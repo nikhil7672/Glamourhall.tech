@@ -60,7 +60,7 @@ export function LandingPageComponent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
   const fileInputRef = useRef(null);
-  const chatContainerRef = useRef(null);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
