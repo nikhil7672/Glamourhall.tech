@@ -258,50 +258,42 @@ export function LandingPageComponent() {
 
   {/* Enhanced Drawer Content */}
   <SheetContent
-    side="right"
-    className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 w-[250px] sm:w-[300px] shadow-lg rounded-l-xl transition-transform duration-300 ease-in-out"
-  >
-    <div className="p-6">
-      {/* Custom Close Button */}
-      <Button
-        variant="ghost"
-        size="icon"
+  side="right"
+  className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 w-[250px] sm:w-[300px] shadow-lg rounded-l-xl transition-transform duration-300 ease-in-out [&>button]:text-white [&>button]:hover:text-yellow-300 [&>button]:transition-colors [&>button]:duration-200 [&>button]:scale-150 [&>button]:top-6 [&>button]:right-6"
+>
+  <div className="p-6">
+    <nav className="flex flex-col space-y-6 mt-8">
+      <Link
+        href="/"
         onClick={() => setMenuOpen(false)}
-        className="absolute top-4 right-4 text-white"
+        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
       >
-        <X className="h-6 w-6" />
-        <span className="sr-only">Close menu</span>
-      </Button>
-
-      {/* Drawer Navigation */}
-      <nav className="flex flex-col space-y-6 mt-8">
-        <Link
-          href="/"
-          className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
-        >
-          <Home className="h-5 w-5 mr-2" /> Home
-        </Link>
-        <Link
-          href="/#features"
-          className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
-        >
-          <Star className="h-5 w-5 mr-2" /> Features
-        </Link>
-        <Link
-          href="/auth/login"
-          className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
-        >
-          <LogIn className="h-5 w-5 mr-2" /> Login
-        </Link>
-        <Link
-          href="/auth/register"
-          className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
-        >
-          <UserPlus className="h-5 w-5 mr-2" /> Sign Up
-        </Link>
-      </nav>
-    </div>
-  </SheetContent>
+        <Home className="h-5 w-5 mr-2" /> Home
+      </Link>
+      <Link
+        href="/#features"
+        onClick={() => setMenuOpen(false)}
+        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
+      >
+        <Star className="h-5 w-5 mr-2" /> Features
+      </Link>
+      <Link
+        href="/auth/login"
+        onClick={() => setMenuOpen(false)}
+        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
+      >
+        <LogIn className="h-5 w-5 mr-2" /> Login
+      </Link>
+      <Link
+        href="/auth/register"
+        onClick={() => setMenuOpen(false)}
+        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
+      >
+        <UserPlus className="h-5 w-5 mr-2" /> Sign Up
+      </Link>
+    </nav>
+  </div>
+</SheetContent>
 </Sheet>
 
 
