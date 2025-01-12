@@ -1,3 +1,4 @@
+// app/auth/login/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { EyeIcon, EyeOffIcon, MailIcon, LockIcon, Sparkles } from 'lucide-react'
+import { signIn } from 'next-auth/react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -44,6 +46,17 @@ export default function LoginPage() {
     setShowPassword(!showPassword)
   }
 
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signIn('google', { callbackUrl: '/dashboard' })
+      if (result?.error) {
+        setError('Google login failed')
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.')
+    }
+  }
+
   return (
     <div className="min-h-screen flex">
       {/* Left side - Fashion Image */}
@@ -64,7 +77,7 @@ export default function LoginPage() {
 
       {/* Right side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center relative">
-      <div className="absolute inset-0 lg:hidden">
+        <div className="absolute inset-0 lg:hidden">
           <Image
             src="/lgbg.jpg"
             alt="Fashion background"
@@ -75,59 +88,61 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/60 via-blue-900/60 to-black/70 mix-blend-multiply" />
         </div>
         <div className="absolute inset-0 hidden lg:block bg-gradient-to-br from-purple-100 via-indigo-50 to-blue-100" />
-        <Card className="w-full max-w-md shadow-xl rounded-xl bg-white/80 backdrop-blur-sm dark:bg-gray-900/90">
-          <CardHeader className="space-y-2 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Sparkles className="h-8 w-8 text-purple-600" />
+        
+        <Card className="w-full max-w-md shadow-xl rounded-xl bg-white/90 backdrop-blur-sm dark:bg-gray-900/90 relative z-10 m-6">
+          <CardHeader className="space-y-2 text-center pb-4">
+            <div className="flex items-center justify-center mb-1">
+              <Sparkles className="h-6 w-6 text-purple-600" />
             </div>
-            <CardTitle className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600">
+            <CardTitle className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600">
               Welcome Back
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Log in to your GlamourHall account
+            <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+              Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+                <div className="p-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs">
                   {error}
                 </div>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              
+              <div className="space-y-1">
+                <Label htmlFor="email" className="text-xs font-medium text-gray-700 dark:text-gray-300">
                   Email
                 </Label>
                 <div className="relative">
-                  <Input 
-                    id="email" 
-                    placeholder="Enter your email" 
-                    type="email" 
-                    required 
-                    className="pl-10 py-3 rounded-lg bg-white/50 dark:bg-gray-800 focus:bg-white focus:dark:bg-gray-700 transition-all border-gray-200"
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    required
+                    className="pl-9 py-2 rounded-lg bg-white/50 dark:bg-gray-800 focus:bg-white focus:dark:bg-gray-700 transition-all border-gray-200 text-sm"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
-                  <MailIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <MailIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-xs font-medium text-gray-700 dark:text-gray-300">
                   Password
                 </Label>
                 <div className="relative">
                   <Input
                     id="password"
-                    placeholder="Enter your password"
                     type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
                     required
-                    className="pl-10 py-3 rounded-lg bg-white/50 dark:bg-gray-800 focus:bg-white focus:dark:bg-gray-700 transition-all border-gray-200"
+                    className="pl-9 py-2 rounded-lg bg-white/50 dark:bg-gray-800 focus:bg-white focus:dark:bg-gray-700 transition-all border-gray-200 text-sm"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Button
                     type="button"
                     variant="ghost"
@@ -136,54 +151,60 @@ export default function LoginPage() {
                     onClick={togglePasswordVisibility}
                   >
                     {showPassword ? (
-                      <EyeOffIcon className="h-5 w-5 text-gray-400" />
+                      <EyeOffIcon className="h-4 w-4 text-gray-400" />
                     ) : (
-                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                      <EyeIcon className="h-4 w-4 text-gray-400" />
                     )}
                     <span className="sr-only">Toggle password visibility</span>
                   </Button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input 
-                    id="remember-me" 
-                    name="remember-me" 
-                    type="checkbox" 
-                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600 dark:text-gray-400">
-                    Remember me
-                  </label>
-                </div>
-                <Link 
-                  href="/auth/forgot-password" 
-                  className="text-sm text-purple-600 hover:text-purple-500 dark:text-purple-400 hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
               <Button
-                className="w-full py-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition duration-300 shadow-md"
+                className="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition duration-300 shadow-md text-sm"
                 type="submit"
               >
                 Log in
               </Button>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
+              </div>
+
+              <Button
+                className="w-full py-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg border border-gray-300 transition duration-300 shadow-sm flex items-center justify-center gap-2 text-sm"
+                onClick={handleGoogleLogin}
+                type="button"
+              >
+                <Image src="/google.png" alt="Google" width={16} height={16} />
+                Log in with Google
+              </Button>
             </form>
           </CardContent>
-          
-          <CardFooter className="border-t pt-6">
-            <p className="text-center text-sm text-gray-600 dark:text-gray-400 w-full">
-              Don't have an account?{' '}
-              <Link 
-                href="/auth/register" 
-                className="font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 hover:underline"
-              >
-                Sign up for free
-              </Link>
-            </p>
+
+          <CardFooter className="border-t pt-4">
+            <div className="w-full space-y-2">
+              <p className="text-center text-xs text-gray-600 dark:text-gray-400">
+                Don't have an account?{' '}
+                <Link 
+                  href="/auth/register" 
+                  className="font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 hover:underline"
+                >
+                  Sign up for free
+                </Link>
+              </p>
+              <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                By logging in, you agree to our{' '}
+                <Link href="/terms" className="text-purple-600 hover:underline">Terms</Link>
+                {' '}and{' '}
+                <Link href="/privacy" className="text-purple-600 hover:underline">Privacy Policy</Link>
+              </p>
+            </div>
           </CardFooter>
         </Card>
       </div>
