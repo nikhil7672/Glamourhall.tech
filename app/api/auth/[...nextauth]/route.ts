@@ -1,7 +1,11 @@
    // app/api/auth/[...nextauth]/route.ts
    import NextAuth from 'next-auth'
    import GoogleProvider from 'next-auth/providers/google'
-
+   declare module 'next-auth' {
+    interface Session {
+      accessToken?: string;
+    }
+  }
    const handler = NextAuth({
      providers: [
        GoogleProvider({

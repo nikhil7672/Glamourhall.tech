@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fa'
 import { Button } from "@/components/ui/button"
 import { useMediaQuery } from '@/utils/useMediaQuery'; // Ensure this is correctly imported
+import axios from 'axios'
 
 interface Message {
   type: 'user' | 'ai'
@@ -49,6 +50,8 @@ export default function DashboardPage() {
       timestamp: new Date()
     },
   ])
+  const [userInput, setUserInput] = useState('');
+  const [isAITyping, setIsAITyping] = useState(false);
 
   // Refs
   const chatContainerRef = useRef<HTMLDivElement | null>(null)
@@ -108,26 +111,57 @@ export default function DashboardPage() {
   }
 
   // Message Handlers
-  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const form = e.currentTarget
-    const input = form.elements.namedItem('message') as HTMLInputElement
-    const message = input.value.trim()
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!userInput.trim()) return;
+    
+    // Add user message to chat
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { type: 'user', content: userInput },
+    ]);
 
-    if (message) {
-      setMessages(prev => [...prev, { 
-        type: "user", 
-        content: message,
-        timestamp: new Date()
-      }])
-      
-      form.reset()
-      setIsTyping(true)
-      await simulateAIResponse()
-      setIsTyping(false)
+    // Set AI typing state to true
+    setIsAITyping(true);
+
+    try {
+        const message = userInput
+        setUserInput('')
+      // Send a POST request with the refined text prompt
+      const response = await axios.post('/api/huggingface', {
+        prompt: message,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.data.result) {
+        // Add AI response to chat
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { type: 'ai', content: response.data.result.content },
+        ]);
+      } else {
+        console.error('No response from API');
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { type: 'ai', content: 'Sorry, I could not process your request.' },
+        ]);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: 'ai', content: 'Sorry, an error occurred while processing your request.' },
+      ]);
+    } finally {
+      // Clear input field and stop typing animation
+      setUserInput('');
+      setIsAITyping(false);
     }
-  }
-
+  };
   const simulateAIResponse = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     setMessages(prev => [...prev, {
@@ -137,23 +171,58 @@ export default function DashboardPage() {
     }])
   }
 
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const result = e.target?.result as string
-        setMessages(prev => [...prev, { 
-          type: "user", 
-          content: "Image uploaded",
-          image: result,
-          timestamp: new Date()
-        }])
-        simulateAIResponse()
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+  
+    // Add the image upload message to the chat
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: "user",
+        content: "Image uploaded",
+        image: URL.createObjectURL(file), // Use URL for display
+        timestamp: new Date(),
+      },
+    ]);
+  
+    try {
+      // Create a FormData object to send the file
+      const formData = new FormData();
+      formData.append('image', file);
+  
+      // Send the image file to the server for processing
+      const response = await axios.post('/api/huggingface', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      // Handle the AI response
+      if (response.data.result) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { type: "ai", content: JSON.stringify(response.data.result) },
+        ]);
+      } else {
+        console.error("No response from API");
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { type: "ai", content: "Sorry, I could not process your image." },
+        ]);
       }
-      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error("Error:", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          type: "ai",
+          content: "Sorry, an error occurred while processing your image.",
+        },
+      ]);
     }
-  }
+  };
+  
 
   const handleVoiceMessage = async () => {
     setIsRecording(!isRecording)
@@ -296,115 +365,99 @@ export default function DashboardPage() {
 
         {/* Main Content */}
         <main className="flex-1 container mx-auto px-4 py-6 md:px-6 md:py-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-            Welcome, {session?.user?.name}
-          </h1>
-          <p className="mb-4 text-gray-600 dark:text-gray-300">
-            This is your dashboard. Here you can manage your account, view your style history, and more.
-          </p>
+  <h1 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+    Welcome, {session?.user?.name}
+  </h1>
+  <p className="mb-4 text-gray-600 dark:text-gray-300">
+    This is your dashboard. Here you can manage your account, view your style history, and more.
+  </p>
 
-          {/* Chat Section */}
-          {showChat && (
-            <div className="mt-4 md:mt-8 border rounded-lg shadow-lg bg-white dark:bg-gray-800 max-w-4xl mx-auto">
-              <div className="p-4 border-b flex items-center justify-between">
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
-                  Chat with AI Assistant
-                </h2>
-                <div className="flex items-center space-x-2">
-                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Online</span>
-                </div>
-              </div>
-              
-              <div 
-                className="p-4 overflow-y-auto h-[400px] md:h-[500px] scroll-smooth" 
-                ref={chatContainerRef}
-              >
-                {messages.map((message, index) => (
-                  <div 
-                    key={index} 
-                    className={`flex ${message.type === "user" ? "justify-end" : "justify-start"} mb-4`}
-                  >
-                    <div 
-                      className={`
-                        max-w-[85%] md:max-w-[70%] rounded-lg p-3.5 
-                        ${message.type === "user" 
-                          ? "bg-purple-500 text-white rounded-br-none" 
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none"
-                        }
-                        ${message.image ? "p-2" : ""}
-                      `}
-                    >
-                      {message.image && (
-                        <img 
-                          src={message.image} 
-                          alt="Uploaded" 
-                          className="max-w-full rounded-lg mb-2"
-                        />
-                      )}
-                      <p className="break-words">{message.content}</p>
-                      <span className="text-xs opacity-70 mt-1 block text-right">
-                        {message.timestamp?.toLocaleTimeString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+  {/* Chat Section */}
+  {showChat && (
+    <div className="mt-4 md:mt-8 border rounded-lg shadow-lg bg-white dark:bg-gray-800 max-w-4xl mx-auto">
+      <div className="p-4 border-b flex items-center justify-between">
+        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
+          Chat with AI Assistant
+        </h2>
+        <div className="flex items-center space-x-2">
+          <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+          <span className="text-sm text-gray-600 dark:text-gray-300">Online</span>
+        </div>
+      </div>
 
-              <form 
-                onSubmit={handleSendMessage} 
-                className="p-4 border-t bg-gray-50 dark:bg-gray-750 rounded-b-lg"
-              >
-                <div className="flex space-x-2">
-                  <div className="flex-1 relative">
-                    <input 
-                      name="message" 
-                      placeholder="Type your message..." 
-                      className="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 
-                               text-gray-900 dark:text-white placeholder-gray-500
-                               focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button 
-                      type="submit"
-                      className="bg-purple-500 hover:bg-purple-600 text-white px-4"
-                    >
-                      <FaPaperPlane className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      className="border-gray-300 dark:border-gray-600"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <FaImage className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      className={`border-gray-300 dark:border-gray-600 
-                                ${isRecording ? 'bg-red-50 dark:bg-red-900' : ''}`}
-                      onClick={handleVoiceMessage}
-                    >
-                      <FaMicrophone 
-                        className="h-4 w-4" 
-                        color={isRecording ? "red" : "currentColor"} 
-                      />
-                    </Button>
-                    </div>
-                </div>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handlePhotoUpload} 
-                  accept="image/*" 
-                  className="hidden" 
-                />
-              </form>
+      <div className="p-4 overflow-y-auto h-[400px] md:h-[500px] scroll-smooth" ref={chatContainerRef}>
+        {messages.map((message, index) => (
+          <div key={index} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"} mb-4`}>
+            <div className={`max-w-[85%] md:max-w-[70%] rounded-lg p-3.5 ${message.type === "user" ? "bg-purple-500 text-white rounded-br-none" : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none"}`}>
+              {message.image && (
+                <img src={message.image} alt="Uploaded" className="max-w-full rounded-lg mb-2" />
+              )}
+              <p className="break-words">{message.content}</p>
+              <span className="text-xs opacity-70 mt-1 block text-right">
+                {message.timestamp?.toLocaleTimeString()}
+              </span>
             </div>
-          )}
-        </main>
+          </div>
+        ))}
+        {isAITyping && (
+          <div className="flex justify-start mb-4">
+            <div className="max-w-[85%] md:max-w-[70%] rounded-lg p-3.5 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={handleSendMessage} className="p-4 border-t bg-gray-50 dark:bg-gray-750 rounded-b-lg">
+        <div className="flex flex-col sm:flex-row space-x-0 sm:space-x-2">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              name="message"
+              placeholder="Type your message..."
+              className="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              onChange={(e) => setUserInput(e.target.value)}
+              value={userInput}
+            />
+          </div>
+          <div className="flex mt-2 sm:mt-0 space-x-2">
+            <Button type="submit" className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2">
+              <FaPaperPlane className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-gray-300 dark:border-gray-600 px-4 py-2"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <FaImage className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className={`border-gray-300 dark:border-gray-600 px-4 py-2 ${isRecording ? "bg-red-50 dark:bg-red-900" : ""}`}
+              onClick={handleVoiceMessage}
+            >
+              <FaMicrophone className="h-4 w-4" color={isRecording ? "red" : "currentColor"} />
+            </Button>
+          </div>
+        </div>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handlePhotoUpload}
+          accept="image/*"
+          className="hidden"
+        />
+      </form>
+    </div>
+  )}
+</main>
+
 
         {/* Footer */}
         <footer className="bg-white dark:bg-gray-800 shadow w-full">
