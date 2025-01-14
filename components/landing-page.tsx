@@ -396,18 +396,21 @@ export function LandingPageComponent() {
       
       {/* Buttons */}
       <div className="space-y-4 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center">
-        <Button
-          onClick={() => setShowChat(true)}
+      <Link href="/auth/login">
+      <Button
           className="px-6 py-3 text-lg bg-purple-600 text-white font-semibold rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 flex items-center"
         >
           <Upload className="mr-2 h-5 w-5" /> Start Chatting
         </Button>
-        <Button
-          onClick={() => setShowChat(true)}
+      </Link>
+      <Link href="/auth/login">
+      <Button
           className="px-6 py-3 text-lg bg-gray-100 text-purple-600 font-semibold rounded-full shadow-lg hover:bg-gray-200 transition-all duration-300 flex items-center"
         >
           <Camera className="mr-2 h-5 w-5" /> Take Photo
         </Button>
+      </Link>
+      
       </div>
     </div>
   </div>
