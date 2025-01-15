@@ -54,7 +54,7 @@ export default function DashboardPage() {
   const [hasStartedChat, setHasStartedChat] = useState(false);
 
   const initialPrompts = [
-    { icon: "👗", text: "Help me style an outfit for a wedding" },
+    { icon: "💃", text: "Help me style an outfit for a wedding" },
     { icon: "🎨", text: "What colors are trending this season?" },
     { icon: "💄", text: "Recommend makeup looks for my skin tone" },
     { icon: "🛍️", text: "Create a capsule wardrobe for me" },
