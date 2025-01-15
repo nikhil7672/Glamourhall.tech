@@ -89,6 +89,8 @@ body {
 .typing-indicator {
   display: flex;
   align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
 }
 
 .typing-indicator span {
@@ -96,7 +98,7 @@ body {
   width: 8px;
   height: 8px;
   margin: 0 2px;
-  background-color: #ccc;
+  background-color: #4B5563;
   border-radius: 50%;
   animation: typing 1.5s infinite;
 }

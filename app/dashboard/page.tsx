@@ -1,214 +1,217 @@
 // components/dashboard.tsx
-'use client'
+"use client";
 
-import { useSession } from 'next-auth/react'
-import { useRouter, usePathname } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FaBars, FaTimes, FaComments, FaHome, FaSignOutAlt, 
-  FaUser, FaCog, FaPaperPlane, FaMicrophone, FaImage,
-  FaChartLine, FaBookmark, FaBell, FaQuestionCircle 
-} from 'react-icons/fa'
-import { Button } from "@/components/ui/button"
-import { useMediaQuery } from '@/utils/useMediaQuery'; // Ensure this is correctly imported
-import axios from 'axios'
-
+import { useSession } from "next-auth/react";
+import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
+import { CgGirl } from "react-icons/cg";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaBars,
+  FaTimes,
+  FaHome,
+  FaSignOutAlt,
+  FaUser,
+  FaCog,
+  FaPaperPlane,
+  FaMicrophone,
+  FaImage,
+  FaChartLine,
+  FaBookmark,
+  FaBell,
+  FaQuestionCircle,
+  FaSearch,
+  FaCompass,
+  FaTshirt,
+  FaRobot,
+  FaComments,
+  FaPen,
+  FaCommentDots,
+} from "react-icons/fa";
+import { useMediaQuery } from "@/utils/useMediaQuery";
+import axios from "axios";
+import Image from "next/image"
 interface Message {
-  type: 'user' | 'ai'
-  content: string
-  image?: string
-  timestamp?: Date
+  type: "user" | "ai";
+  content: string;
+  images?: string[];
+  timestamp?: Date;
 }
 
 interface MenuItem {
-  icon: React.ElementType
-  label: string
-  href: string
+  icon: React.ElementType;
+  label: string;
+  href: string;
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const pathname = usePathname()
-  
-  // UI States
-  const [showChat, setShowChat] = useState(true)
-  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [hasStartedChat, setHasStartedChat] = useState(false);
+
+  const initialPrompts = [
+    { icon: "👗", text: "Help me style an outfit for a wedding" },
+    { icon: "🎨", text: "What colors are trending this season?" },
+    { icon: "💄", text: "Recommend makeup looks for my skin tone" },
+    { icon: "🛍️", text: "Create a capsule wardrobe for me" },
+    { icon: "✨", text: "Give me fashion tips for my body type" },
+  ];
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
 
-  const [isRecording, setIsRecording] = useState(false)
-  const [isTyping, setIsTyping] = useState(false)
-  
   // Chat State
   const [messages, setMessages] = useState<Message[]>([
-    {
-      type: "ai",
-      content: "Hello! How can I assist you today?",
-      timestamp: new Date()
-    },
-  ])
-  const [userInput, setUserInput] = useState('');
+  ]);
+  const [userInput, setUserInput] = useState("");
   const [isAITyping, setIsAITyping] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   // Refs
-  const chatContainerRef = useRef<HTMLDivElement | null>(null)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const messageInputRef = useRef<HTMLInputElement | null>(null)
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const messageInputRef = useRef<HTMLInputElement | null>(null);
 
   // Menu Configuration
   const menuItems: MenuItem[] = [
-    { icon: FaHome, label: 'Home', href: '/' },
-    { icon: FaChartLine, label: 'Analytics', href: '/analytics' },
-    { icon: FaBookmark, label: 'Saved Items', href: '/saved' },
-    { icon: FaBell, label: 'Notifications', href: '/notifications' },
-    { icon: FaUser, label: 'Profile', href: '/profile' },
-    { icon: FaCog, label: 'Settings', href: '/settings' },
-    { icon: FaQuestionCircle, label: 'Help Center', href: '/help' },
-  ]
-
+    { icon: FaCommentDots, label: "Start New Chat", href: "/new-chat" }, // Replaced Home with Start New Chat
+    { icon: FaUser, label: "Profile", href: "/profile" },
+    { icon: FaCog, label: "Settings", href: "/settings" },
+    { icon: FaQuestionCircle, label: "Help Center", href: "/help" },
+    { icon: FaComments, label: "Recent Chats", href: "/recent-chats" }, // Keep Recent Chats
+  ];
   // Authentication Effect
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login')
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
     }
-  }, [status, router])
+  }, [status, router]);
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+    setImageFiles((prev) => [...prev, ...Array.from(files)]);
+
+    // Create object URLs for each file
+    const newImagePreviews = Array.from(files).map((file) => {
+      const objectUrl = URL.createObjectURL(file);
+      return objectUrl;
+    });
+
+    // Update state with new image previews
+    setImagePreviews((prev) => [...prev, ...newImagePreviews]);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  useEffect(() => {
+    // Cleanup object URLs on component unmount or when the imagePreviews change
+    return () => {
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviews]);
 
   // Chat Scroll Effect
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
-  }, [messages])
+  }, [messages]);
 
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
-        setIsMobileSidebarOpen(prev => !prev)
+      if ((e.ctrlKey || e.metaKey) && e.key === "/") {
+        setIsMobileSidebarOpen((prev) => !prev);
       }
-      if (e.key === 'Escape' && window.innerWidth < 768) {
-        setIsMobileSidebarOpen(false)
+      if (e.key === "Escape" && window.innerWidth < 768) {
+        setIsMobileSidebarOpen(false);
       }
-    }
+    };
 
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [])
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, []);
 
   useEffect(() => {
     setIsMobileSidebarOpen(isDesktop);
   }, [isDesktop]);
   // Loading State
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
       </div>
-    )
+    );
   }
+
+  const handlePromptClick = (promptText: string) => {
+    setUserInput(promptText);
+  
+  };
 
   // Message Handlers
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!userInput.trim()) return;
-    
+    setHasStartedChat(true);
+    if (!userInput.trim() && imagePreviews.length === 0) return;
+    setHasStartedChat(true);
     // Add user message to chat
     setMessages((prevMessages) => [
       ...prevMessages,
-      { type: 'user', content: userInput },
+      { type: "user", content: userInput, images: imagePreviews },
     ]);
+    const uploadImages: any = imagePreviews;
+    // Reset input and image previews
+    setUserInput("");
+    setImagePreviews([]);
 
     // Set AI typing state to true
     setIsAITyping(true);
 
     try {
-        const message = userInput
-        setUserInput('')
-      // Send a POST request with the refined text prompt
-      const response = await axios.post('/api/huggingface', {
-        prompt: message,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      let textResponse;
 
-      if (response.data.result) {
-        // Add AI response to chat
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { type: 'ai', content: response.data.result.content },
-        ]);
-      } else {
-        console.error('No response from API');
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { type: 'ai', content: 'Sorry, I could not process your request.' },
-        ]);
+      // Send text message as JSON only if there is user input
+      if (userInput.trim()) {
+        textResponse = await axios.post("/api/huggingface", {
+          prompt: userInput,
+        });
       }
-    } catch (error) {
-      console.error('Error:', error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { type: 'ai', content: 'Sorry, an error occurred while processing your request.' },
-      ]);
-    } finally {
-      // Clear input field and stop typing animation
-      setUserInput('');
-      setIsAITyping(false);
-    }
-  };
-  const simulateAIResponse = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setMessages(prev => [...prev, {
-      type: "ai",
-      content: "Thank you for your message. How else can I help?",
-      timestamp: new Date()
-    }])
-  }
 
-  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-  
-    // Add the image upload message to the chat
-    setMessages((prev) => [
-      ...prev,
-      {
-        type: "user",
-        content: "Image uploaded",
-        image: URL.createObjectURL(file), // Use URL for display
-        timestamp: new Date(),
-      },
-    ]);
-  
-    try {
-      // Create a FormData object to send the file
-      const formData = new FormData();
-      formData.append('image', file);
-  
-      // Send the image file to the server for processing
-      const response = await axios.post('/api/huggingface', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-  
-      // Handle the AI response
-      if (response.data.result) {
+      // Handle image uploads separately
+      if (uploadImages.length > 0) {
+        const formData = new FormData();
+        for (const file of uploadImages) {
+          formData.append("images", file, file.name);
+        }
+
+        // Send a POST request with the images
+        await axios.post("/api/huggingface", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      // Handle AI response if textResponse is available
+      if (textResponse && textResponse.data.result) {
         setMessages((prevMessages) => [
           ...prevMessages,
-          { type: "ai", content: JSON.stringify(response.data.result) },
+          { type: "ai", content: textResponse.data.result.content },
         ]);
+      } else if (!textResponse) {
+        // If no text response was made, handle image-only response or fallback
+        console.log("Images uploaded without text input.");
       } else {
         console.error("No response from API");
         setMessages((prevMessages) => [
           ...prevMessages,
-          { type: "ai", content: "Sorry, I could not process your image." },
+          { type: "ai", content: "Sorry, I could not process your request." },
         ]);
       }
     } catch (error) {
@@ -217,47 +220,70 @@ export default function DashboardPage() {
         ...prevMessages,
         {
           type: "ai",
-          content: "Sorry, an error occurred while processing your image.",
+          content: "Sorry, an error occurred while processing your request.",
         },
       ]);
+    } finally {
+      setIsAITyping(false);
     }
   };
-  
-
-  const handleVoiceMessage = async () => {
-    setIsRecording(!isRecording)
-    if (isRecording) {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setMessages(prev => [...prev, { 
-        type: "user", 
-        content: "Voice message sent",
-        timestamp: new Date()
-      }])
-      simulateAIResponse()
-    }
-  }
+  const simulateAIResponse = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setMessages((prev) => [
+      ...prev,
+      {
+        type: "ai",
+        content: "Thank you for your message. How else can I help?",
+        timestamp: new Date(),
+      },
+    ]);
+  };
 
   const handleLogout = () => {
-    router.push('/auth/login')
-  }
+    router.push("/auth/login");
+  };
+
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gray-100 dark:bg-gray-900">
+<div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-purple-50 to-pink-50">
+
       {/* Mobile Overlay */}
+      {/* Bottom Navigation Bar - Mobile Only */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden">
+        <div className="flex justify-around items-center p-3">
+          <button className="flex flex-col items-center">
+            <FaSearch className="h-6 w-6 text-purple-500" />
+            <span className="text-xs mt-1">Search</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <FaCompass className="h-6 w-6" />
+            <span className="text-xs mt-1">Explore</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <FaBookmark className="h-6 w-6" />
+            <span className="text-xs mt-1">Saved</span>
+          </button>
+          <button className="flex flex-col items-center">
+            <FaUser className="h-6 w-6" />
+            <span className="text-xs mt-1">Profile</span>
+          </button>
+        </div>
+      </div>
       {isMobileSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
           onClick={() => setIsMobileSidebarOpen(false)}
         />
       )}
-    {/* Sidebar */}
-    <motion.aside
+      {/* Sidebar */}
+      <motion.aside
         initial={{ x: -300 }}
         animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
         className={`
-          fixed md:static md:translate-x-0 w-72 ${isDesktop ? 'h-screen' : 'h-full'} z-40 
-          bg-white dark:bg-gray-800 
-          border-r border-gray-200 dark:border-gray-700
+          fixed md:static md:translate-x-0 w-72 ${
+            isDesktop ? "h-screen" : "h-full"
+          } z-40 
+          bg-gradient-to-r from-purple-50 to-pink-50  
           transition-transform duration-200
           md:block
         `}
@@ -266,14 +292,7 @@ export default function DashboardPage() {
           {/* Sidebar Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={40}
-                height={40}
-                className="rounded-xl"
-              />
-              <span className="font-bold text-lg text-gray-900 dark:text-white">
+              <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
                 GlamourHall
               </span>
             </div>
@@ -297,8 +316,11 @@ export default function DashboardPage() {
                     text-gray-700 dark:text-gray-300
                     hover:bg-gray-100 dark:hover:bg-gray-700
                     transition-colors duration-150
-                    ${pathname === item.href ? 
-                      'bg-purple-50 dark:bg-gray-700 text-purple-600 dark:text-purple-400' : ''}
+                    ${
+                      pathname === item.href
+                        ? "bg-purple-50 dark:bg-gray-700 text-purple-600 dark:text-purple-400"
+                        : ""
+                    }
                   `}
                 >
                   <item.icon className="w-5 h-5" />
@@ -324,82 +346,126 @@ export default function DashboardPage() {
         </div>
       </motion.aside>
 
-
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="bg-white dark:bg-gray-800 shadow">
-          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div className="flex items-center">
-              <button 
-                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                className="text-gray-900 dark:text-white mr-4 md:hidden"
-              >
-                <FaBars size={24} />
-              </button>
-              <Link href="/" className="flex items-center">
-                <Image 
-                  src="/logo.png" 
-                  alt="Logo" 
-                  width={32} 
-                  height={32} 
-                  className="mr-2" 
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-screen">
+        {/* Fixed Header */}
+        <header className="fixed top-0 left-0 right-0 bg-white/30 backdrop-blur-md shadow z-10">
+      <div className="px-4 py-3 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="text-gray-900 mr-2 md:hidden"
+          >
+            <FaBars size={24} className="text-gray-600 hover:text-gray-800" />
+          </button>
+
+          <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
+            GlamourHall
+          </span>
+        </div>
+
+        {/* Profile section on the right */}
+        <div className="flex items-center gap-3">
+          {session?.user && (
+            <>
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300">
+                <Image
+                  src={`${session?.user?.image}`} // Default image if no profile image
+                  alt="Profile Picture"
+                  width={40}
+                  height={40}
+                  className="object-cover"
                 />
-                <span className="font-bold text-lg sm:text-xl text-gray-900 dark:text-white">
-                  GlamourHall
-                </span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                className="text-gray-900 dark:text-white" 
-                onClick={() => setShowChat(!showChat)}
-              >
-                <FaComments className="mr-2 h-4 w-4" />
-                {showChat ? 'Hide Chat' : 'Show Chat'}
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="flex-1 container mx-auto px-4 py-6 md:px-6 md:py-8">
-  <h1 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-    Welcome, {session?.user?.name}
-  </h1>
-  <p className="mb-4 text-gray-600 dark:text-gray-300">
-    This is your dashboard. Here you can manage your account, view your style history, and more.
-  </p>
-
-  {/* Chat Section */}
-  {showChat && (
-    <div className="mt-4 md:mt-8 border rounded-lg shadow-lg bg-white dark:bg-gray-800 max-w-4xl mx-auto">
-      <div className="p-4 border-b flex items-center justify-between">
-        <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
-          Chat with AI Assistant
-        </h2>
-        <div className="flex items-center space-x-2">
-          <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-          <span className="text-sm text-gray-600 dark:text-gray-300">Online</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
+    </header>
 
-      <div className="p-4 overflow-y-auto h-[400px] md:h-[500px] scroll-smooth" ref={chatContainerRef}>
-        {messages.map((message, index) => (
-          <div key={index} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"} mb-4`}>
-            <div className={`max-w-[85%] md:max-w-[70%] rounded-lg p-3.5 ${message.type === "user" ? "bg-purple-500 text-white rounded-br-none" : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none"}`}>
-              {message.image && (
-                <img src={message.image} alt="Uploaded" className="max-w-full rounded-lg mb-2" />
+        {/* Chat Container */}
+        <div className="flex-1 overflow-hidden mt-[60px] mb-[80px] md:mb-12">
+          <div className="h-full overflow-y-auto" ref={chatContainerRef}>
+            <div className="max-w-3xl mx-auto px-4 py-6">
+              {/* Welcome Section - Only show if chat hasn't started */}
+              {!hasStartedChat && messages.length <= 1 && (
+                <div className="text-center mb-8">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 flex items-center justify-center">
+                    <span className="text-white text-3xl">👗</span>
+                  </div>
+                  <h2 className="text-2xl font-bold mb-2">
+                    Your Personal Style Guide
+                  </h2>
+                  <p className="text-gray-600 mb-8">
+                    Get personalized fashion advice, trend updates, and style
+                    recommendations
+                  </p>
+
+                  {/* Featured Prompts */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl mx-auto">
+                    {initialPrompts.map((prompt, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handlePromptClick(prompt.text)}
+                        className="group p-4 rounded-xl border border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-300 text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{prompt.icon}</span>
+                          <span className="text-sm text-gray-700 group-hover:text-purple-700">
+                            {prompt.text}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Feature Badges */}
+                  <div className="flex flex-wrap justify-center gap-3 mt-8">
+                    <span className="px-4 py-2 rounded-full bg-purple-100 text-purple-700 text-sm">
+                      Personal Styling
+                    </span>
+                    <span className="px-4 py-2 rounded-full bg-pink-100 text-pink-700 text-sm">
+                      Trend Analysis
+                    </span>
+                    <span className="px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm">
+                      Color Matching
+                    </span>
+                    <span className="px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm">
+                      Sustainable Fashion
+                    </span>
+                  </div>
+                </div>
               )}
-              <p className="break-words">{message.content}</p>
-              <span className="text-xs opacity-70 mt-1 block text-right">
-                {message.timestamp?.toLocaleTimeString()}
-              </span>
-            </div>
-          </div>
-        ))}
-        {isAITyping && (
+
+              {/* Chat Messages */}
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    message.type === "user" ? "justify-end" : "justify-start"
+                  } mb-4`}
+                >
+                  {message.type === "ai" && (
+                    <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
+                      <span className="text-white">
+                        {/* <CgGirl className="h-6 w-6" /> */}
+                        ✨
+                      </span>
+                    </div>
+                  )}
+                  <div
+                    className={`relative max-w-[80%] rounded-2xl px-4 py-3 ${
+                      message.type === "user"
+                        ? "bg-gradient-to-r from-purple-500 to-pink-400 text-white"
+                        : "bg-gradient-to-r from-pink-100 to-blue-100 text-black"
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                </div>
+              ))}
+              {isAITyping && (
           <div className="flex justify-start mb-4">
             <div className="max-w-[85%] md:max-w-[70%] rounded-lg p-3.5 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none">
               <div className="typing-indicator">
@@ -410,64 +476,48 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
-      </div>
-
-      <form onSubmit={handleSendMessage} className="p-4 border-t bg-gray-50 dark:bg-gray-750 rounded-b-lg">
-        <div className="flex flex-col sm:flex-row space-x-0 sm:space-x-2">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              name="message"
-              placeholder="Type your message..."
-              className="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              onChange={(e) => setUserInput(e.target.value)}
-              value={userInput}
-            />
-          </div>
-          <div className="flex mt-2 sm:mt-0 space-x-2">
-            <Button type="submit" className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2">
-              <FaPaperPlane className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-gray-300 dark:border-gray-600 px-4 py-2"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <FaImage className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className={`border-gray-300 dark:border-gray-600 px-4 py-2 ${isRecording ? "bg-red-50 dark:bg-red-900" : ""}`}
-              onClick={handleVoiceMessage}
-            >
-              <FaMicrophone className="h-4 w-4" color={isRecording ? "red" : "currentColor"} />
-            </Button>
+            </div>
           </div>
         </div>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handlePhotoUpload}
-          accept="image/*"
-          className="hidden"
-        />
-      </form>
-    </div>
-  )}
-</main>
 
-
-        {/* Footer */}
-        <footer className="bg-white dark:bg-gray-800 shadow w-full">
-          <div className="container mx-auto px-6 py-4 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              © {new Date().getFullYear()} GlamourHall. All rights reserved.
-            </p>
+        {/* Input Bar */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white/30 backdrop-blur-md border-t shadow z-10">
+          <div className="max-w-3xl mx-auto px-4 py-3">
+            <form onSubmit={handleSendMessage} className="relative lg:ml-16">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Ask about fashion, styling, or trends..."
+                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-colors"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                  />
+                  {/* <input
+                    ref={fileInputRef}
+                    type="file"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <FaImage className="h-5 w-5" />
+                  </button> */}
+                </div>
+                <button
+                  type="submit"
+                  className="p-3 rounded-full bg-gradient-to-r from-purple-500 to-blue-400 text-white hover:opacity-90 transition-opacity"
+                >
+                  <FaPaperPlane className="h-5 w-5" />
+                </button>
+              </div>
+            </form>
           </div>
-        </footer>
+        </div>
       </div>
     </div>
-  )
+  );
 }

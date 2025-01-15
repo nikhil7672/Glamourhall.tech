@@ -76,14 +76,14 @@ export function LandingPageComponent() {
     }
   }, []);
 
-  const handlePhotoUpload = (event) => {
+  const handlePhotoUpload = (event:any) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setMessages([
           ...messages,
-          { type: "user", content: "Image uploaded", image: e.target.result },
+          { type: "user", content: "Image uploaded", image: e?.target?.result },
         ]);
         simulateAIResponse();
       };
@@ -199,14 +199,10 @@ export function LandingPageComponent() {
     {/* Logo */}
     <div className="flex items-center space-x-2">
       <Link className="flex items-center" href="/">
-        <Image
-          src="/logo.png"
-          alt="GlamourHall Logo"
-          width={32}
-          height={32}
-          className="mr-2"
-        />
-        <span className="font-bold text-lg sm:text-xl text-gray-900 dark:text-white">GlamourHall</span>
+       
+   <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
+  GlamourHall
+</span>
       </Link>
     </div>
 
