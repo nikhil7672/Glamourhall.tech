@@ -12,6 +12,7 @@ import {
   FaTimes,
   FaHome,
   FaSignOutAlt,
+  FaTimesCircle,
   FaUser,
   FaCog,
   FaPaperPlane,
@@ -107,12 +108,6 @@ export default function DashboardPage() {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  useEffect(() => {
-    // Cleanup object URLs on component unmount or when the imagePreviews change
-    return () => {
-      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [imagePreviews]);
 
   // Chat Scroll Effect
   useEffect(() => {
@@ -189,16 +184,12 @@ export default function DashboardPage() {
         for (const file of uploadImages) {
           formData.append("images", file, file.name);
         }
-
-        // Send a POST request with the images
         await axios.post("/api/huggingface", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-
-      // Handle AI response if textResponse is available
       if (textResponse && textResponse.data.result) {
         setMessages((prevMessages) => [
           ...prevMessages,
@@ -227,17 +218,6 @@ export default function DashboardPage() {
       setIsAITyping(false);
     }
   };
-  const simulateAIResponse = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setMessages((prev) => [
-      ...prev,
-      {
-        type: "ai",
-        content: "Thank you for your message. How else can I help?",
-        timestamp: new Date(),
-      },
-    ]);
-  };
 
   const handleLogout = () => {
     router.push("/auth/login");
@@ -248,27 +228,7 @@ export default function DashboardPage() {
 <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-purple-50 to-pink-50">
 
       {/* Mobile Overlay */}
-      {/* Bottom Navigation Bar - Mobile Only */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden">
-        <div className="flex justify-around items-center p-3">
-          <button className="flex flex-col items-center">
-            <FaSearch className="h-6 w-6 text-purple-500" />
-            <span className="text-xs mt-1">Search</span>
-          </button>
-          <button className="flex flex-col items-center">
-            <FaCompass className="h-6 w-6" />
-            <span className="text-xs mt-1">Explore</span>
-          </button>
-          <button className="flex flex-col items-center">
-            <FaBookmark className="h-6 w-6" />
-            <span className="text-xs mt-1">Saved</span>
-          </button>
-          <button className="flex flex-col items-center">
-            <FaUser className="h-6 w-6" />
-            <span className="text-xs mt-1">Profile</span>
-          </button>
-        </div>
-      </div>
+    
       {isMobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
@@ -462,6 +422,18 @@ export default function DashboardPage() {
                     }`}
                   >
                     {message.content}
+                    {message.images && message.images.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {message.images.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`Message Image ${index}`}
+              className="w-32 h-32 object-cover rounded-lg"
+            />
+          ))}
+        </div>
+      )}
                   </div>
                 </div>
               ))}
@@ -493,11 +465,12 @@ export default function DashboardPage() {
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                   />
-                  {/* <input
+                  <input
                     ref={fileInputRef}
                     type="file"
                     onChange={handlePhotoUpload}
                     className="hidden"
+                    multiple
                   />
                   <button
                     type="button"
@@ -505,7 +478,7 @@ export default function DashboardPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <FaImage className="h-5 w-5" />
-                  </button> */}
+                  </button>
                 </div>
                 <button
                   type="submit"
@@ -514,6 +487,27 @@ export default function DashboardPage() {
                   <FaPaperPlane className="h-5 w-5" />
                 </button>
               </div>
+              {imagePreviews.length > 0 && (
+        <div className="mt-4 flex gap-2 overflow-x-auto">
+          {imagePreviews.map((preview, index) => (
+            <div key={index} className="relative">
+              <img
+                src={preview}
+                alt={`Preview ${index}`}
+                className="w-24 h-24 object-cover rounded-lg"
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveImage(index)}
+                className="absolute top-0 right-0 text-red-600 bg-white rounded-full p-1"
+              >
+                <FaTimesCircle className="h-5 w-5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
             </form>
           </div>
         </div>
