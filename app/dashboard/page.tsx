@@ -32,7 +32,7 @@ import {
 } from "react-icons/fa";
 import { useMediaQuery } from "@/utils/useMediaQuery";
 import axios from "axios";
-import Image from "next/image"
+import Image from "next/image";
 interface Message {
   type: "user" | "ai";
   content: string;
@@ -64,8 +64,7 @@ export default function DashboardPage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
 
   // Chat State
-  const [messages, setMessages] = useState<Message[]>([
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
   const [isAITyping, setIsAITyping] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -108,7 +107,6 @@ export default function DashboardPage() {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-
   // Chat Scroll Effect
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -146,7 +144,6 @@ export default function DashboardPage() {
 
   const handlePromptClick = (promptText: string) => {
     setUserInput(promptText);
-  
   };
 
   // Message Handlers
@@ -223,12 +220,10 @@ export default function DashboardPage() {
     router.push("/auth/login");
   };
 
-
   return (
-<div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-purple-50 to-pink-50">
-
+    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-purple-50 to-pink-50">
       {/* Mobile Overlay */}
-    
+
       {isMobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
@@ -311,38 +306,41 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col h-screen">
         {/* Fixed Header */}
         <header className="fixed top-0 left-0 right-0 bg-white/30 backdrop-blur-md shadow z-10">
-      <div className="px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            className="text-gray-900 mr-2 md:hidden"
-          >
-            <FaBars size={24} className="text-gray-600 hover:text-gray-800" />
-          </button>
-
-          <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
-            GlamourHall
-          </span>
-        </div>
-
-        {/* Profile section on the right */}
-        <div className="flex items-center gap-3">
-          {session?.user && (
-            <>
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300">
-                <Image
-                  src={`${session?.user?.image}`} // Default image if no profile image
-                  alt="Profile Picture"
-                  width={40}
-                  height={40}
-                  className="object-cover"
+          <div className="px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                className="text-gray-900 mr-2 md:hidden"
+              >
+                <FaBars
+                  size={24}
+                  className="text-gray-600 hover:text-gray-800"
                 />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
+              </button>
+
+              <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
+                GlamourHall
+              </span>
+            </div>
+
+            {/* Profile section on the right */}
+            <div className="flex items-center gap-3">
+              {session?.user && (
+                <>
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300">
+                    <Image
+                      src={`${session?.user?.image}`} // Default image if no profile image
+                      alt="Profile Picture"
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
 
         {/* Chat Container */}
         <div className="flex-1 overflow-hidden mt-[60px] mb-[80px] md:mb-12">
@@ -400,30 +398,21 @@ export default function DashboardPage() {
 
               {/* Chat Messages */}
               {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${
-                    message.type === "user" ? "justify-end" : "justify-start"
-                  } mb-4`}
-                >
-                  {message.type === "ai" && (
-                    <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
-                      <span className="text-white">
-                        {/* <CgGirl className="h-6 w-6" /> */}
-                        ✨
-                      </span>
-                    </div>
-                  )}
-                  <div
-                    className={`relative max-w-[80%] rounded-2xl px-4 py-3 ${
-                      message.type === "user"
-                        ? "bg-gradient-to-r from-purple-500 to-pink-400 text-white"
-                        : "bg-gradient-to-r from-pink-100 to-blue-100 text-black"
-                    }`}
-                  >
-                    {message.content}
-                    {message.images && message.images.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
+  <div
+    key={index}
+    className={`flex ${
+      message.type === "user" ? "justify-end" : "justify-start"
+    } mb-4`}
+  >
+    {message.type === "ai" && (
+      <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
+        <span className="text-white">✨</span>
+      </div>
+    )}
+    <div className="max-w-[80%]">
+      {/* Image Section */}
+      {message.images && message.images.length > 0 && (
+        <div className="mb-2 mt-2 flex flex-wrap gap-2">
           {message.images.map((image, index) => (
             <img
               key={index}
@@ -434,20 +423,33 @@ export default function DashboardPage() {
           ))}
         </div>
       )}
+      {/* Text Content Section */}
+      {message.content && (
+        <div
+          className={`relative inline-block rounded-2xl px-4 py-3 ${
+            message.type === "user"
+              ? "bg-gradient-to-r from-purple-500 to-pink-400 text-white"
+              : "bg-gradient-to-r from-pink-100 to-blue-100 text-black"
+          }`}
+        >
+          {message.content}
+        </div>
+      )}
+    </div>
+  </div>
+))}
+
+              {isAITyping && (
+                <div className="flex justify-start mb-4">
+                  <div className="max-w-[85%] md:max-w-[70%] rounded-lg p-3.5 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none">
+                    <div className="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
                   </div>
                 </div>
-              ))}
-              {isAITyping && (
-          <div className="flex justify-start mb-4">
-            <div className="max-w-[85%] md:max-w-[70%] rounded-lg p-3.5 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          </div>
-        )}
+              )}
             </div>
           </div>
         </div>
@@ -488,26 +490,25 @@ export default function DashboardPage() {
                 </button>
               </div>
               {imagePreviews.length > 0 && (
-        <div className="mt-4 flex gap-2 overflow-x-auto">
-          {imagePreviews.map((preview, index) => (
-            <div key={index} className="relative">
-              <img
-                src={preview}
-                alt={`Preview ${index}`}
-                className="w-24 h-24 object-cover rounded-lg"
-              />
-              <button
-                type="button"
-                onClick={() => handleRemoveImage(index)}
-                className="absolute top-0 right-0 text-red-600 bg-white rounded-full p-1"
-              >
-                <FaTimesCircle className="h-5 w-5" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
+                <div className="mt-4 flex gap-2 overflow-x-auto">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index}`}
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute top-0 right-0 text-red-600 bg-white rounded-full p-1"
+                      >
+                        <FaTimesCircle className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </form>
           </div>
         </div>

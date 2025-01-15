@@ -230,14 +230,9 @@ export function LandingPageComponent() {
         
         {/* Action Buttons */}
         <div className="flex items-center space-x-2">
-          <Link href="/auth/login">
-          <Button variant="ghost" className="hidden sm:inline-flex text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800">
-            Login
-          </Button>
-          </Link>
           <Link href="/auth/register">
-          <Button className="hidden sm:inline-flex bg-purple-600 text-white hover:bg-purple-700 transition-all duration-300">
-            Sign Up
+          <Button className="hidden sm:inline-flex bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:bg-purple-700 transition-all duration-300">
+            Get Started
           </Button>
           </Link>
         
@@ -255,7 +250,7 @@ export function LandingPageComponent() {
   {/* Enhanced Drawer Content */}
   <SheetContent
   side="right"
-  className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 w-[250px] sm:w-[300px] shadow-lg rounded-l-xl transition-transform duration-300 ease-in-out [&>button]:text-white [&>button]:hover:text-yellow-300 [&>button]:transition-colors [&>button]:duration-200 [&>button]:scale-150 [&>button]:top-6 [&>button]:right-6"
+  className="bg-gradient-to-br from-purple-400  to-blue-400   w-[250px] sm:w-[300px] shadow-lg rounded-l-xl transition-transform duration-300 ease-in-out [&>button]:text-white [&>button]:hover:text-yellow-300 [&>button]:transition-colors [&>button]:duration-200 [&>button]:scale-150 [&>button]:top-6 [&>button]:right-6"
 >
   <div className="p-6">
     <nav className="flex flex-col space-y-6 mt-8">
@@ -382,31 +377,23 @@ export function LandingPageComponent() {
       
       {/* Headline */}
       <div className="space-y-4">
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
-          Elevate Your Style with AI
-        </h1>
-        <p className="mx-auto max-w-[700px] text-base sm:text-lg md:text-xl lg:text-2xl" style={{ color: "rgba(255, 255, 255, 0.8)" }}>
-          Get instant, personalized fashion advice from our AI stylist. Upload a photo or take one now to start your style journey!
-        </p>
+      <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+    AI-Powered Fashion Advice, Just for You
+  </h1>
+  <p className="mx-auto max-w-[700px] text-base sm:text-lg md:text-xl lg:text-2xl" style={{ color: "rgba(255, 255, 255, 0.8)" }}>
+    Receive personalized fashion recommendations based on your style.
+  </p>
       </div>
       
       {/* Buttons */}
       <div className="space-y-4 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center">
       <Link href="/auth/login">
       <Button
-          className="px-6 py-3 text-lg bg-purple-600 text-white font-semibold rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 flex items-center"
+          className="px-6 py-3 text-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 flex items-center"
         >
-          <Upload className="mr-2 h-5 w-5" /> Start Chatting
+          <Upload className="mr-2 h-5 w-5" /> Get Fashion Advice
         </Button>
       </Link>
-      <Link href="/auth/login">
-      <Button
-          className="px-6 py-3 text-lg bg-gray-100 text-purple-600 font-semibold rounded-full shadow-lg hover:bg-gray-200 transition-all duration-300 flex items-center"
-        >
-          <Camera className="mr-2 h-5 w-5" /> Take Photo
-        </Button>
-      </Link>
-      
       </div>
     </div>
   </div>
@@ -467,7 +454,7 @@ export function LandingPageComponent() {
                       className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 transition-transform duration-300 hover:scale-105"
                     >
                       <div className="flex flex-col items-center">
-                        <feature.icon className="h-12 w-12 mb-4 text-purple-600" />
+                        <feature.icon className="h-12 w-12 mb-4 text-blue-400" />
                         <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
                           {feature.title}
                         </h3>
@@ -508,7 +495,7 @@ export function LandingPageComponent() {
                         their best, no matter the occasion.
                       </p>
                     </div>
-                    <Button className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-full shadow-md hover:bg-purple-700 transition-colors duration-300 w-fit">
+                    <Button className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-full shadow-md hover:bg-purple-700 transition-colors duration-300 w-fit">
                       Learn More About Us
                     </Button>
                   </div>
@@ -691,7 +678,7 @@ export function LandingPageComponent() {
                         <button
                           className={`w-full py-3 px-6 rounded-lg text-lg font-semibold transition-colors duration-300 ${
                             index === 1
-                              ? "bg-purple-500 text-white hover:bg-purple-600"
+                              ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:bg-purple-600"
                               : "bg-gray-800 text-white dark:bg-gray-700 dark:hover:bg-gray-600 hover:bg-gray-900"
                           }`}
                           onClick={() => console.log("Plan Selected")}
@@ -706,7 +693,7 @@ export function LandingPageComponent() {
             </section>
 
             {/* CTA Section */}
-            <section className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white">
+            <section className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-r from-purple-500 to-blue-500 text-white">
               <div className="container mx-auto px-6 text-center">
                 <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl leading-tight">
                   Ready to Transform Your Style?
