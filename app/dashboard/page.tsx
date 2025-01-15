@@ -149,7 +149,6 @@ export default function DashboardPage() {
   // Message Handlers
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    setHasStartedChat(true);
     if (!userInput.trim() && imagePreviews.length === 0) return;
     setHasStartedChat(true);
     // Add user message to chat
