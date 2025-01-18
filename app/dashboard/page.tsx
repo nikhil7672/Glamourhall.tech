@@ -104,7 +104,8 @@ export default function DashboardPage() {
   };
 
   const handleRemoveImage = (index: number) => {
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index)); // Remove from imageFiles
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index)); // Remove from imagePreviews
   };
 
   // Chat Scroll Effect
@@ -149,58 +150,72 @@ export default function DashboardPage() {
   // Message Handlers
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+  
     if (!userInput.trim() && imagePreviews.length === 0) return;
     setHasStartedChat(true);
+  
     // Add user message to chat
     setMessages((prevMessages) => [
       ...prevMessages,
       { type: "user", content: userInput, images: imagePreviews },
     ]);
-    const uploadImages: any = imagePreviews;
-    // Reset input and image previews
-    setUserInput("");
-    setImagePreviews([]);
-
-    // Set AI typing state to true
+  
     setIsAITyping(true);
-
+  
     try {
-      let textResponse;
-
-      // Send text message as JSON only if there is user input
-      if (userInput.trim()) {
-        textResponse = await axios.post("/api/huggingface", {
-          prompt: userInput,
+      let uploadedImagePaths:any = [];
+  
+      // Upload images to the server
+      if (imageFiles.length > 0) {
+        const uploadFormData = new FormData();
+        imageFiles.forEach((file) => {
+          uploadFormData.append("images", file);
         });
-      }
-
-      // Handle image uploads separately
-      if (uploadImages.length > 0) {
-        const formData = new FormData();
-        for (const file of uploadImages) {
-          formData.append("images", file, file.name);
-        }
-        await axios.post("/api/huggingface", formData, {
+  
+        const uploadResponse = await axios.post("/api/upload", uploadFormData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
+  
+        if (uploadResponse.data.filePaths) {
+          uploadedImagePaths = uploadResponse.data.filePaths.map((file) => file.path);
+        }
       }
-      if (textResponse && textResponse.data.result) {
+  
+      // Prepare data for AI processing
+      const formData = new FormData();
+      if (userInput.trim()) {
+        formData.append("text", userInput);
+      }
+      uploadedImagePaths.forEach((path) => {
+        formData.append("imagePaths", path); // Send file paths instead of file objects
+      });
+  
+      // Send data to AI API
+      const response = await fetch("/api/huggingface", {
+        method: "POST",
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data && data.result) {
         setMessages((prevMessages) => [
           ...prevMessages,
-          { type: "ai", content: textResponse.data.result.content },
+          { type: "ai", content: data.result },
         ]);
-      } else if (!textResponse) {
-        // If no text response was made, handle image-only response or fallback
-        console.log("Images uploaded without text input.");
       } else {
-        console.error("No response from API");
         setMessages((prevMessages) => [
           ...prevMessages,
           { type: "ai", content: "Sorry, I could not process your request." },
         ]);
       }
+  
+      // Reset input and image previews
+      setUserInput("");
+      setImagePreviews([]);
+      setImageFiles([]);
+  
     } catch (error) {
       console.error("Error:", error);
       setMessages((prevMessages) => [
@@ -212,15 +227,20 @@ export default function DashboardPage() {
       ]);
     } finally {
       setIsAITyping(false);
+      setUserInput("");
+      setImagePreviews([]);
+      setImageFiles([]);
     }
   };
+  
+  
 
   const handleLogout = () => {
     router.push("/auth/login");
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-purple-50 to-pink-50">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-blue-50 to-purple-50">
       {/* Mobile Overlay */}
 
       {isMobileSidebarOpen && (
@@ -230,18 +250,20 @@ export default function DashboardPage() {
         />
       )}
       {/* Sidebar */}
-      <motion.aside
-        initial={{ x: -300 }}
-        animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
-        className={`
-          fixed md:static md:translate-x-0 w-72 ${
-            isDesktop ? "h-screen" : "h-full"
-          } z-40 
-          bg-gradient-to-r from-purple-50 to-pink-50  
-          transition-transform duration-200
-          md:block
-        `}
-      >
+    {/* Sidebar */}
+<motion.aside
+  initial={{ x: -300 }}
+  animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
+  className={`
+    fixed md:static md:translate-x-0 w-72 ${
+      isDesktop ? "h-screen" : "h-full"
+    } z-40 
+    bg-gradient-to-r from-purple-50 to-blue-50  
+    border border-gray-300 rounded-lg shadow-md // Add border, rounded corners, and shadow
+    transition-transform duration-200
+    md:block
+  `}
+>
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
