@@ -6,191 +6,120 @@ const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const prompt = formData.get("text") as string | null;
+    const userInput = formData.get("text") as string | null;
     const imagePaths = formData.getAll("imagePaths") as string[];
 
-    let response = null;
-
-    // Case 1: Only prompt (text) - Use Mistral
-    if (prompt && imagePaths.length === 0) {
-      const beautyPrompt = `
-        As a beauty and fashion consultant, help with this question: ${prompt}
-        Consider:
-        - Fashion and style advice
-        - Skincare recommendations 
-        - Hair care tips
-        - Makeup suggestions (if applicable)
-        Provide practical and specific recommendations.
-      `;
-
-      const completion = await hf.chatCompletion({
-        model: "mistralai/Mistral-Nemo-Instruct-2407",
-        messages: [{ role: "user", content: beautyPrompt }],
-        max_tokens: 500,
-      });
-
-      response = completion.choices[0].message.content;
-    }
-
-    // Case 2: Both image and prompt - Use Llama
-   // Case 2: Both image and prompt - Use Llama then refine with Mistral
-else if (prompt && imagePaths.length > 0) {
-  const results = await Promise.all(
-    imagePaths.map(async (imagePath) => {
-      try {
-        // Initial analysis with Llama
-        const personalPrompt = `
-          Analyze this person as a beauty and fashion consultant:
-          1. Overall appearance and features
-          2. Skin type and tone analysis
-          3. Current hairstyle and suggestions
-          4. For women: Makeup look and recommendations
-          5. Fashion and outfit analysis
-          6. Style enhancement suggestions
-          Additional request: ${prompt}
-          Be supportive and specific in recommendations.
-        `;
-
-        const initialAnalysis = await hf.chatCompletion({
-          model: "meta-llama/Llama-3.2-11B-Vision-Instruct",
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: personalPrompt },
-                { type: "image_url", image_url: { url: imagePath } },
-              ],
-            },
-          ],
-          max_tokens: 500,
-        });
-
-        // Refine with Mistral
-        const refinementPrompt = `
-          As a high-end fashion and beauty consultant, please enhance this analysis while addressing the specific request: "${prompt}"
-
-          Initial Analysis:
-          ${initialAnalysis.choices[0].message.content}
-
-          Please provide a refined response with:
-          1. More detailed style analysis and recommendations
-          2. Specific fashion advice related to the user's request
-          3. Personalized beauty and skincare suggestions
-          4. Current trend connections
-          5. Practical implementation steps
-
-          Format the response with:
-          ✨ Overall Impression
-          [Enhanced analysis of their current style and appearance]
-
-          💆‍♀️ Beauty Tips
-          1. Skin Care Suggestions
-          2. Hair Care Recommendations
-          3. Makeup Tips (if applicable)
-
-          👗 Style Advice
-          1. Fashion Recommendations
-          2. Color Palette Suggestions
-          3. Outfit Combinations
-
-          🎯 Specific Advice for User's Request
-          [Detailed response to their specific question/prompt]
-        `;
-
-        const refinedAnalysis = await hf.chatCompletion({
-          model: "mistralai/Mistral-Nemo-Instruct-2407",
-          messages: [
-            {
-              role: "user",
-              content: refinementPrompt,
-            },
-          ],
-          max_tokens: 500,
-        });
-
-        return refinedAnalysis.choices[0].message.content;
-
-      } catch (error) {
-        console.error(`Image processing failed:`, error);
-        return "Sorry, I couldn't analyze this image. Please try again.";
+    // Handle conversation flow
+    if (userInput) {
+      if (isGreeting(userInput)) {
+        return NextResponse.json({ result: handleGreeting(userInput) });
+      } else if (isFashionRelated(userInput)) {
+        return NextResponse.json({ result: await handleFashionQuery(userInput) });
+      } else if (userInput.toLowerCase().includes("date")) {
+        return NextResponse.json({ result: await handleDateQuery(userInput) });
+      } else {
+        return NextResponse.json({ result: redirectToFashion(userInput) });
       }
-    })
-  );
-
-  response = results.join("\n");
-}
-
-    // Case 3: Only image - Use Ollama first, then refine with Mistral
-    else if (imagePaths.length > 0) {
-      // First get Ollama analysis
-      const imageTextResult = await Promise.all(
-        imagePaths.map(async (imagePath) => {
-          try {
-            const imageAnalysis = await hf.chatCompletion({
-              model: "meta-llama/Llama-3.2-11B-Vision-Instruct", // Replace with actual Ollama endpoint
-              messages: [
-                {
-                  role: "user",
-                  content: [
-                    { type: "text", text: "Analyze this person's style and appearance" },
-                    { type: "image_url", image_url: { url: imagePath } },
-                  ],
-                },
-              ],
-              max_tokens: 300,
-            });
-
-            // Refine with Mistral
-            const refinedAnalysis = await hf.chatCompletion({
-              model: "mistralai/Mistral-Nemo-Instruct-2407",
-              messages: [
-                {
-                  role: "user",
-                  content: `As a refined personal fashion consultant, please enhance and elaborate on this initial analysis: ${imageAnalysis.choices[0].message.content}`,
-                },
-              ],
-              max_tokens: 500,
-            });
-
-            return `
-✨ Overall Impression
-${refinedAnalysis.choices[0].message.content}
-
-💆‍♀️ Beauty Tips
-1. Skin Care Suggestions
-2. Hair Care Recommendations
-3. Makeup Tips (for women)
-
-👗 Style Advice
-1. Fashion Recommendations
-2. Color Palette Suggestions
-3. Outfit Combinations
-
-Want specific advice about any of these areas? Feel free to ask!
-            `;
-          } catch (error) {
-            console.error(`Image processing failed:`, error);
-            return "Sorry, I couldn't analyze this image. Please try again.";
-          }
-        })
-      );
-
-      response = imageTextResult.join("\n");
-    }
-
-    else {
+    } else if (imagePaths.length > 0) {
+      return NextResponse.json({ result: await handleImageAnalysis(imagePaths) });
+    } else {
       return NextResponse.json(
-        { error: "Please provide an image or a beauty/fashion question" },
+        { error: "Need help with fashion or beauty? Share your thoughts or upload an image! ✨" },
         { status: 400 }
       );
     }
-
-    return NextResponse.json({ result: response });
   } catch (error: any) {
     console.error("Error:", error.message);
     return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
+      { error: "Oops! Something went wrong. Let's try again? 💄" },
       { status: 500 }
     );
   }
+}
+
+// Greeting handler
+function isGreeting(text: string): boolean {
+  const greetings = ["hi", "hello", "hey", "how are you", "good morning", "good evening", "what is your name"];
+  return greetings.some((greeting) => text.toLowerCase().includes(greeting));
+}
+
+function handleGreeting(text: string): string {
+  return `Hey there! 👋 I'm GlamBot, your personal fashion assistant. I’m here to help you with:
+  - Outfit suggestions for any occasion 👗
+  - Beauty tips and skincare advice 💆‍♀️
+  - Makeup looks and tips 💄
+  - Personalized style guidance based on your needs 🎯
+
+Feel free to ask about anything fashion-related, or share your thoughts for personalized advice! ✨`;
+}
+
+// Fashion-related query detection
+function isFashionRelated(text: string): boolean {
+  const keywords = [
+    "fashion", "style", "beauty", "skincare", "makeup", "outfit", "trend", "accessories",
+    "hair", "hairstyle", "shoes", "bags", "clothing", "dresses", "jeans", "jackets", "coats", 
+    "casual wear", "formal wear", "evening wear", "street style", "vintage", "modern", "chic", 
+    "elegant", "comfortable", "sustainable fashion", "color palette", "trendy", "bold", "minimalist", 
+    "boho", "layering", "statement pieces", "personal style", "fashion tips", "skirt", "blouse", 
+    "tops", "pants", "accessorize", "personalized outfits", "wardrobe", "clothing combinations", 
+    "seasonal fashion", "fashion hacks", "style guide", "fashion inspiration", "styling advice", 
+    "outfit combinations", "fashion accessories", "color matching", "pattern mixing", "textiles", "couture"
+  ];
+  return keywords.some((keyword) => text.toLowerCase().includes(keyword));
+}
+
+
+// Handle date-specific queries
+async function handleDateQuery(prompt: string): Promise<string> {
+  const datePrompt = `
+    A user mentioned a date. Guide them with tips for:
+    1. Dressing confidently for their date.
+    2. Grooming or skincare tips for the day.
+    3. Suggesting outfit ideas based on casual, formal, or trendy looks.
+    User's input: "${prompt}"
+  `;
+  const completion = await hf.chatCompletion({
+    model: "mistralai/Mistral-Nemo-Instruct-2407",
+    messages: [{ role: "user", content: datePrompt }],
+    max_tokens: 200,
+  });
+  return `${completion.choices[0].message.content}\n\nWant to share more about the vibe of your date? I can suggest something extra special! 🌟`;
+}
+
+// Redirect unrelated queries
+function redirectToFashion(userInput: string): string {
+  return `That sounds interesting! 💡 By the way, do you need any fashion or beauty advice? I’m here to help you slay your style! 👗`;
+}
+
+// Handle fashion-related text queries
+async function handleFashionQuery(prompt: string): Promise<string> {
+  const fashionPrompt = `Provide concise advice for this fashion-related question: "${prompt}"`;
+  const completion = await hf.chatCompletion({
+    model: "mistralai/Mistral-Nemo-Instruct-2407",
+    messages: [{ role: "user", content: fashionPrompt }],
+    max_tokens: 150,
+  });
+  return `${completion.choices[0].message.content}\n\nNeed more details or options? Let me know! 💄`;
+}
+
+// Analyze images for fashion context
+async function handleImageAnalysis(imagePaths: string[]): Promise<string> {
+  const results = await Promise.all(
+    imagePaths.map(async (imagePath) => {
+      try {
+        const analysis = await hf.chatCompletion({
+          model: "meta-llama/Llama-3.2-11B-Vision-Instruct",
+          messages: [
+            { role: "user", content: "Analyze this image for style and beauty tips." },
+            { role: "image_url", content: { url: imagePath } },
+          ],
+          max_tokens: 150,
+        });
+        return `${analysis.choices[0].message.content}\n\nDoes this match your style goals? Let me know! ✨`;
+      } catch {
+        return "Couldn't process the image—maybe try another one? 📸";
+      }
+    })
+  );
+  return results.join("\n\n") + `\n\nHave another look you'd like me to review? 👚`;
 }

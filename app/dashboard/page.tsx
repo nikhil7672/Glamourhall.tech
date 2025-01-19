@@ -30,9 +30,11 @@ import {
   FaPen,
   FaCommentDots,
 } from "react-icons/fa";
+import {BsBellFill} from "react-icons/bs"
 import { useMediaQuery } from "@/utils/useMediaQuery";
 import axios from "axios";
 import Image from "next/image";
+import ReactMarkdown from 'react-markdown';
 interface Message {
   type: "user" | "ai";
   content: string;
@@ -62,7 +64,7 @@ export default function DashboardPage() {
   ];
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
-
+  const [notificationCount, setNotificationCount] = useState(4)
   // Chat State
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -77,10 +79,10 @@ export default function DashboardPage() {
   // Menu Configuration
   const menuItems: MenuItem[] = [
     { icon: FaCommentDots, label: "Start New Chat", href: "/new-chat" }, // Replaced Home with Start New Chat
-    { icon: FaUser, label: "Profile", href: "/profile" },
+    { icon: FaComments, label: "Recent Chats", href: "/recent-chats" }, // Keep Recent Chats
     { icon: FaCog, label: "Settings", href: "/settings" },
     { icon: FaQuestionCircle, label: "Help Center", href: "/help" },
-    { icon: FaComments, label: "Recent Chats", href: "/recent-chats" }, // Keep Recent Chats
+
   ];
   // Authentication Effect
   useEffect(() => {
@@ -88,6 +90,9 @@ export default function DashboardPage() {
       router.push("/auth/login");
     }
   }, [status, router]);
+
+ 
+
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -109,27 +114,21 @@ export default function DashboardPage() {
   };
 
   // Chat Scroll Effect
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   // Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "/") {
-        setIsMobileSidebarOpen((prev) => !prev);
-      }
-      if (e.key === "Escape" && window.innerWidth < 768) {
-        setIsMobileSidebarOpen(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleKeyPress = (e: KeyboardEvent) => {
+  //     if ((e.ctrlKey || e.metaKey) && e.key === "/") {
+  //       setIsMobileSidebarOpen((prev) => !prev);
+  //     }
+  //     if (e.key === "Escape" && window.innerWidth < 768) {
+  //       setIsMobileSidebarOpen(false);
+  //     }
+  //   };
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, []);
+  //   window.addEventListener("keydown", handleKeyPress);
+  //   return () => window.removeEventListener("keydown", handleKeyPress);
+  // }, []);
 
   useEffect(() => {
     setIsMobileSidebarOpen(isDesktop);
@@ -142,6 +141,8 @@ export default function DashboardPage() {
       </div>
     );
   }
+  
+
 
   const handlePromptClick = (promptText: string) => {
     setUserInput(promptText);
@@ -230,10 +231,22 @@ export default function DashboardPage() {
       setUserInput("");
       setImagePreviews([]);
       setImageFiles([]);
+      scrollToBottom();
     }
   };
   
-  
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      // Check if the device is mobile
+      if (window.innerWidth < 768) {
+        // Scroll to the bottom of the chat container with a smooth animation
+        chatContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } else {
+        // Scroll to the bottom of the chat container without animation
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      }
+    }
+  };
 
   const handleLogout = () => {
     router.push("/auth/login");
@@ -327,45 +340,68 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col h-screen">
         {/* Fixed Header */}
         <header className="fixed top-0 left-0 right-0 bg-white/30 backdrop-blur-md shadow z-10">
-          <div className="px-4 py-3 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                className="text-gray-900 mr-2 md:hidden"
-              >
-                <FaBars
-                  size={24}
-                  className="text-gray-600 hover:text-gray-800"
-                />
-              </button>
+  <div className="px-4 py-3 flex justify-between items-center">
+    <div className="flex items-center gap-3">
+      <button
+        onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+        className="text-gray-900 mr-2 md:hidden"
+      >
+        <FaBars
+          size={24}
+          className="text-gray-600 hover:text-gray-800"
+        />
+      </button>
 
-              <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
-                GlamourHall
-              </span>
-            </div>
+      <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
+        GlamourHall
+      </span>
+    </div>
 
-            {/* Profile section on the right */}
-            <div className="flex items-center gap-3">
-              {session?.user && (
-                <>
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300">
-                    <Image
-                      src={`${session?.user?.image}`} // Default image if no profile image
-                      alt="Profile Picture"
-                      width={40}
-                      height={40}
-                      className="object-cover"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+    {/* Profile section on the right */}
+    <div className="flex items-center gap-4">
+      {session?.user && (
+        <>
+              <div className="relative">
+      <div className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors cursor-pointer">
+      <BsBellFill className={`text-gray-700 ${window.innerWidth < 768 ? 'w-6 h-6' : 'w-5 h-5'}`} />
+        
+        {/* Notification Badge */}
+        {notificationCount > 0 && (
+          <div className="absolute -top-1 -right-1 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 px-1.5 border-2 border-white">
+            <span className="text-xs font-medium text-white">
+              {notificationCount > 99 ? "99+" : notificationCount}
+            </span>
           </div>
-        </header>
+        )}
+      </div>
+    </div>
+
+
+          <Link href={`/profile`}>
+            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center">
+              <Image
+                src={`${session?.user?.image}`} // Default image if no profile image
+                alt="Profile Picture"
+                width={40}
+                height={40}
+                className="object-cover"
+              />
+            </div>
+          </Link>
+        </>
+      )}
+    </div>
+  </div>
+</header>
 
         {/* Chat Container */}
         <div className="flex-1 overflow-hidden mt-[60px] mb-[80px] md:mb-12">
-          <div className="h-full overflow-y-auto" ref={chatContainerRef}>
+        <div
+            className={`h-full overflow-y-auto ${
+              window.innerWidth < 768 ? 'mb-20' : ''
+            }`}
+            ref={chatContainerRef}
+          >
             <div className="max-w-3xl mx-auto px-4 py-6">
               {/* Welcome Section - Only show if chat hasn't started */}
               {!hasStartedChat && messages.length <= 1 && (
@@ -426,10 +462,23 @@ export default function DashboardPage() {
     } mb-4`}
   >
     {message.type === "ai" && (
-      <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
-        <span className="text-white">✨</span>
-      </div>
-    )}
+  <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
+    <motion.span
+      animate={{
+        y: ["0%", "-10%", "0%"],
+      }}
+      transition={{
+        duration: 1.5,
+        repeat: Infinity,
+        repeatType: "loop",
+        ease: "easeInOut",
+      }}
+      className="text-white"
+    >
+      ✨
+    </motion.span>
+  </div>
+)}
     <div className="max-w-[80%]">
       {/* Image Section */}
       {message.images && message.images.length > 0 && (
@@ -453,7 +502,11 @@ export default function DashboardPage() {
               : "bg-gradient-to-r from-pink-100 to-blue-100 text-black"
           }`}
         >
-          {message.content}
+           {message.type === "ai" ? (
+      <ReactMarkdown>{message.content}</ReactMarkdown>
+    ) : (
+      message.content
+    )}
         </div>
       )}
     </div>
@@ -477,14 +530,14 @@ export default function DashboardPage() {
 
         {/* Input Bar */}
         <div className="fixed bottom-0 left-0 right-0 bg-white/30 backdrop-blur-md border-t shadow z-10">
-          <div className="max-w-3xl mx-auto px-4 py-3">
+          <div className="max-w-2xl mx-auto px-4 py-3">
             <form onSubmit={handleSendMessage} className="relative lg:ml-16">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <input
                     type="text"
                     placeholder="Ask about fashion, styling, or trends..."
-                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-colors"
+                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:border-lavender focus:ring focus:ring-lavender transition-colors"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                   />
