@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { EyeIcon, EyeOffIcon, MailIcon, UserIcon, LockIcon, Sparkles } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import toast, { Toaster } from 'react-hot-toast'
+
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
@@ -22,22 +24,45 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    // Validate password
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const isLengthValid = password.length >= 8;
+    
+    if (!hasUppercase || !hasLowercase || !hasNumber  || !isLengthValid) {
+      toast.error('Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address.')
+      return
+    }
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify({ fullName, email, password, provider:'email' }),
       })
+
       const data = await response.json()
+
       if (response.ok) {
-        router.push('/auth/login')
+        toast.success('Registration successful! Redirecting to login...')
+        setTimeout(() => {
+          router.push('/auth/login')
+        }, 2000)
       } else {
-        setError(data.error || 'Registration failed')
+        toast.error(data.error || 'Registration failed')
       }
     } catch (error) {
-      setError('An error occurred. Please try again.')
+      toast.error('An error occurred. Please try again.')
     }
   }
 
@@ -224,6 +249,7 @@ export default function RegisterPage() {
           </CardFooter>
         </Card>
       </div>
+      <Toaster />
     </div>
   )
 }

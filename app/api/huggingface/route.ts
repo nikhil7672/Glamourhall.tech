@@ -3,123 +3,199 @@ import { HfInference } from "@huggingface/inference";
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
+interface StylePreferences {
+  styleType?: string;
+  occasion?: string;
+  colorPreferences?: string[];
+  seasonalPreference?: string;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const userInput = formData.get("text") as string | null;
+    const prompt = formData.get("text") as string | null;
     const imagePaths = formData.getAll("imagePaths") as string[];
+    const preferences = JSON.parse(formData.get("preferences") as string || "{}") as StylePreferences;
 
-    // Handle conversation flow
-    if (userInput) {
-      if (isGreeting(userInput)) {
-        return NextResponse.json({ result: handleGreeting(userInput) });
-      } else if (isFashionRelated(userInput)) {
-        return NextResponse.json({ result: await handleFashionQuery(userInput) });
-      } else if (userInput.toLowerCase().includes("date")) {
-        return NextResponse.json({ result: await handleDateQuery(userInput) });
-      } else {
-        return NextResponse.json({ result: redirectToFashion(userInput) });
-      }
-    } else if (imagePaths.length > 0) {
-      return NextResponse.json({ result: await handleImageAnalysis(imagePaths) });
-    } else {
-      return NextResponse.json(
-        { error: "Need help with fashion or beauty? Share your thoughts or upload an image! ✨" },
-        { status: 400 }
-      );
+    // Handle text-only fashion queries
+    if (prompt && imagePaths.length === 0) {
+      return NextResponse.json({ 
+        result: await handleFashionQuery(prompt, preferences) 
+      });
     }
+
+    // Handle both image and text analysis
+    if (prompt && imagePaths.length > 0) {
+      return NextResponse.json({ 
+        result: await analyzeOutfitWithContext(imagePaths, prompt, preferences) 
+      });
+    }
+
+    // Handle image-only analysis
+    if (imagePaths.length > 0) {
+      return NextResponse.json({ 
+        result: await generateStyleAnalysis(imagePaths, preferences) 
+      });
+    }
+
+    return NextResponse.json(
+      { error: "Share your style question or upload a photo for personalized fashion advice! ✨" },
+      { status: 400 }
+    );
   } catch (error: any) {
     console.error("Error:", error.message);
     return NextResponse.json(
-      { error: "Oops! Something went wrong. Let's try again? 💄" },
+      { error: "Fashion emergency! Let's try that again? 👗" },
       { status: 500 }
     );
   }
 }
 
-// Greeting handler
-function isGreeting(text: string): boolean {
-  const greetings = ["hi", "hello", "hey", "how are you", "good morning", "good evening", "what is your name"];
-  return greetings.some((greeting) => text.toLowerCase().includes(greeting));
-}
+async function handleFashionQuery(
+  prompt: string, 
+  preferences: StylePreferences
+): Promise<string> {
+  const fashionPrompt = `
+    As a luxury fashion consultant, provide detailed advice for: "${prompt}"
+    
+    Style Context:
+    - Preferred Style: ${preferences.styleType || 'Not specified'}
+    - Occasion: ${preferences.occasion || 'Not specified'}
+    - Color Preferences: ${preferences.colorPreferences?.join(', ') || 'Not specified'}
+    - Season: ${preferences.seasonalPreference || 'Not specified'}
 
-function handleGreeting(text: string): string {
-  return `Hey there! 👋 I'm GlamBot, your personal fashion assistant. I’m here to help you with:
-  - Outfit suggestions for any occasion 👗
-  - Beauty tips and skincare advice 💆‍♀️
-  - Makeup looks and tips 💄
-  - Personalized style guidance based on your needs 🎯
-
-Feel free to ask about anything fashion-related, or share your thoughts for personalized advice! ✨`;
-}
-
-// Fashion-related query detection
-function isFashionRelated(text: string): boolean {
-  const keywords = [
-    "fashion", "style", "beauty", "skincare", "makeup", "outfit", "trend", "accessories",
-    "hair", "hairstyle", "shoes", "bags", "clothing", "dresses", "jeans", "jackets", "coats", 
-    "casual wear", "formal wear", "evening wear", "street style", "vintage", "modern", "chic", 
-    "elegant", "comfortable", "sustainable fashion", "color palette", "trendy", "bold", "minimalist", 
-    "boho", "layering", "statement pieces", "personal style", "fashion tips", "skirt", "blouse", 
-    "tops", "pants", "accessorize", "personalized outfits", "wardrobe", "clothing combinations", 
-    "seasonal fashion", "fashion hacks", "style guide", "fashion inspiration", "styling advice", 
-    "outfit combinations", "fashion accessories", "color matching", "pattern mixing", "textiles", "couture"
-  ];
-  return keywords.some((keyword) => text.toLowerCase().includes(keyword));
-}
-
-
-// Handle date-specific queries
-async function handleDateQuery(prompt: string): Promise<string> {
-  const datePrompt = `
-    A user mentioned a date. Guide them with tips for:
-    1. Dressing confidently for their date.
-    2. Grooming or skincare tips for the day.
-    3. Suggesting outfit ideas based on casual, formal, or trendy looks.
-    User's input: "${prompt}"
+    Provide:
+    1. Personalized style recommendations
+    2. Current trend connections
+    3. Practical styling tips
+    4. Accessorizing suggestions
+    5. Alternative options
   `;
-  const completion = await hf.chatCompletion({
-    model: "mistralai/Mistral-Nemo-Instruct-2407",
-    messages: [{ role: "user", content: datePrompt }],
-    max_tokens: 200,
-  });
-  return `${completion.choices[0].message.content}\n\nWant to share more about the vibe of your date? I can suggest something extra special! 🌟`;
-}
 
-// Redirect unrelated queries
-function redirectToFashion(userInput: string): string {
-  return `That sounds interesting! 💡 By the way, do you need any fashion or beauty advice? I’m here to help you slay your style! 👗`;
-}
-
-// Handle fashion-related text queries
-async function handleFashionQuery(prompt: string): Promise<string> {
-  const fashionPrompt = `Provide concise advice for this fashion-related question: "${prompt}"`;
   const completion = await hf.chatCompletion({
     model: "mistralai/Mistral-Nemo-Instruct-2407",
     messages: [{ role: "user", content: fashionPrompt }],
-    max_tokens: 150,
+    max_tokens: 500,
   });
-  return `${completion.choices[0].message.content}\n\nNeed more details or options? Let me know! 💄`;
+
+  return formatStyleAdvice(completion.choices[0].message.content);
 }
 
-// Analyze images for fashion context
-async function handleImageAnalysis(imagePaths: string[]): Promise<string> {
+async function analyzeOutfitWithContext(
+  imagePaths: string[], 
+  prompt: string,
+  preferences: StylePreferences
+): Promise<string> {
   const results = await Promise.all(
     imagePaths.map(async (imagePath) => {
       try {
-        const analysis = await hf.chatCompletion({
-          model: "meta-llama/Llama-3.2-11B-Vision-Instruct",
-          messages: [
-            { role: "user", content: "Analyze this image for style and beauty tips." },
-            { role: "image_url", content: { url: imagePath } },
-          ],
-          max_tokens: 150,
-        });
-        return `${analysis.choices[0].message.content}\n\nDoes this match your style goals? Let me know! ✨`;
-      } catch {
-        return "Couldn't process the image—maybe try another one? 📸";
+        const initialAnalysis = await getOutfitAnalysis(imagePath, prompt);
+        return await refineFashionAdvice(initialAnalysis, prompt, preferences);
+      } catch (error) {
+        return "I couldn't analyze this look. Want to try another photo? 📸";
       }
     })
   );
-  return results.join("\n\n") + `\n\nHave another look you'd like me to review? 👚`;
+
+  return results.join("\n\n") + "\n\nNeed specific styling suggestions? Just ask! ✨";
+}
+
+async function getOutfitAnalysis(imagePath: string, prompt: string): Promise<string> {
+  const analysisPrompt = `
+    Analyze this outfit as a high-end fashion consultant:
+    1. Style categorization and mood
+    2. Silhouette and fit analysis
+    3. Color palette evaluation
+    4. Fabric and texture assessment
+    5. Styling potential and versatility
+    
+    Additional Context: ${prompt}
+  `;
+
+  const analysis = await hf.chatCompletion({
+    model: "meta-llama/Llama-3.2-11B-Vision-Instruct",
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: analysisPrompt },
+          { type: "image_url", image_url: { url: imagePath } },
+        ],
+      },
+    ],
+    max_tokens: 400,
+  });
+
+  return analysis.choices[0].message.content;
+}
+
+async function refineFashionAdvice(
+  initialAnalysis: string, 
+  prompt: string,
+  preferences: StylePreferences
+): Promise<string> {
+  const refinementPrompt = `
+    Enhance this style analysis with luxury fashion expertise:
+
+    Initial Analysis:
+    ${initialAnalysis}
+
+    User Request: "${prompt}"
+    Style Preferences: ${JSON.stringify(preferences)}
+
+    Provide:
+    ✨ Style Profile
+    [Comprehensive style analysis]
+
+    👗 Outfit Enhancement
+    1. Styling Recommendations
+    2. Color Coordination
+    3. Accessory Suggestions
+    4. Proportion Optimization
+
+    🎯 Personalized Advice
+    [Specific recommendations based on preferences]
+
+    🌟 Style Evolution
+    [Trend-forward suggestions]
+  `;
+
+  const refinement = await hf.chatCompletion({
+    model: "mistralai/Mistral-Nemo-Instruct-2407",
+    messages: [{ role: "user", content: refinementPrompt }],
+    max_tokens: 500,
+  });
+
+  return formatStyleAdvice(refinement.choices[0].message.content);
+}
+
+async function generateStyleAnalysis(
+  imagePaths: string[], 
+  preferences: StylePreferences
+): Promise<string> {
+  const analyses = await Promise.all(
+    imagePaths.map(async (imagePath) => {
+      try {
+        const analysis = await getOutfitAnalysis(imagePath, "");
+        const enhancedAdvice = await refineFashionAdvice(
+          analysis,
+          "Provide comprehensive style analysis",
+          preferences
+        );
+        return enhancedAdvice;
+      } catch {
+        return "I couldn't analyze this look. Let's try another photo! 📸";
+      }
+    })
+  );
+
+  return formatStyleAnalysis(analyses);
+}
+
+function formatStyleAdvice(content: string): string {
+  return `${content.trim()}\n\nWant to explore more styling options? I'm here to help! ✨`;
+}
+
+function formatStyleAnalysis(analyses: string[]): string {
+  return analyses.join("\n\n") + "\n\nLet me know if you'd like specific styling tips for any of these looks! 🌟";
 }

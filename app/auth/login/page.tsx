@@ -11,34 +11,62 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { EyeIcon, EyeOffIcon, MailIcon, LockIcon, Sparkles } from 'lucide-react'
 import { signIn } from 'next-auth/react'
-
+import toast, { Toaster } from 'react-hot-toast'
+import { z } from "zod"
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+})
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsLoading(true)
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+      // Validate input
+      const validatedInput = loginSchema.safeParse({ email, password })
+      if (!validatedInput.success) {
+        setError(validatedInput.error.errors[0].message)
+        toast.error(validatedInput.error.errors[0].message)
+        return
+      }
+
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       })
+
       const data = await response.json()
+
       if (response.ok) {
+        // Store token and user data
         localStorage.setItem('token', data.token)
-        router.push('/')
+        localStorage.setItem('user', JSON.stringify(data.user))
+        
+        toast.success('Login successful!')
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 2000)
       } else {
         setError(data.error || 'Login failed')
+        toast.error(data.error || 'Login failed')
       }
     } catch (error) {
+      console.error('Login error:', error)
       setError('An error occurred. Please try again.')
+      toast.error('An error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 

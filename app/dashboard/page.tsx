@@ -65,8 +65,8 @@ export default function DashboardPage() {
 
   // Menu Configuration
   const menuItems: MenuItem[] = [
-    { icon: FaCommentDots, label: "Start New Chat", href: "/new-chat" }, // Replaced Home with Start New Chat
-    { icon: FaComments, label: "Recent Chats", href: "/recent-chats" }, // Keep Recent Chats
+    { icon: FaCommentDots, label: "Start New Chat", href: "/new-chat" }, 
+    { icon: FaComments, label: "Recent Chats", href: "/recent-chats" },
     { icon: FaCog, label: "Settings", href: "/settings" },
     { icon: FaQuestionCircle, label: "Help Center", href: "/help" },
   ];
@@ -76,19 +76,17 @@ export default function DashboardPage() {
     if (!files) return;
     setImageFiles((prev) => [...prev, ...Array.from(files)]);
 
-    // Create object URLs for each file
     const newImagePreviews = Array.from(files).map((file) => {
       const objectUrl = URL.createObjectURL(file);
       return objectUrl;
     });
 
-    // Update state with new image previews
     setImagePreviews((prev) => [...prev, ...newImagePreviews]);
   };
 
   const handleRemoveImage = (index: number) => {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index)); // Remove from imageFiles
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index)); // Remove from imagePreviews
+    setImageFiles((prev) => prev.filter((_, i) => i !== index)); 
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index)); 
   };
 
   const handlePromptClick = (promptText: string) => {
