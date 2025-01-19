@@ -1,40 +1,27 @@
-// components/dashboard.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { CgGirl } from "react-icons/cg";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   FaBars,
   FaTimes,
-  FaHome,
   FaSignOutAlt,
   FaTimesCircle,
-  FaUser,
   FaCog,
   FaPaperPlane,
-  FaMicrophone,
   FaImage,
-  FaChartLine,
-  FaBookmark,
-  FaBell,
   FaQuestionCircle,
-  FaSearch,
-  FaCompass,
-  FaTshirt,
-  FaRobot,
   FaComments,
-  FaPen,
   FaCommentDots,
 } from "react-icons/fa";
-import {BsBellFill} from "react-icons/bs"
+import { BsBellFill } from "react-icons/bs";
 import { useMediaQuery } from "@/utils/useMediaQuery";
 import axios from "axios";
 import Image from "next/image";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 interface Message {
   type: "user" | "ai";
   content: string;
@@ -64,7 +51,7 @@ export default function DashboardPage() {
   ];
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
-  const [notificationCount, setNotificationCount] = useState(4)
+  const [notificationCount, setNotificationCount] = useState(4);
   // Chat State
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -82,16 +69,7 @@ export default function DashboardPage() {
     { icon: FaComments, label: "Recent Chats", href: "/recent-chats" }, // Keep Recent Chats
     { icon: FaCog, label: "Settings", href: "/settings" },
     { icon: FaQuestionCircle, label: "Help Center", href: "/help" },
-
   ];
-  // Authentication Effect
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login");
-    }
-  }, [status, router]);
-
- 
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -113,37 +91,6 @@ export default function DashboardPage() {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index)); // Remove from imagePreviews
   };
 
-  // Chat Scroll Effect
-
-  // Keyboard Shortcuts
-  // useEffect(() => {
-  //   const handleKeyPress = (e: KeyboardEvent) => {
-  //     if ((e.ctrlKey || e.metaKey) && e.key === "/") {
-  //       setIsMobileSidebarOpen((prev) => !prev);
-  //     }
-  //     if (e.key === "Escape" && window.innerWidth < 768) {
-  //       setIsMobileSidebarOpen(false);
-  //     }
-  //   };
-
-  //   window.addEventListener("keydown", handleKeyPress);
-  //   return () => window.removeEventListener("keydown", handleKeyPress);
-  // }, []);
-
-  useEffect(() => {
-    setIsMobileSidebarOpen(isDesktop);
-  }, [isDesktop]);
-  // Loading State
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-      </div>
-    );
-  }
-  
-
-
   const handlePromptClick = (promptText: string) => {
     setUserInput(promptText);
   };
@@ -151,54 +98,56 @@ export default function DashboardPage() {
   // Message Handlers
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!userInput.trim() && imagePreviews.length === 0) return;
     setHasStartedChat(true);
-  
+
     // Add user message to chat
     setMessages((prevMessages) => [
       ...prevMessages,
       { type: "user", content: userInput, images: imagePreviews },
     ]);
-  
+
     setIsAITyping(true);
-  
+
     try {
-      let uploadedImagePaths:any = [];
-  
+      let uploadedImagePaths: any = [];
+
       // Upload images to the server
       if (imageFiles.length > 0) {
         const uploadFormData = new FormData();
         imageFiles.forEach((file) => {
           uploadFormData.append("images", file);
         });
-  
+
         const uploadResponse = await axios.post("/api/upload", uploadFormData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-  
+
         if (uploadResponse.data.filePaths) {
-          uploadedImagePaths = uploadResponse.data.filePaths.map((file) => file.path);
+          uploadedImagePaths = uploadResponse.data.filePaths.map(
+            (file: any) => file.path
+          );
         }
       }
-  
+
       // Prepare data for AI processing
       const formData = new FormData();
       if (userInput.trim()) {
         formData.append("text", userInput);
       }
-      uploadedImagePaths.forEach((path) => {
+      uploadedImagePaths.forEach((path: any) => {
         formData.append("imagePaths", path); // Send file paths instead of file objects
       });
-  
+
       // Send data to AI API
       const response = await fetch("/api/huggingface", {
         method: "POST",
-        body: formData
+        body: formData,
       });
-      
+
       const data = await response.json();
       if (data && data.result) {
         setMessages((prevMessages) => [
@@ -211,12 +160,11 @@ export default function DashboardPage() {
           { type: "ai", content: "Sorry, I could not process your request." },
         ]);
       }
-  
+
       // Reset input and image previews
       setUserInput("");
       setImagePreviews([]);
       setImageFiles([]);
-  
     } catch (error) {
       console.error("Error:", error);
       setMessages((prevMessages) => [
@@ -234,16 +182,20 @@ export default function DashboardPage() {
       scrollToBottom();
     }
   };
-  
+
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       // Check if the device is mobile
       if (window.innerWidth < 768) {
         // Scroll to the bottom of the chat container with a smooth animation
-        chatContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        chatContainerRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
       } else {
         // Scroll to the bottom of the chat container without animation
-        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        chatContainerRef.current.scrollTop =
+          chatContainerRef.current.scrollHeight;
       }
     }
   };
@@ -251,6 +203,26 @@ export default function DashboardPage() {
   const handleLogout = () => {
     router.push("/auth/login");
   };
+
+  // Authentication Effect
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    setIsMobileSidebarOpen(isDesktop);
+  }, [isDesktop]);
+
+  // Loading State
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-blue-50 to-purple-50">
@@ -263,11 +235,11 @@ export default function DashboardPage() {
         />
       )}
       {/* Sidebar */}
-    {/* Sidebar */}
-<motion.aside
-  initial={{ x: -300 }}
-  animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
-  className={`
+      {/* Sidebar */}
+      <motion.aside
+        initial={{ x: -300 }}
+        animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
+        className={`
     fixed md:static md:translate-x-0 w-72 ${
       isDesktop ? "h-screen" : "h-full"
     } z-40 
@@ -276,7 +248,7 @@ export default function DashboardPage() {
     transition-transform duration-200
     md:block
   `}
->
+      >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -340,65 +312,68 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col h-screen">
         {/* Fixed Header */}
         <header className="fixed top-0 left-0 right-0 bg-white/30 backdrop-blur-md shadow z-10">
-  <div className="px-4 py-3 flex justify-between items-center">
-    <div className="flex items-center gap-3">
-      <button
-        onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-        className="text-gray-900 mr-2 md:hidden"
-      >
-        <FaBars
-          size={24}
-          className="text-gray-600 hover:text-gray-800"
-        />
-      </button>
+          <div className="px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                className="text-gray-900 mr-2 md:hidden"
+              >
+                <FaBars
+                  size={24}
+                  className="text-gray-600 hover:text-gray-800"
+                />
+              </button>
 
-      <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
-        GlamourHall
-      </span>
-    </div>
-
-    {/* Profile section on the right */}
-    <div className="flex items-center gap-4">
-      {session?.user && (
-        <>
-              <div className="relative">
-      <div className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors cursor-pointer">
-      <BsBellFill className={`text-gray-700 ${window.innerWidth < 768 ? 'w-6 h-6' : 'w-5 h-5'}`} />
-        
-        {/* Notification Badge */}
-        {notificationCount > 0 && (
-          <div className="absolute -top-1 -right-1 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 px-1.5 border-2 border-white">
-            <span className="text-xs font-medium text-white">
-              {notificationCount > 99 ? "99+" : notificationCount}
-            </span>
-          </div>
-        )}
-      </div>
-    </div>
-
-
-          <Link href={`/profile`}>
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center">
-              <Image
-                src={`${session?.user?.image}`} // Default image if no profile image
-                alt="Profile Picture"
-                width={40}
-                height={40}
-                className="object-cover"
-              />
+              <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
+                GlamourHall
+              </span>
             </div>
-          </Link>
-        </>
-      )}
-    </div>
-  </div>
-</header>
+
+            {/* Profile section on the right */}
+            <div className="flex items-center gap-4">
+              {session?.user && (
+                <>
+                  <div className="relative">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors cursor-pointer">
+                      <BsBellFill
+                        className={`text-gray-700 ${
+                          window.innerWidth < 768 ? "w-6 h-6" : "w-5 h-5"
+                        }`}
+                      />
+
+                      {/* Notification Badge */}
+                      {notificationCount > 0 && (
+                        <div className="absolute -top-1 -right-1 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 px-1.5 border-2 border-white">
+                          <span className="text-xs font-medium text-white">
+                            {notificationCount > 99 ? "99+" : notificationCount}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Link href={`/profile`}>
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center">
+                      <Image
+                        src={`${session?.user?.image}`} // Default image if no profile image
+                        alt="Profile Picture"
+                        width={40}
+                        height={40}
+                        className="object-cover"
+                      />
+                    </div>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
 
         {/* Chat Container */}
         <div className="flex-1 overflow-hidden mt-[60px] mb-[80px] md:mb-12">
-        <div
+          <div
             className={`h-full overflow-y-auto ${
-              window.innerWidth < 768 ? 'mb-20' : ''
+              window.innerWidth < 768 ? "mb-20" : ""
             }`}
             ref={chatContainerRef}
           >
@@ -455,63 +430,63 @@ export default function DashboardPage() {
 
               {/* Chat Messages */}
               {messages.map((message, index) => (
-  <div
-    key={index}
-    className={`flex ${
-      message.type === "user" ? "justify-end" : "justify-start"
-    } mb-4`}
-  >
-    {message.type === "ai" && (
-  <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
-    <motion.span
-      animate={{
-        y: ["0%", "-10%", "0%"],
-      }}
-      transition={{
-        duration: 1.5,
-        repeat: Infinity,
-        repeatType: "loop",
-        ease: "easeInOut",
-      }}
-      className="text-white"
-    >
-      ✨
-    </motion.span>
-  </div>
-)}
-    <div className="max-w-[80%]">
-      {/* Image Section */}
-      {message.images && message.images.length > 0 && (
-        <div className="mb-2 mt-2 flex flex-wrap gap-2">
-          {message.images.map((image, index) => (
-            <img
-              key={index}
-              src={image}
-              alt={`Message Image ${index}`}
-              className="w-32 h-32 object-cover rounded-lg"
-            />
-          ))}
-        </div>
-      )}
-      {/* Text Content Section */}
-      {message.content && (
-        <div
-          className={`relative inline-block rounded-2xl px-4 py-3 ${
-            message.type === "user"
-              ? "bg-gradient-to-r from-purple-500 to-pink-400 text-white"
-              : "bg-gradient-to-r from-pink-100 to-blue-100 text-black"
-          }`}
-        >
-           {message.type === "ai" ? (
-      <ReactMarkdown>{message.content}</ReactMarkdown>
-    ) : (
-      message.content
-    )}
-        </div>
-      )}
-    </div>
-  </div>
-))}
+                <div
+                  key={index}
+                  className={`flex ${
+                    message.type === "user" ? "justify-end" : "justify-start"
+                  } mb-4`}
+                >
+                  {message.type === "ai" && (
+                    <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
+                      <motion.span
+                        animate={{
+                          y: ["0%", "-10%", "0%"],
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          repeatType: "loop",
+                          ease: "easeInOut",
+                        }}
+                        className="text-white"
+                      >
+                        ✨
+                      </motion.span>
+                    </div>
+                  )}
+                  <div className="max-w-[80%]">
+                    {/* Image Section */}
+                    {message.images && message.images.length > 0 && (
+                      <div className="mb-2 mt-2 flex flex-wrap gap-2">
+                        {message.images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`Message Image ${index}`}
+                            className="w-32 h-32 object-cover rounded-lg"
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {/* Text Content Section */}
+                    {message.content && (
+                      <div
+                        className={`relative inline-block rounded-2xl px-4 py-3 ${
+                          message.type === "user"
+                            ? "bg-gradient-to-r from-purple-500 to-pink-400 text-white"
+                            : "bg-gradient-to-r from-pink-100 to-blue-100 text-black"
+                        }`}
+                      >
+                        {message.type === "ai" ? (
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        ) : (
+                          message.content
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
 
               {isAITyping && (
                 <div className="flex justify-start mb-4">
