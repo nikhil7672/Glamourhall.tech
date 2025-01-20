@@ -57,7 +57,7 @@ export default function LoginPage() {
         
         setTimeout(() => {
           router.push('/chat')
-        }, 2000)
+        }, 300)
       } else {
         setError(data.error || 'Login failed')
         toast.error(data.error || 'Login failed')

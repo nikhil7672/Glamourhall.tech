@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
@@ -297,16 +297,37 @@ export default function ChatPage() {
     }
   };
 
-  const handleLogout = () => {
-    router.push("/auth/login");
+  const handleLogout = async () => {
+    try {
+      // Clear local/session storage
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
+      localStorage.removeItem('nextauth.message');
+      sessionStorage.removeItem('nextauth.message');
+      
+      // Clear NextAuth session
+      await signOut({ redirect: false });
+      
+      // Redirect to login
+      window.location.href = "/auth/login";
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   // Authentication Effect
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login");
-    }
-  }, [status, router]);
+    const checkAuth = () => {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (status === "unauthenticated" && !token) {
+        window.location.href = "/auth/login";
+      }
+    };
+  
+    checkAuth();
+  }, [status]);
 
   useEffect(() => {
     setIsMobileSidebarOpen(isDesktop);
