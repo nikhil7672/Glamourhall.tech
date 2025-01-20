@@ -49,11 +49,12 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (response.ok) {
+        toast.success('Login successful!')
+
         // Store token and user data
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(data.user))
         
-        toast.success('Login successful!')
         setTimeout(() => {
           router.push('/chat')
         }, 2000)
@@ -236,6 +237,7 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
       </div>
+      <Toaster />
     </div>
   )
 }

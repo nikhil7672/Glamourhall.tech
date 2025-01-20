@@ -78,7 +78,7 @@ async function handleFashionQuery(
     max_tokens: 500,
   });
 
-  return formatStyleAdvice(completion.choices[0].message.content);
+  return formatStyleAdvice(completion.choices[0].message.content || "No style advice available.");
 }
 
 async function analyzeOutfitWithContext(
@@ -126,7 +126,7 @@ async function getOutfitAnalysis(imagePath: string, prompt: string): Promise<str
     max_tokens: 400,
   });
 
-  return analysis.choices[0].message.content;
+  return analysis.choices[0].message.content || "Could not analyze the outfit.";
 }
 
 async function refineFashionAdvice(
@@ -166,7 +166,7 @@ async function refineFashionAdvice(
     max_tokens: 500,
   });
 
-  return formatStyleAdvice(refinement.choices[0].message.content);
+  return formatStyleAdvice(refinement.choices[0].message.content || "No style advice available.");
 }
 
 async function generateStyleAnalysis(

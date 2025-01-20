@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FcIdea } from "react-icons/fc";
 import { Button } from "@/components/ui/button";
-import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, LightbulbIcon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -45,11 +46,18 @@ import {
   X,
   LogIn,
   Image as ImageIcon,
+  BrainCircuit
 } from "lucide-react";
 
+
+interface Message {
+  type: string;
+  content: string;
+  image?: string | ArrayBuffer | null;
+}
 export function LandingPageComponent() {
   const [showChat, setShowChat] = useState(false);
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       type: "ai",
       content:
@@ -76,7 +84,7 @@ export function LandingPageComponent() {
     }
   }, []);
 
-  const handlePhotoUpload = (event:any) => {
+  const handlePhotoUpload = (event: any) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -97,12 +105,12 @@ export function LandingPageComponent() {
     simulateAIResponse();
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const message = e.target.message.value;
+    const message = (e.target as HTMLFormElement).message.value;
     if (message.trim()) {
       setMessages([...messages, { type: "user", content: message }]);
-      e.target.reset();
+      (e.target as HTMLFormElement).reset();
       simulateAIResponse();
     }
   };
@@ -180,14 +188,14 @@ export function LandingPageComponent() {
       >
         Pricing
       </Link>
-      <Link
+      {/* <Link
         href="/blogs"
         className={`block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700 ${
           mobile ? "text-lg" : ""
         }`}
       >
         Blogs
-      </Link>
+      </Link> */}
     </>
   );
 
@@ -195,106 +203,108 @@ export function LandingPageComponent() {
     <div className="flex flex-col min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-gray-200 backdrop-blur-lg bg-white/70 dark:bg-gray-900/70">
-  <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-    {/* Logo */}
-    <div className="flex items-center space-x-2">
-      <Link className="flex items-center" href="/">
-       
-   <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
-  GlamourHall
-</span>
-      </Link>
-    </div>
+        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-2">
+            <Link className="flex items-center" href="/">
+              <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
+                GlamourHall
+              </span>
+            </Link>
+          </div>
 
-    {/* User/Navigation Section */}
-    {showChat ? (
-      <div className="flex items-center space-x-4">
-        <Avatar>
-          <AvatarImage
-            src="/placeholder.svg?height=32&width=32"
-            alt="User"
-          />
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
-        <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-900 dark:text-white">
-          <LogOut className="h-5 w-5" />
-          <span className="sr-only">Logout</span>
-        </Button>
-      </div>
-    ) : (
-      <div className="flex items-center">
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium mr-4 text-gray-700 dark:text-gray-300">
-          <MenuItems />
-        </nav>
-        
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-2">
-          <Link href="/auth/register">
-          <Button className="hidden sm:inline-flex bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:bg-purple-700 transition-all duration-300">
-            Get Started
-          </Button>
-          </Link>
-        
+          {/* User/Navigation Section */}
+          {showChat ? (
+            <div className="flex items-center space-x-4">
+              <Avatar>
+                <AvatarImage
+                  src="/placeholder.svg?height=32&width=32"
+                  alt="User"
+                />
+                <AvatarFallback>U</AvatarFallback>
+              </Avatar>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="text-gray-900 dark:text-white"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="sr-only">Logout</span>
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center">
+              {/* Desktop Navigation */}
+              <nav className="hidden md:flex items-center space-x-6 text-sm font-medium mr-4 text-gray-700 dark:text-gray-300">
+                <MenuItems />
+              </nav>
+
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2">
+                <Link href="/auth/register">
+                  <Button className="hidden sm:inline-flex bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:bg-purple-700 transition-all duration-300">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden ml-2 text-gray-900 dark:text-white"
+                  >
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle menu</span>
+                  </Button>
+                </SheetTrigger>
+
+                {/* Enhanced Drawer Content */}
+                <SheetContent
+                  side="right"
+                  className="bg-gradient-to-br from-purple-400  to-blue-400   w-[250px] sm:w-[300px] shadow-lg rounded-l-xl transition-transform duration-300 ease-in-out [&>button]:text-white [&>button]:hover:text-yellow-300 [&>button]:transition-colors [&>button]:duration-200 [&>button]:scale-150 [&>button]:top-6 [&>button]:right-6"
+                >
+                  <div className="p-6">
+                    <nav className="flex flex-col space-y-6 mt-8">
+                      <Link
+                        href="/"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
+                      >
+                        <Home className="h-5 w-5 mr-2" /> Home
+                      </Link>
+                      <Link
+                        href="/#features"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
+                      >
+                        <Star className="h-5 w-5 mr-2" /> Features
+                      </Link>
+                      <Link
+                        href="/auth/login"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
+                      >
+                        <LogIn className="h-5 w-5 mr-2" /> Login
+                      </Link>
+                      <Link
+                        href="/auth/register"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
+                      >
+                        <UserPlus className="h-5 w-5 mr-2" /> Sign Up
+                      </Link>
+                    </nav>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          )}
         </div>
-
-        {/* Mobile Menu Button */}
-        <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-  <SheetTrigger asChild>
-    <Button variant="ghost" size="icon" className="md:hidden ml-2 text-gray-900 dark:text-white">
-      <Menu className="h-5 w-5" />
-      <span className="sr-only">Toggle menu</span>
-    </Button>
-  </SheetTrigger>
-
-  {/* Enhanced Drawer Content */}
-  <SheetContent
-  side="right"
-  className="bg-gradient-to-br from-purple-400  to-blue-400   w-[250px] sm:w-[300px] shadow-lg rounded-l-xl transition-transform duration-300 ease-in-out [&>button]:text-white [&>button]:hover:text-yellow-300 [&>button]:transition-colors [&>button]:duration-200 [&>button]:scale-150 [&>button]:top-6 [&>button]:right-6"
->
-  <div className="p-6">
-    <nav className="flex flex-col space-y-6 mt-8">
-      <Link
-        href="/"
-        onClick={() => setMenuOpen(false)}
-        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
-      >
-        <Home className="h-5 w-5 mr-2" /> Home
-      </Link>
-      <Link
-        href="/#features"
-        onClick={() => setMenuOpen(false)}
-        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
-      >
-        <Star className="h-5 w-5 mr-2" /> Features
-      </Link>
-      <Link
-        href="/auth/login"
-        onClick={() => setMenuOpen(false)}
-        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
-      >
-        <LogIn className="h-5 w-5 mr-2" /> Login
-      </Link>
-      <Link
-        href="/auth/register"
-        onClick={() => setMenuOpen(false)}
-        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
-      >
-        <UserPlus className="h-5 w-5 mr-2" /> Sign Up
-      </Link>
-    </nav>
-  </div>
-</SheetContent>
-</Sheet>
-
-
-
-
-      </div>
-    )}
-  </div>
-</header>
-
+      </header>
 
       <main className="flex-1">
         {router.pathname === "/blogs" ? (
@@ -355,51 +365,54 @@ export function LandingPageComponent() {
           <>
             {/* Hero Section with Video Background */}
             <section className="relative w-full py-16 md:py-24 lg:py-32 xl:py-48 overflow-hidden">
-  <video
-    ref={videoRef}
-    autoPlay
-    loop
-    muted
-    playsInline
-    className="absolute top-0 left-0 w-full h-full object-cover"
-    poster="/video-poster.jpg"
-  >
-    <source src="/cover.mp4" type="video/mp4" />
-    <source src="/background-video.webm" type="video/webm" />
-    Your browser does not support the video tag.
-  </video>
-  
-  {/* Overlay for contrast */}
-  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+              <video
+                ref={videoRef}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute top-0 left-0 w-full h-full object-cover"
+                poster="/video-poster.jpg"
+              >
+                <source src="/cover.mp4" type="video/mp4" />
+                <source src="/background-video.webm" type="video/webm" />
+                Your browser does not support the video tag.
+              </video>
 
-  <div className="container relative z-10 mx-auto px-4 md:px-6 flex items-center justify-center h-full">
-    <div className="flex flex-col items-center space-y-6 text-center text-white max-w-4xl animate-fade-in">
-      
-      {/* Headline */}
-      <div className="space-y-4">
-      <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
-    AI-Powered Fashion Advice, Just for You
-  </h1>
-  <p className="mx-auto max-w-[700px] text-base sm:text-lg md:text-xl lg:text-2xl" style={{ color: "rgba(255, 255, 255, 0.8)" }}>
-    Receive personalized fashion recommendations based on your style.
-  </p>
-      </div>
-      
-      {/* Buttons */}
-      <div className="space-y-4 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center">
-      <Link href="/auth/login">
-      <Button
-          className="px-6 py-3 text-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 flex items-center"
-        >
-          <Upload className="mr-2 h-5 w-5" /> Get Fashion Advice
-        </Button>
-      </Link>
-      </div>
-    </div>
-  </div>
-</section>
+              {/* Overlay for contrast */}
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black via-black/60 to-transparent"></div>
 
+              <div className="container relative z-10 mx-auto px-4 md:px-6 flex items-center justify-center h-full">
+                <div className="flex flex-col items-center space-y-6 text-center text-white max-w-4xl animate-fade-in">
+                  {/* Headline */}
+                  <div className="space-y-4">
+                    <h1
+                      className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+                      style={{ color: "rgba(255, 255, 255, 0.9)" }}
+                    >
+                      AI-Powered Fashion Advice, Just for You
+                    </h1>
+                    <p
+                      className="mx-auto max-w-[700px] text-base sm:text-lg md:text-xl lg:text-2xl"
+                      style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    >
+                      Receive personalized fashion recommendations based on your
+                      style.
+                    </p>
+                  </div>
 
+                  {/* Buttons */}
+                  <div className="space-y-4 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center">
+                    <Link href="/auth/login">
+                      <Button className="px-8 py-4 text-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-full shadow-xl hover:shadow-2xl hover:brightness-110 transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center">
+                        <BrainCircuit className="mr-3 h-7 w-7 transform transition-transform duration-300 hover:rotate-12" />
+                        Fashion Advice
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </section>
 
             {/* Features Section */}
             <section
@@ -832,137 +845,144 @@ export function LandingPageComponent() {
           </div>
         )}
       </main>
-
       {/* Footer */}
       <footer className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
-  <div className="container mx-auto px-6 py-12">
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">About GlamourHall</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          GlamourHall is your AI-powered fashion assistant, helping you look your best every day with personalized style advice.
-        </p>
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Quick Links</h3>
-        <ul className="space-y-2">
-          <li>
-            <Link
-              href="/"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-            >
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#about"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-            >
-              About
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#features"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-            >
-              Features
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#pricing"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-            >
-              Pricing
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/blogs"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-            >
-              Blog
-            </Link>
-          </li>
-        </ul>
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Legal</h3>
-        <ul className="space-y-2">
-          <li>
-            <Link
-              href="#"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-            >
-              Terms of Service
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-            >
-              Privacy Policy
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-            >
-              Cookie Policy
-            </Link>
-          </li>
-        </ul>
-      </div>
-      <div>
-      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Connect</h3>
-      <ul className="space-y-2">
-        <li>
-          <Link
-            href="#"
-            className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-          >
-            <Facebook className="mr-2" size={16} /> Facebook
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="#"
-            className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-          >
-            <Twitter className="mr-2" size={16} /> Twitter
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="#"
-            className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-          >
-            <Instagram className="mr-2" size={16} /> Instagram
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="#"
-            className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-          >
-            <Linkedin className="mr-2" size={16} /> LinkedIn
-          </Link>
-        </li>
-      </ul>
-    </div>
-    </div>
-    <div className="mt-12 border-t pt-8">
-      <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-        © {new Date().getFullYear()} GlamourHall. All rights reserved.
-      </p>
-    </div>
-  </div>
-</footer>
-
+        <div className="container mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                About GlamourHall
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                GlamourHall is your AI-powered fashion assistant, helping you
+                look your best every day with personalized style advice.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Quick Links
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#about"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#features"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#pricing"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    Pricing
+                  </Link>
+                </li>
+                {/* <li>
+                  <Link
+                    href="/blogs"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    Blog
+                  </Link>
+                </li> */}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Legal
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                {/* <li>
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    Cookie Policy
+                  </Link>
+                </li> */}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Connect
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="#"
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    <Facebook className="mr-2" size={16} /> Facebook
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    <Twitter className="mr-2" size={16} /> Twitter
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    <Instagram className="mr-2" size={16} /> Instagram
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#"
+                    className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                  >
+                    <Linkedin className="mr-2" size={16} /> LinkedIn
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-12 border-t pt-8">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+              © {new Date().getFullYear()} GlamourHall. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
