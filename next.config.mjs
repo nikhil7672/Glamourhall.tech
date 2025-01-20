@@ -1,19 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     typescript: {
-      ignoreBuildErrors: true,
+      ignoreBuildErrors: true,  // Disable TypeScript type checking during the build
     },
     images: {
-      domains: ['lh3.googleusercontent.com'],
+      domains: ['lh3.googleusercontent.com'], // Add the domain to the list
     },
- 
-    async rewrites() {
-      return [
-        {
-            source: '/chat',
-        }
-      ];
-    }
   };
   
   export default nextConfig;
