@@ -35,7 +35,7 @@ interface MenuItem {
   href: string;
 }
 
-export default function DashboardPage() {
+export default function ChatPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();

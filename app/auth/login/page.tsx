@@ -55,7 +55,7 @@ export default function LoginPage() {
         
         toast.success('Login successful!')
         setTimeout(() => {
-          router.push('/dashboard')
+          router.push('/chat')
         }, 2000)
       } else {
         setError(data.error || 'Login failed')
@@ -76,7 +76,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     try {
-      const result = await signIn('google', { callbackUrl: '/dashboard' })
+      const result = await signIn('google', { callbackUrl: '/chat' })
       if (result?.error) {
         setError('Google login failed')
       }

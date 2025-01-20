@@ -72,7 +72,7 @@ export default function RegisterPage() {
 
   const handleGoogleSignUp = async () => {
     try {
-      const result = await signIn('google', { callbackUrl: '/dashboard' })
+      const result = await signIn('google', { callbackUrl: '/chat' })
       if (result?.error) {
         setError('Google sign-up failed')
       }

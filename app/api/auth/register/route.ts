@@ -18,8 +18,8 @@ const registerSchema = z.object({
 type RegisterInput = z.infer<typeof registerSchema>;
 
 export async function POST(request: Request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
   const SALT_ROUNDS = 10; // for bcrypt
 
   if (!supabaseUrl || !supabaseAnonKey) {
