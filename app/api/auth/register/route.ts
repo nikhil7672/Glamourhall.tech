@@ -113,11 +113,6 @@ export async function POST(request: Request) {
   }
 }
 
-// Rate limiting and request size configuration
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "100kb",
-    },
-  },
-};
+export const runtime = 'edge'; // 'nodejs' | 'edge'
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
