@@ -18,7 +18,7 @@ const NotificationDetails = () => {
   };
 
   const handleBack = () => {
-    window.location.href = '/notification';
+    window.location.href = '/notifications';
   };
 
   return (

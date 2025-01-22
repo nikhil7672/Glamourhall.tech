@@ -13,16 +13,20 @@ import { EyeIcon, EyeOffIcon, MailIcon, LockIcon, Sparkles } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 import toast, { Toaster } from 'react-hot-toast'
 import { z } from "zod"
+import { Loader2 } from 'lucide-react';
+
 const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  
   const router = useRouter()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,12 +99,14 @@ export default function LoginPage() {
           alt="Fashion background"
           fill
           className="object-cover"
-          priority 
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-purple-900/40 to-blue-900/40 mix-blend-multiply" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
           <h2 className="text-3xl font-bold mb-2">Style Redefined</h2>
-          <p className="text-lg opacity-90">Your personal fashion assistant awaits</p>
+          <p className="text-lg opacity-90">
+            Your personal fashion assistant awaits
+          </p>
         </div>
       </div>
 
@@ -112,12 +118,12 @@ export default function LoginPage() {
             alt="Fashion background"
             fill
             className="object-cover"
-            priority 
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/60 via-blue-900/60 to-black/70 mix-blend-multiply" />
         </div>
         <div className="absolute inset-0 hidden lg:block bg-gradient-to-br from-purple-100 via-indigo-50 to-blue-100" />
-        
+
         <Card className="w-full max-w-md shadow-xl rounded-xl bg-white/90 backdrop-blur-sm dark:bg-gray-900/90 relative z-10 m-6">
           <CardHeader className="space-y-2 text-center pb-4">
             <div className="flex items-center justify-center mb-1">
@@ -138,9 +144,12 @@ export default function LoginPage() {
                   {error}
                 </div>
               )}
-              
+
               <div className="space-y-1">
-                <Label htmlFor="email" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="email"
+                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
+                >
                   Email
                 </Label>
                 <div className="relative">
@@ -158,7 +167,10 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="password" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="password"
+                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
+                >
                   Password
                 </Label>
                 <div className="relative">
@@ -192,8 +204,16 @@ export default function LoginPage() {
               <Button
                 className="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition duration-300 shadow-md text-sm"
                 type="submit"
+                disabled={isLoading}
               >
-                Log in
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Log in"
+                )}
               </Button>
 
               <div className="relative my-4">
@@ -201,7 +221,9 @@ export default function LoginPage() {
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  <span className="px-2 bg-white text-gray-500">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
@@ -219,19 +241,26 @@ export default function LoginPage() {
           <CardFooter className="border-t pt-4">
             <div className="w-full space-y-2">
               <p className="text-center text-xs text-gray-600 dark:text-gray-400">
-                Don't have an account?{' '}
-                <Link 
-                  href="/auth/register" 
+                Don't have an account?{" "}
+                <Link
+                  href="/auth/register"
                   className="font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 hover:underline"
                 >
                   Sign up for free
                 </Link>
               </p>
               <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                By logging in, you agree to our{' '}
-                <Link href="/terms" className="text-purple-600 hover:underline">Terms</Link>
-                {' '}and{' '}
-                <Link href="/privacy" className="text-purple-600 hover:underline">Privacy Policy</Link>
+                By logging in, you agree to our{" "}
+                <Link href="/terms" className="text-purple-600 hover:underline">
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy"
+                  className="text-purple-600 hover:underline"
+                >
+                  Privacy Policy
+                </Link>
               </p>
             </div>
           </CardFooter>
@@ -239,5 +268,5 @@ export default function LoginPage() {
       </div>
       <Toaster />
     </div>
-  )
+  );
 }

@@ -132,7 +132,7 @@ const NotificationsPage = () => {
             currentNotifications.map((notification) => (
               <Link
                 key={notification.id}
-                href={`/notification/${notification.id}`}
+                href={`/notifications/${notification.id}`}
                 className={`block p-4 hover:bg-gray-50 transition-colors ${
                   !notification.read ? 'bg-blue-50/50' : ''
                 }`}

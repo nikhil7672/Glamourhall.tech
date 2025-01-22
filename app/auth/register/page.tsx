@@ -1,85 +1,107 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { EyeIcon, EyeOffIcon, MailIcon, UserIcon, LockIcon, Sparkles } from 'lucide-react'
-import { signIn } from 'next-auth/react'
-import toast, { Toaster } from 'react-hot-toast'
-
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  MailIcon,
+  UserIcon,
+  LockIcon,
+  Sparkles,
+} from "lucide-react";
+import { signIn } from "next-auth/react";
+import toast, { Toaster } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const router = useRouter()
-
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
     // Validate password
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
     const isLengthValid = password.length >= 8;
-    
-    if (!hasUppercase || !hasLowercase || !hasNumber  || !isLengthValid) {
-      toast.error('Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.');
+
+    if (!hasUppercase || !hasLowercase || !hasNumber || !isLengthValid) {
+      toast.error(
+        "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+      );
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error('Please enter a valid email address.')
-      return
+      toast.error("Please enter a valid email address.");
+      return;
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fullName, email, password, provider:'email' }),
-      })
+        body: JSON.stringify({ fullName, email, password, provider: "email" }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        toast.success('Registration successful! Redirecting to login...')
+        toast.success("Registration successful! Redirecting to login...");
         setTimeout(() => {
-          router.push('/auth/login')
-        }, 2000)
+          router.push("/auth/login");
+        }, 2000);
       } else {
-        toast.error(data.error || 'Registration failed')
+        toast.error(data.error || "Registration failed");
       }
+      setIsLoading(false);
     } catch (error) {
-      toast.error('An error occurred. Please try again.')
+      toast.error("An error occurred. Please try again.");
+      setIsLoading(false);
     }
-  }
+  };
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
+    setShowPassword(!showPassword);
+  };
 
   const handleGoogleSignUp = async () => {
+    setIsGoogleLoading(true);
     try {
-      const result = await signIn('google', { callbackUrl: '/chat' })
+      const result = await signIn("google", { callbackUrl: "/chat" });
       if (result?.error) {
-        setError('Google sign-up failed')
+        setError("Google sign-up failed");
       }
     } catch (error) {
-      setError('An error occurred. Please try again.')
+      setError("An error occurred. Please try again.");
+    } finally {
+      setIsGoogleLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -90,7 +112,7 @@ export default function RegisterPage() {
           alt="Fashion background"
           fill
           className="object-cover"
-          priority 
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-purple-900/40 to-blue-900/40 mix-blend-multiply" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -107,12 +129,12 @@ export default function RegisterPage() {
             alt="Fashion background"
             fill
             className="object-cover"
-            priority 
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/60 via-blue-900/60 to-black/70 mix-blend-multiply" />
         </div>
         <div className="absolute inset-0 hidden lg:block bg-gradient-to-br from-purple-100 via-indigo-50 to-blue-100" />
-        
+
         <Card className="w-full max-w-md shadow-xl rounded-xl bg-white/90 backdrop-blur-sm dark:bg-gray-900/90 relative z-10 m-6">
           <CardHeader className="space-y-2 text-center pb-4">
             <div className="flex items-center justify-center mb-1">
@@ -133,9 +155,12 @@ export default function RegisterPage() {
                   {error}
                 </div>
               )}
-              
+
               <div className="space-y-1">
-                <Label htmlFor="name" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="name"
+                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
+                >
                   Full Name
                 </Label>
                 <div className="relative">
@@ -152,7 +177,10 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="email" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="email"
+                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
+                >
                   Email
                 </Label>
                 <div className="relative">
@@ -170,7 +198,10 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="password" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <Label
+                  htmlFor="password"
+                  className="text-xs font-medium text-gray-700 dark:text-gray-300"
+                >
                   Password
                 </Label>
                 <div className="relative">
@@ -204,46 +235,78 @@ export default function RegisterPage() {
               <Button
                 className="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg transition duration-300 shadow-md text-sm"
                 type="submit"
+                disabled={isLoading}
               >
-                Create Account
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
               </Button>
-
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  <span className="px-2 bg-white text-gray-500">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
               <Button
-  className="w-full py-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg border border-gray-300 transition duration-300 shadow-sm flex items-center justify-center gap-2 text-sm"
-  onClick={handleGoogleSignUp}
-  type="button"
->
-  <Image src="/google.png" alt="Google" width={16} height={16} />
-  Sign up with Google
-</Button>
+                className="w-full py-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg border border-gray-300 transition duration-300 shadow-sm flex items-center justify-center gap-2 text-sm"
+                onClick={handleGoogleSignUp}
+                type="button"
+                disabled={isGoogleLoading}
+              >
+                {isGoogleLoading ? (
+                  <>
+                <Image src="/google.png" alt="Google" width={16} height={16} />
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Image
+                      src="/google.png"
+                      alt="Google"
+                      width={16}
+                      height={16}
+                    />
+                    Log in with Google
+                  </>
+                )}
+              </Button>
             </form>
           </CardContent>
 
           <CardFooter className="border-t pt-4">
             <div className="w-full space-y-2">
               <p className="text-center text-xs text-gray-600 dark:text-gray-400">
-                Already have an account?{' '}
-                <Link 
-                  href="/auth/login" 
+                Already have an account?{" "}
+                <Link
+                  href="/auth/login"
                   className="font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 hover:underline"
                 >
                   Log in
                 </Link>
               </p>
               <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                By registering, you agree to our{' '}
-                <Link href="/terms" className="text-purple-600 hover:underline">Terms</Link>
-                {' '}and{' '}
-                <Link href="/privacy" className="text-purple-600 hover:underline">Privacy Policy</Link>
+                By registering, you agree to our{" "}
+                <Link href="/terms" className="text-purple-600 hover:underline">
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy"
+                  className="text-purple-600 hover:underline"
+                >
+                  Privacy Policy
+                </Link>
               </p>
             </div>
           </CardFooter>
@@ -251,5 +314,5 @@ export default function RegisterPage() {
       </div>
       <Toaster />
     </div>
-  )
+  );
 }

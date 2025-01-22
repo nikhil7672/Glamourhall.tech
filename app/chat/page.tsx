@@ -42,7 +42,7 @@ export default function ChatPage() {
   const pathname = usePathname();
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [hasStartedChat, setHasStartedChat] = useState(false);
-
+  const localStorageUser = localStorage.getItem('user')
   const initialPrompts = [
     { icon: "💃", text: "Help me style an outfit for a wedding" },
     { icon: "🎨", text: "What colors are trending this season?" },
@@ -449,40 +449,56 @@ export default function ChatPage() {
 
             {/* Profile section on the right */}
             <div className="flex items-center gap-4">
-              {session?.user && (
-                <>
-                  <div className="relative">
-                  <button
-          onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative"
-        >
-          <BsBellFill
-            className={`text-gray-700 ${
-              window.innerWidth < 768 ? "w-6 h-6" : "w-5 h-5"
-            }`}
-          />
-          {notifications.length > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-medium px-1.5 border-2 border-white">
-              {notifications.length > 99 ? "99+" : notifications.length}
-            </span>
-          )}
-        </button>
-       
-                  </div>
+            {(session?.user || localStorageUser) && (
+  <>
+    <div className="relative">
+      <button
+        onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative"
+      >
+        <BsBellFill
+          className={`text-gray-700 ${
+            window.innerWidth < 768 ? "w-6 h-6" : "w-5 h-5"
+          }`}
+        />
+        {notifications.length > 0 && (
+          <span className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-medium px-1.5 border-2 border-white">
+            {notifications.length > 99 ? "99+" : notifications.length}
+          </span>
+        )}
+      </button>
+    </div>
 
-                  <Link href={`/profile`}>
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center">
-                      <Image
-                        src={`${session?.user?.image}`} // Default image if no profile image
-                        alt="Profile Picture"
-                        width={40}
-                        height={40}
-                        className="object-cover"
-                      />
-                    </div>
-                  </Link>
-                </>
-              )}
+    <Link href="/profile">
+      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center bg-gray-100">
+        {session?.user?.image ? (
+          <Image
+            src={session.user.image}
+            alt="Profile Picture"
+            width={40}
+            height={40}
+            className="object-cover"
+            onError={(e) => {
+              e.target.src = "/avatar-placeholder.png" // Fallback image path
+            }}
+          />
+        ) : (
+          <svg 
+            className="w-6 h-6 text-gray-400" 
+            fill="currentColor" 
+            viewBox="0 0 20 20"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" 
+              clipRule="evenodd" 
+            />
+          </svg>
+        )}
+      </div>
+    </Link>
+  </>
+)}
             </div>
           </div>
         </header>

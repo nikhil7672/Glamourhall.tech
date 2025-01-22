@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import Link from "next/link";
 import { Bell, X, ChevronRight } from "lucide-react";
 
-
 interface Notification {
   id: string;
   title: string;
@@ -26,87 +25,74 @@ export const NotificationDialog: React.FC<NotificationDialogProps> = ({
   onClose,
   notifications,
 }) => {
- 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
           {/* Backdrop */}
           <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/20 z-40"
-          />
+          ></motion.div>
 
           {/* Dialog */}
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute right-0 top-12 w-96 bg-white rounded-lg shadow-xl z-50 overflow-hidden"
+            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-lg overflow-y-auto"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {/* Header */}
-            <div className="px-4 py-3 border-b flex items-center justify-between bg-white sticky top-0">
-              <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-gray-600" />
-                <h3 className="font-semibold text-gray-900">Notifications</h3>
-              </div>
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h2 className="text-lg font-semibold">Notifications</h2>
               <button
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-gray-200"
+                aria-label="Close notifications"
               >
-                <X className="h-5 w-5" />
+                <X size={20} />
               </button>
             </div>
 
             {/* Notifications List */}
-            <div className="max-h-[70vh] overflow-y-auto">
+            <div className="p-4 space-y-4">
               {notifications.length > 0 ? (
-                <div className="divide-y">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                        !notification.read ? "bg-blue-50/50" : ""
-                      }`}
-                    >
-                      <Link
-                        href={`/notification/${notification.id}`}
-                        onClick={onClose}
-                        className="block"
-                      >
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="font-medium text-gray-900">
-                            {notification.title}
-                          </h4>
-                          <span className="text-xs text-gray-500">
-                            {format(notification.timestamp, "MMM d, h:mm a")}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {notification.message}
-                        </p>
-                      </Link>
+                notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className="flex flex-col sm:flex-row sm:items-center p-3 border rounded-lg bg-gray-50 hover:bg-gray-100"
+                  >
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold">{notification.title}</h3>
+                      <p className="text-xs text-gray-500">
+                        {format(notification.timestamp, "MMM d, h:mm a")}
+                      </p>
+                      <p className="text-sm">{notification.message}</p>
                     </div>
-                  ))}
-                </div>
+                    <ChevronRight
+                      size={20}
+                      className="mt-2 sm:mt-0 sm:ml-2 text-gray-400"
+                    />
+                  </div>
+                ))
               ) : (
-                <div className="p-4 text-center text-gray-500">
+                <p className="text-center text-sm text-gray-500">
                   No new notifications
-                </div>
+                </p>
               )}
             </div>
 
             {/* Footer */}
-            <div className="p-3 border-t bg-gray-50 sticky bottom-0">
+            <div className="px-4 py-3 border-t text-center">
               <Link
-                href="/notification"
-                className="flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium"
+                href="/notifications"
+                className="text-blue-600 hover:underline"
               >
                 View all notifications
-                <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
           </motion.div>
