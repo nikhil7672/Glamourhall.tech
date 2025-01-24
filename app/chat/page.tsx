@@ -209,7 +209,9 @@ export default function ChatPage() {
 
     try {
       let uploadedImagePaths: any = [];
-
+      setImagePreviews([]);
+      const textPrompt = userInput;
+      setUserInput('')
       // Upload images to the server
       if (imageFiles.length > 0) {
         const uploadFormData = new FormData();
@@ -233,7 +235,7 @@ export default function ChatPage() {
       // Prepare data for AI processing
       const formData = new FormData();
       if (userInput.trim()) {
-        formData.append("text", userInput);
+        formData.append("text", textPrompt);
       }
       uploadedImagePaths.forEach((path: any) => {
         formData.append("imagePaths", path); // Send file paths instead of file objects
@@ -477,10 +479,7 @@ export default function ChatPage() {
             alt="Profile Picture"
             width={40}
             height={40}
-            className="object-cover"
-            onError={(e) => {
-              e.target.src = "/avatar-placeholder.png" // Fallback image path
-            }}
+            className="object-cover"          
           />
         ) : (
           <svg 

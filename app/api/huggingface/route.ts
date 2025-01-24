@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { HfInference } from "@huggingface/inference";
-
+import OpenAI from "openai";
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 interface StylePreferences {
@@ -9,6 +9,11 @@ interface StylePreferences {
   colorPreferences?: string[];
   seasonalPreference?: string;
 }
+const openai = new OpenAI({
+  baseURL: 'https://api.deepseek.com',
+  apiKey: process.env.DEEPSEEK_API_KEY
+});
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,24 +61,11 @@ async function handleFashionQuery(
   preferences: StylePreferences
 ): Promise<string> {
   const fashionPrompt = `
-    As a luxury fashion consultant, provide detailed advice for: "${prompt}"
-    
-    Style Context:
-    - Preferred Style: ${preferences.styleType || 'Not specified'}
-    - Occasion: ${preferences.occasion || 'Not specified'}
-    - Color Preferences: ${preferences.colorPreferences?.join(', ') || 'Not specified'}
-    - Season: ${preferences.seasonalPreference || 'Not specified'}
-
-    Provide:
-    1. Personalized style recommendations
-    2. Current trend connections
-    3. Practical styling tips
-    4. Accessorizing suggestions
-    5. Alternative options
+  Imagine you are a pro fashion assistant so reply to this and here is the prompt ${prompt}
   `;
 
-  const completion = await hf.chatCompletion({
-    model: "mistralai/Mistral-Nemo-Instruct-2407",
+  const completion = await openai.chat.completions.create({
+    model: "deepseek-chat",
     messages: [{ role: "user", content: fashionPrompt }],
     max_tokens: 500,
   });
@@ -102,14 +94,7 @@ async function analyzeOutfitWithContext(
 
 async function getOutfitAnalysis(imagePath: string, prompt: string): Promise<string> {
   const analysisPrompt = `
-    Analyze this outfit as a high-end fashion consultant:
-    1. Style categorization and mood
-    2. Silhouette and fit analysis
-    3. Color palette evaluation
-    4. Fabric and texture assessment
-    5. Styling potential and versatility
-    
-    Additional Context: ${prompt}
+    Imagine you are a pro fashion assistant so analyze given image  ${prompt}
   `;
 
   const analysis = await hf.chatCompletion({
@@ -135,38 +120,22 @@ async function refineFashionAdvice(
   preferences: StylePreferences
 ): Promise<string> {
   const refinementPrompt = `
-    Enhance this style analysis with luxury fashion expertise:
+    Imagine you are a pro fashion assistant:
 
     Initial Analysis:
     ${initialAnalysis}
 
-    User Request: "${prompt}"
+    User Prompt: "${prompt}"
     Style Preferences: ${JSON.stringify(preferences)}
-
-    Provide:
-    ✨ Style Profile
-    [Comprehensive style analysis]
-
-    👗 Outfit Enhancement
-    1. Styling Recommendations
-    2. Color Coordination
-    3. Accessory Suggestions
-    4. Proportion Optimization
-
-    🎯 Personalized Advice
-    [Specific recommendations based on preferences]
-
-    🌟 Style Evolution
-    [Trend-forward suggestions]
   `;
 
-  const refinement = await hf.chatCompletion({
-    model: "mistralai/Mistral-Nemo-Instruct-2407",
+  const completion = await openai.chat.completions.create({
+    model: "deepseek-chat",
     messages: [{ role: "user", content: refinementPrompt }],
     max_tokens: 500,
   });
 
-  return formatStyleAdvice(refinement.choices[0].message.content || "No style advice available.");
+  return formatStyleAdvice(completion.choices[0].message.content || "No style advice available.");
 }
 
 async function generateStyleAnalysis(
@@ -183,7 +152,8 @@ async function generateStyleAnalysis(
           preferences
         );
         return enhancedAdvice;
-      } catch {
+      } catch(error) {
+        console.log(error)
         return "I couldn't analyze this look. Let's try another photo! 📸";
       }
     })

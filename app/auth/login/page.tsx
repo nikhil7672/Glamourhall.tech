@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,6 +80,7 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
     try {
       const result = await signIn('google', { callbackUrl: '/chat' })
       if (result?.error) {
@@ -87,6 +88,9 @@ export default function LoginPage() {
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
+    }
+    finally {
+      setIsGoogleLoading(false);
     }
   }
 
@@ -228,13 +232,24 @@ export default function LoginPage() {
               </div>
 
               <Button
-                className="w-full py-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg border border-gray-300 transition duration-300 shadow-sm flex items-center justify-center gap-2 text-sm"
-                onClick={handleGoogleLogin}
-                type="button"
-              >
-                <Image src="/google.png" alt="Google" width={16} height={16} />
-                Log in with Google
-              </Button>
+      className="w-full py-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg border border-gray-300 transition duration-300 shadow-sm flex items-center justify-center gap-2 text-sm"
+      onClick={handleGoogleLogin}
+      type="button"
+      disabled={isGoogleLoading}
+    >
+      {isGoogleLoading ? (
+        <>
+          <Image src="/google.png" alt="Google" width={16} height={16} />
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Connecting...
+        </>
+      ) : (
+        <>
+          <Image src="/google.png" alt="Google" width={16} height={16} />
+          Log in with Google
+        </>
+      )}
+    </Button>
             </form>
           </CardContent>
 
