@@ -1,0 +1,10 @@
+{
+    "functions": {
+      "app/api/upload/route.ts": {
+        "maxDuration": 60
+      },
+      "app/api/huggingface/route.ts": {
+        "maxDuration": 60
+      }
+    }
+  }
