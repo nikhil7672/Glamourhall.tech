@@ -20,26 +20,25 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const prompt = formData.get("text") as string | null;
     const imagePaths = formData.getAll("imagePaths") as string[];
-    const preferences = JSON.parse(formData.get("preferences") as string || "{}") as StylePreferences;
 
     // Handle text-only fashion queries
     if (prompt && imagePaths.length === 0) {
       return NextResponse.json({ 
-        result: await handleFashionQuery(prompt, preferences) 
+        result: await handleFashionQuery(prompt) 
       });
     }
 
     // Handle both image and text analysis
     if (prompt && imagePaths.length > 0) {
       return NextResponse.json({ 
-        result: await analyzeOutfitWithContext(imagePaths, prompt, preferences) 
+        result: await analyzeOutfitWithContext(imagePaths, prompt) 
       });
     }
 
     // Handle image-only analysis
     if (imagePaths.length > 0) {
       return NextResponse.json({ 
-        result: await generateStyleAnalysis(imagePaths, preferences) 
+        result: await generateStyleAnalysis(imagePaths) 
       });
     }
 
@@ -58,7 +57,6 @@ export async function POST(req: NextRequest) {
 
 async function handleFashionQuery(
   prompt: string, 
-  preferences: StylePreferences
 ): Promise<string> {
   const fashionPrompt = `
   Imagine you are a pro fashion assistant so reply to this and here is the prompt ${prompt}
@@ -76,13 +74,12 @@ async function handleFashionQuery(
 async function analyzeOutfitWithContext(
   imagePaths: string[], 
   prompt: string,
-  preferences: StylePreferences
 ): Promise<string> {
   const results = await Promise.all(
     imagePaths.map(async (imagePath) => {
       try {
-        const initialAnalysis = await getOutfitAnalysis(imagePath, prompt);
-        return await refineFashionAdvice(initialAnalysis, prompt, preferences);
+        const initialAnalysis = await getOutfitAnalysis(imagePath);
+        return await refineFashionAdvice(initialAnalysis, prompt);
       } catch (error) {
         return "I couldn't analyze this look. Want to try another photo? 📸";
       }
@@ -92,9 +89,9 @@ async function analyzeOutfitWithContext(
   return results.join("\n\n") + "\n\nNeed specific styling suggestions? Just ask! ✨";
 }
 
-async function getOutfitAnalysis(imagePath: string, prompt: string): Promise<string> {
+async function getOutfitAnalysis(imagePath: string): Promise<string> {
   const analysisPrompt = `
-    Imagine you are a pro fashion assistant so analyze given image  ${prompt}
+    Imagine you are a pro fashion assistant so analyze given image
   `;
 
   const analysis = await hf.chatCompletion({
@@ -108,7 +105,7 @@ async function getOutfitAnalysis(imagePath: string, prompt: string): Promise<str
         ],
       },
     ],
-    max_tokens: 400,
+    max_tokens: 500,
   });
 
   return analysis.choices[0].message.content || "Could not analyze the outfit.";
@@ -116,17 +113,14 @@ async function getOutfitAnalysis(imagePath: string, prompt: string): Promise<str
 
 async function refineFashionAdvice(
   initialAnalysis: string, 
-  prompt: string,
-  preferences: StylePreferences
+  prompt: string
 ): Promise<string> {
   const refinementPrompt = `
     Imagine you are a pro fashion assistant:
-
     Initial Analysis:
     ${initialAnalysis}
 
-    User Prompt: "${prompt}"
-    Style Preferences: ${JSON.stringify(preferences)}
+    User Prompt: "${prompt}",
   `;
 
   const completion = await openai.chat.completions.create({
@@ -140,16 +134,14 @@ async function refineFashionAdvice(
 
 async function generateStyleAnalysis(
   imagePaths: string[], 
-  preferences: StylePreferences
 ): Promise<string> {
   const analyses = await Promise.all(
     imagePaths.map(async (imagePath) => {
       try {
-        const analysis = await getOutfitAnalysis(imagePath, "");
+        const analysis = await getOutfitAnalysis(imagePath);
         const enhancedAdvice = await refineFashionAdvice(
           analysis,
-          "Provide comprehensive style analysis",
-          preferences
+          ""
         );
         return enhancedAdvice;
       } catch(error) {
