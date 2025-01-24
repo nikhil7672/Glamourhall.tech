@@ -29,7 +29,8 @@ export const POST = async (req:NextRequest) => {
       const uploadResult = await s3.upload(params).promise();
       filePaths.push({ path: uploadResult.Location });
     } catch (error) {
-      return new Response('Error uploading to S3', { status: 500 });
+     
+      return new Response(`Error uploading to s3 ${error}`, { status: 500 });
     }
   }
 
