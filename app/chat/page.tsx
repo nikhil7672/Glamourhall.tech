@@ -42,7 +42,7 @@ export default function ChatPage() {
   const pathname = usePathname();
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [hasStartedChat, setHasStartedChat] = useState(false);
-  const localStorageUser = localStorage.getItem('user')
+  const [localStorageUser, setLocalStorageUser] = useState<string | null>(null);
   const initialPrompts = [
     { icon: "💃", text: "Help me style an outfit for a wedding" },
     { icon: "🎨", text: "What colors are trending this season?" },
@@ -335,6 +335,9 @@ export default function ChatPage() {
     setIsMobileSidebarOpen(isDesktop);
   }, [isDesktop]);
 
+  useEffect(() => {
+    setLocalStorageUser(localStorage.getItem('user'));
+  },[])
   // Loading State
   if (status === "loading") {
     return (
