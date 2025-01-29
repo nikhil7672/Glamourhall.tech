@@ -266,7 +266,7 @@ export default function ChatPage() {
         formData.append("imagePaths", path); // Send file paths instead of file objects
       });
 
-      formData.append("messages", JSON.stringify(messages));
+      formData.append("messages", JSON.stringify(messages?.slice(-5)));
 
       const userMessage = {
         type: "user",

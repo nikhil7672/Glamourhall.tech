@@ -1,3 +1,7 @@
+export const dynamic = 'force-dynamic';  // Disable caching for this route
+export const revalidate = 0;  // Disable revalidation
+
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -11,7 +15,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const { data, error } = await supabase
       .from("conversations")
-      .select("*")
+      .select(`
+        id,
+        messages,
+        created_at,
+        title
+      `)
       .eq("user_id", id);
 
     if (error) {

@@ -72,7 +72,7 @@ async function handleFashionQuery(
     max_tokens: 500,
   });
 
-  return formatStyleAdvice(completion.choices[0].message.content || "No style advice available.");
+  return completion.choices[0].message.content || "No style advice available.";
 }
 
 async function analyzeOutfitWithContext(
@@ -136,7 +136,7 @@ async function refineFashionAdvice(
     max_tokens: 500,
   });
 
-  return formatStyleAdvice(completion.choices[0].message.content || "No style advice available.");
+  return completion.choices[0].message.content || "No style advice available.";
 }
 
 async function generateStyleAnalysis(
@@ -160,13 +160,6 @@ async function generateStyleAnalysis(
     })
   );
 
-  return formatStyleAnalysis(analyses);
+  return analyses.join('\n\n');
 }
 
-function formatStyleAdvice(content: string): string {
-  return `${content.trim()}\n\nWant to explore more styling options? I'm here to help! ✨`;
-}
-
-function formatStyleAnalysis(analyses: string[]): string {
-  return analyses.join("\n\n") + "\n\nLet me know if you'd like specific styling tips for any of these looks! 🌟";
-}
