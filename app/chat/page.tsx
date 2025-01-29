@@ -5,6 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Popover, Transition } from "@headlessui/react";
+import { Fragment } from "react";
 import {
   FaBars,
   FaTimes,
@@ -16,6 +18,7 @@ import {
   FaQuestionCircle,
   FaComments,
   FaCommentDots,
+  FaPlus,
 } from "react-icons/fa";
 import { BsBellFill } from "react-icons/bs";
 import { useMediaQuery } from "@/utils/useMediaQuery";
@@ -23,6 +26,8 @@ import axios from "axios";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { NotificationDialog } from "@/components/notificationDialog";
+import { RiChatNewFill } from "react-icons/ri";
+
 interface Message {
   type: "user" | "ai";
   content: string;
@@ -53,110 +58,60 @@ export default function ChatPage() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
   const [notificationCount, setNotificationCount] = useState(4);
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
   // Chat State
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
   const [isAITyping, setIsAITyping] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
   const [notifications] = useState([
     {
-      id: '1',
-      title: 'New Style Recommendation',
-      message: 'Check out the latest fashion trends we picked for you!',
+      id: "1",
+      title: "New Style Recommendation",
+      message: "Check out the latest fashion trends we picked for you!",
       timestamp: new Date(),
       read: false,
-      type: 'update' as const,
+      type: "update" as const,
     },
     {
-      id: '2',
-      title: 'Outfit Analysis Complete',
-      message: 'Your recent outfit analysis is ready to view.',
+      id: "2",
+      title: "Outfit Analysis Complete",
+      message: "Your recent outfit analysis is ready to view.",
       timestamp: new Date(Date.now() - 3600000),
       read: true,
-      type: 'alert' as const,
+      type: "alert" as const,
     },
     {
-      id: '3',
-      title: 'New Message',
-      message: 'Your stylist has sent you a new message.',
+      id: "3",
+      title: "New Message",
+      message: "Your stylist has sent you a new message.",
       timestamp: new Date(Date.now() - 7200000),
       read: false,
-      type: 'message' as const,
+      type: "message" as const,
     },
     {
-      id: '4',
-      title: 'Trending Colors',
-      message: 'Spring color trends are now available!',
+      id: "4",
+      title: "Trending Colors",
+      message: "Spring color trends are now available!",
       timestamp: new Date(Date.now() - 86400000),
       read: false,
-      type: 'update' as const,
+      type: "update" as const,
     },
     {
-      id: '5',
-      title: 'Style Match Found',
-      message: 'We found a perfect match for your style preferences.',
+      id: "5",
+      title: "Style Match Found",
+      message: "We found a perfect match for your style preferences.",
       timestamp: new Date(Date.now() - 172800000),
       read: true,
-      type: 'alert' as const,
-    },
-    {
-      id: '6',
-      title: 'Wardrobe Update',
-      message: 'Time to refresh your wardrobe! Check new suggestions.',
-      timestamp: new Date(Date.now() - 259200000),
-      read: false,
-      type: 'update' as const,
-    },
-    {
-      id: '7',
-      title: 'Seasonal Tips',
-      message: 'New seasonal styling tips are available.',
-      timestamp: new Date(Date.now() - 345600000),
-      read: true,
-      type: 'message' as const,
-    },
-    {
-      id: '8',
-      title: 'Style Analysis',
-      message: 'Your monthly style analysis is ready.',
-      timestamp: new Date(Date.now() - 432000000),
-      read: false,
-      type: 'alert' as const,
-    },
-    {
-      id: '9',
-      title: 'New Collection',
-      message: 'Explore our latest collection picks for you.',
-      timestamp: new Date(Date.now() - 518400000),
-      read: true,
-      type: 'update' as const,
-    },
-    {
-      id: '10',
-      title: 'Outfit Reminder',
-      message: 'Dont forget to plan your outfit for tomorrow!',
-      timestamp: new Date(Date.now() - 604800000),
-      read: false,
-      type: 'message' as const,
-    },
-    {
-      id: '11',
-      title: 'Style Achievement',
-      message: 'You unlocked a new style milestone!',
-      timestamp: new Date(Date.now() - 691200000),
-      read: true,
-      type: 'alert' as const,
-    },
-    {
-      id: '12',
-      title: 'Fashion Event',
-      message: 'Virtual fashion show starting in 2 hours.',
-      timestamp: new Date(Date.now() - 777600000),
-      read: false,
-      type: 'update' as const,
+      type: "alert" as const,
     },
   ]);
+
+  const [conversations, setConversations] = useState([]);
   // Refs
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -164,7 +119,7 @@ export default function ChatPage() {
 
   // Menu Configuration
   const menuItems: MenuItem[] = [
-    { icon: FaCommentDots, label: "Start New Chat", href: "/new-chat" }, 
+    { icon: FaCommentDots, label: "Start New Chat", href: "/new-chat" },
     { icon: FaComments, label: "Recent Chats", href: "/recent-chats" },
     { icon: FaCog, label: "Settings", href: "/settings" },
     { icon: FaQuestionCircle, label: "Help Center", href: "/help" },
@@ -184,12 +139,78 @@ export default function ChatPage() {
   };
 
   const handleRemoveImage = (index: number) => {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index)); 
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index)); 
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handlePromptClick = (promptText: string) => {
     setUserInput(promptText);
+  };
+  const createConversation = async (messagesToSave: any[]) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user?.id) {
+        throw new Error("User not found");
+      }
+
+      const payload = {
+        userId: user.id,
+        initialMessage: messagesToSave, // Use the passed messages
+      };
+
+      const response = await fetch(`/api/auth/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorDetails = await response.text();
+        throw new Error(`Failed to create new conversation: ${errorDetails}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      throw error;
+    }
+  };
+
+  const updateConversation = async (messagesToSave: any[]) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user?.id) {
+        throw new Error("User not found");
+      }
+
+      const payload = {
+        newMessage: messagesToSave.map((msg) => ({
+          type: msg.type === "user" ? "user" : "ai",
+          content: msg.content,
+          ...(msg.type === "user" &&
+            msg.images?.length && { images: msg.images }),
+        })),
+      };
+
+      const response = await fetch(
+        `/api/auth/conversations/${activeConversationId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorDetails = await response.text();
+        throw new Error(`Failed to update conversation: ${errorDetails}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating conversation:", error);
+      throw error;
+    }
   };
 
   // Message Handlers
@@ -207,11 +228,14 @@ export default function ChatPage() {
 
     setIsAITyping(true);
 
+    const userMessageContent = userInput;
+    const userImages = [...imagePreviews];
+
     try {
       let uploadedImagePaths: any = [];
       setImagePreviews([]);
       const textPrompt = userInput;
-      setUserInput('')
+      setUserInput("");
       // Upload images to the server
       if (imageFiles.length > 0) {
         const uploadFormData = new FormData();
@@ -241,6 +265,12 @@ export default function ChatPage() {
         formData.append("imagePaths", path); // Send file paths instead of file objects
       });
 
+      const userMessage = {
+        type: "user",
+        content: userMessageContent,
+        images: uploadedImagePaths,
+      };
+
       // Send data to AI API
       const response = await fetch("/api/huggingface", {
         method: "POST",
@@ -260,7 +290,24 @@ export default function ChatPage() {
         ]);
       }
 
+      const aiMessage = {
+        type: "ai",
+        content: data?.result || "Sorry, I could not process your request.",
+      };
+
       // Reset input and image previews
+      if (!activeConversationId) {
+        const newConversation = await createConversation([
+          userMessage,
+          aiMessage,
+        ]);
+        console.log(newConversation, "newConversation");
+        setActiveConversationId(newConversation.id);
+        fetchUserConversations();
+      } else {
+        await updateConversation([userMessage, aiMessage]);
+      }
+
       setUserInput("");
       setImagePreviews([]);
       setImageFiles([]);
@@ -302,32 +349,120 @@ export default function ChatPage() {
   const handleLogout = async () => {
     try {
       // Clear local/session storage
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('user');
-      localStorage.removeItem('nextauth.message');
-      sessionStorage.removeItem('nextauth.message');
-      
+      localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("user");
+      localStorage.removeItem("nextauth.message");
+      sessionStorage.removeItem("nextauth.message");
+
       // Clear NextAuth session
       await signOut({ redirect: false });
-      
+
       // Redirect to login
       window.location.href = "/auth/login";
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
+  const checkUser = async () => {
+    if (session?.user?.email) {
+      const response = await fetch("/api/auth/user-exists", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: session.user.email,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (!data.exists) {
+          // Create new user using register endpoint
+          const registerResponse = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: session.user.email,
+              fullName: session.user.name || "",
+              password: "", // Empty for Google users
+              provider: "google",
+            }),
+          });
+
+          if (registerResponse.ok) {
+            const userData = await registerResponse.json();
+            // Store user data in storage
+            localStorage.setItem("user", JSON.stringify(userData.user));
+            sessionStorage.setItem("user", JSON.stringify(userData.user));
+            setLocalStorageUser(userData.user);
+          } else {
+            console.error("Failed to create user");
+          }
+        } else {
+          localStorage.setItem("user", JSON.stringify(data.user));
+          sessionStorage.setItem("user", JSON.stringify(data.user));
+          setLocalStorageUser(data.user);
+        }
+      }
+    }
+  };
+
+  const fetchUserConversations = async () => {
+    try {
+      setIsLoadingChats(true);
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const response = await fetch(`/api/auth/conversations/user/${user.id}`);
+
+      if (!response.ok) throw new Error("Failed to fetch conversations");
+
+      const data = await response.json();
+      setConversations(data);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+    } finally {
+      setIsLoadingChats(false);
+    }
+  };
+
+  const startNewChat = () => {
+    setActiveConversationId(null);
+    setMessages([]);
+    setUserInput("");
+    setImagePreviews([]);
+    setImageFiles([]);
+    setHasStartedChat(false);
+  };
+
+  // Load specific chat
+  const loadConversation = async (conversationId: string) => {
+    try {
+      const response = await fetch(`/api/auth/conversations/${conversationId}`);
+      if (!response.ok) throw new Error("Failed to load conversation");
+
+      const data = await response.json();
+      setActiveConversationId(conversationId);
+      setMessages(data.messages);
+      setHasStartedChat(true);
+    } catch (error) {
+      console.error("Error loading conversation:", error);
+    }
+  };
   // Authentication Effect
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
       if (status === "unauthenticated" && !token) {
         window.location.href = "/auth/login";
       }
     };
-  
+
     checkAuth();
   }, [status]);
 
@@ -336,8 +471,18 @@ export default function ChatPage() {
   }, [isDesktop]);
 
   useEffect(() => {
-    setLocalStorageUser(localStorage.getItem('user'));
-  },[])
+    checkUser();
+  }, [session]);
+
+  useEffect(() => {
+    fetchUserConversations();
+  }, [localStorageUser]);
+
+  useEffect(() => {
+    if (activeConversationId) {
+      loadConversation(activeConversationId);
+    }
+  }, [activeConversationId]);
   // Loading State
   if (status === "loading") {
     return (
@@ -348,9 +493,12 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-blue-50 to-purple-50">
-      {/* Mobile Overlay */}
-
+    <div
+      className="min-h-screen flex flex-col md:flex-row 
+  bg-gradient-to-r from-blue-50 to-purple-50 
+  dark:from-gray-900 dark:to-purple-900
+  transition-colors duration-200"
+    >
       {isMobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
@@ -389,7 +537,7 @@ export default function ChatPage() {
           </div>
 
           {/* Navigation Menu */}
-          <nav className="flex-1 overflow-y-auto p-4">
+          {/* <nav className="flex-1 overflow-y-auto p-4">
             <div className="space-y-1">
               {menuItems.map((item, index) => (
                 <Link
@@ -412,10 +560,56 @@ export default function ChatPage() {
                 </Link>
               ))}
             </div>
-          </nav>
+          </nav> */}
+          <button
+            onClick={() => {
+              startNewChat();
+              if (!isDesktop) {
+                setIsMobileSidebarOpen(false);
+              }
+            }}
+            className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-100"
+          >
+            <RiChatNewFill className="w-4 h-4" />
+            <span>New Chat</span>
+          </button>
+
+          {/* Conversations List */}
+          <div className="overflow-y-auto h-[calc(100%-4rem)]">
+            {isLoadingChats ? (
+              <div className="flex justify-center p-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
+              </div>
+            ) : (
+              conversations.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  className={`group relative px-4 py-3 hover:bg-gray-100 cursor-pointer ${
+                    activeConversationId === conversation.id
+                      ? "bg-gray-100"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    loadConversation(conversation.id);
+                    if (!isDesktop) {
+                      setIsMobileSidebarOpen(false);
+                    }
+                  }}
+                >
+                  {/* Conversation Title */}
+                  <div className="font-medium truncate">
+                    {conversation.title}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {new Date(conversation.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
 
           {/* Logout Button */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+          {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg
@@ -426,7 +620,7 @@ export default function ChatPage() {
               <FaSignOutAlt className="w-5 h-5" />
               <span className="text-sm font-medium">Logout</span>
             </button>
-          </div>
+          </div> */}
         </div>
       </motion.aside>
 
@@ -454,53 +648,121 @@ export default function ChatPage() {
 
             {/* Profile section on the right */}
             <div className="flex items-center gap-4">
-            {(session?.user || localStorageUser) && (
-  <>
-    <div className="relative">
-      <button
-        onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative"
-      >
-        <BsBellFill
-          className={`text-gray-700 ${
-            window.innerWidth < 768 ? "w-6 h-6" : "w-5 h-5"
-          }`}
-        />
-        {notifications.length > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-medium px-1.5 border-2 border-white">
-            {notifications.length > 99 ? "99+" : notifications.length}
-          </span>
-        )}
-      </button>
-    </div>
+              {(session?.user || localStorageUser) && (
+                <>
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                      className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative"
+                    >
+                      <BsBellFill
+                        className={`text-gray-700 ${
+                          window.innerWidth < 768 ? "w-6 h-6" : "w-5 h-5"
+                        }`}
+                      />
+                      {notifications.length > 0 && (
+                        <span className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-medium px-1.5 border-2 border-white">
+                          {notifications.length > 99
+                            ? "99+"
+                            : notifications.length}
+                        </span>
+                      )}
+                    </button>
+                  </div>
 
-    <Link href="/profile">
-      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center bg-gray-100">
-        {session?.user?.image ? (
-          <Image
-            src={session.user.image}
-            alt="Profile Picture"
-            width={40}
-            height={40}
-            className="object-cover"          
-          />
-        ) : (
-          <svg 
-            className="w-6 h-6 text-gray-400" 
-            fill="currentColor" 
-            viewBox="0 0 20 20"
-          >
-            <path 
-              fillRule="evenodd" 
-              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" 
-              clipRule="evenodd" 
-            />
-          </svg>
-        )}
-      </div>
-    </Link>
-  </>
-)}
+                  <Popover className="relative">
+                    <Popover.Button className="focus:outline-none">
+                      <div
+                        className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 
+      transition-all duration-200 flex items-center justify-center bg-gray-100"
+                      >
+                        {session?.user?.image ? (
+                          <Image
+                            src={session.user.image}
+                            alt="Profile Picture"
+                            width={40}
+                            height={40}
+                            className="object-cover"
+                          />
+                        ) : (
+                          <svg
+                            className="w-6 h-6 text-gray-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    </Popover.Button>
+
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-200"
+                      enterFrom="opacity-0 translate-y-1"
+                      enterTo="opacity-100 translate-y-0"
+                      leave="transition ease-in duration-150"
+                      leaveFrom="opacity-100 translate-y-0"
+                      leaveTo="opacity-0 translate-y-1"
+                    >
+                      <Popover.Panel className="absolute right-0 z-50 mt-2 w-80 origin-top-right">
+                        <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                          <div className="relative bg-white dark:bg-gray-800 p-6">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-200">
+                                  {session?.user?.image ? (
+                                    <Image
+                                      src={session.user.image}
+                                      alt="Profile"
+                                      width={64}
+                                      height={64}
+                                      className="object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+                                      <span className="text-2xl text-purple-500">
+                                        {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                                          "?"}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
+                                  {localStorageUser?.fullName || "User"}
+                                </h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                  {localStorageUser?.email}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                              <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg
+            text-red-600 hover:bg-red-50 dark:text-red-400 
+            dark:hover:bg-red-900/20 transition-colors duration-150"
+                              >
+                                <FaSignOutAlt className="w-5 h-5" />
+                                <span className="text-sm font-medium">
+                                  Sign Out
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </Popover.Panel>
+                    </Transition>
+                  </Popover>
+                </>
+              )}
             </div>
           </div>
         </header>
@@ -699,10 +961,10 @@ export default function ChatPage() {
         </div>
       </div>
       <NotificationDialog
-          isOpen={isNotificationOpen}
-          onClose={() => setIsNotificationOpen(false)}
-          notifications={notifications}
-        />
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        notifications={notifications}
+      />
     </div>
   );
 }

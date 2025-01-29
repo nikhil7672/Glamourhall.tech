@@ -24,18 +24,19 @@ export async function POST(request: Request) {
       .eq("email", email)
       .single();
 
-    if (existingUserError) {
-      return NextResponse.json(
-        { error: "An error occurred while checking for existing user" },
-        { status: 500 }
-      );
-    }
-
-    if (existingUser) {
-      return NextResponse.json({ exists: true }, { status: 200 });
-    } else {
-      return NextResponse.json({ exists: false }, { status: 200 });
-    }
+      if (existingUser) {
+        return NextResponse.json({ 
+          exists: true, 
+          user: {
+            id: existingUser.id,
+            email: existingUser.email,
+            fullName: existingUser.full_name,
+            provider: existingUser.provider
+          }
+        }, { status: 200 });
+      } else {
+        return NextResponse.json({ exists: false }, { status: 200 });
+      }
   } catch (error) {
     console.error("Error checking for existing user:", error);
     return NextResponse.json(
