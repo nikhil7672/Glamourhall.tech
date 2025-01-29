@@ -47,7 +47,7 @@ export default function ChatPage() {
   const pathname = usePathname();
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [hasStartedChat, setHasStartedChat] = useState(false);
-  const [localStorageUser, setLocalStorageUser] = useState<string | null>(null);
+  const [localStorageUser, setLocalStorageUser] = useState<any>(null);
   const initialPrompts = [
     { icon: "💃", text: "Help me style an outfit for a wedding" },
     { icon: "🎨", text: "What colors are trending this season?" },
@@ -474,11 +474,16 @@ export default function ChatPage() {
   }, [isDesktop]);
 
   useEffect(() => {
-    checkUser();
-  }, [session]);
+    if (session?.user?.email) {
+      checkUser();
+    }
+  }, [session?.user?.email]);
 
   useEffect(() => {
-    fetchUserConversations();
+    if (localStorageUser?.id) {
+      fetchUserConversations();
+    }
+
   }, [localStorageUser]);
 
   useEffect(() => {
