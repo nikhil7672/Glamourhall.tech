@@ -260,7 +260,6 @@ export default function ChatPage() {
       const formData = new FormData();
       if (userInput.trim()) {
         formData.append("text", textPrompt);
-
       }
 
       uploadedImagePaths.forEach((path: any) => {
@@ -487,6 +486,13 @@ export default function ChatPage() {
       loadConversation(activeConversationId);
     }
   }, [activeConversationId]);
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      setLocalStorageUser(JSON.parse(user));
+    }
+  }, []);
   // Loading State
   if (status === "loading") {
     return (
@@ -529,7 +535,7 @@ export default function ChatPage() {
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <div className="flex items-center gap-4">
               <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
-                GlamBot
+                Glamourhall
               </span>
             </div>
             <button
@@ -585,7 +591,7 @@ export default function ChatPage() {
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
               </div>
             ) : (
-              conversations.map((conversation) => (
+              conversations.map((conversation: any) => (
                 <div
                   key={conversation.id}
                   className={`group relative px-4 py-3 hover:bg-gray-100 cursor-pointer ${
@@ -689,17 +695,12 @@ export default function ChatPage() {
                             className="object-cover"
                           />
                         ) : (
-                          <svg
-                            className="w-6 h-6 text-gray-400"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                          <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+                            <span className="text-2xl text-purple-500">
+                              {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                                localStorageUser?.full_name?.[0]?.toUpperCase()}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </Popover.Button>
@@ -731,7 +732,7 @@ export default function ChatPage() {
                                     <div className="w-full h-full bg-purple-100 flex items-center justify-center">
                                       <span className="text-2xl text-purple-500">
                                         {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                                          "?"}
+                                          localStorageUser?.full_name?.[0]?.toUpperCase()}
                                       </span>
                                     </div>
                                   )}
@@ -739,7 +740,8 @@ export default function ChatPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
-                                  {localStorageUser?.fullName || "User"}
+                                  {localStorageUser?.fullName ||
+                                    localStorageUser?.full_name}
                                 </h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                                   {localStorageUser?.email}

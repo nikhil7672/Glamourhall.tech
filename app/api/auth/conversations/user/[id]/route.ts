@@ -5,14 +5,14 @@ const supabaseUrl:string = process.env.SUPABASE_URL || '';
 const supabaseAnonKey:string = process.env.SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { userId } = params;
+    const { id } = params;
 
     const { data, error } = await supabase
       .from("conversations")
       .select("*")
-      .eq("user_id", userId);
+      .eq("user_id", id);
 
     if (error) {
       throw error;
