@@ -260,10 +260,14 @@ export default function ChatPage() {
       const formData = new FormData();
       if (userInput.trim()) {
         formData.append("text", textPrompt);
+
       }
+
       uploadedImagePaths.forEach((path: any) => {
         formData.append("imagePaths", path); // Send file paths instead of file objects
       });
+
+      formData.append("messages", JSON.stringify(messages));
 
       const userMessage = {
         type: "user",
@@ -525,7 +529,7 @@ export default function ChatPage() {
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <div className="flex items-center gap-4">
               <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
-                GlamourHall
+                GlamBot
               </span>
             </div>
             <button

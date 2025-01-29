@@ -20,25 +20,26 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const prompt = formData.get("text") as string | null;
     const imagePaths = formData.getAll("imagePaths") as string[];
-
+    const messagesStr = formData.get("messages") as string;
+    const messages = JSON.parse(messagesStr || '[]');
     // Handle text-only fashion queries
     if (prompt && imagePaths.length === 0) {
       return NextResponse.json({ 
-        result: await handleFashionQuery(prompt) 
+        result: await handleFashionQuery(prompt, messagesStr) 
       });
     }
 
     // Handle both image and text analysis
     if (prompt && imagePaths.length > 0) {
       return NextResponse.json({ 
-        result: await analyzeOutfitWithContext(imagePaths, prompt) 
+        result: await analyzeOutfitWithContext(imagePaths, prompt, messagesStr) 
       });
     }
 
     // Handle image-only analysis
     if (imagePaths.length > 0) {
       return NextResponse.json({ 
-        result: await generateStyleAnalysis(imagePaths) 
+        result: await generateStyleAnalysis(imagePaths, messagesStr) 
       });
     }
 
@@ -57,9 +58,12 @@ export async function POST(req: NextRequest) {
 
 async function handleFashionQuery(
   prompt: string, 
+  messagesStr: string,
 ): Promise<string> {
   const fashionPrompt = `
-  Imagine you are a pro fashion assistant so reply to this and here is the prompt ${prompt}
+    Previous conversation:
+  ${messagesStr}./////
+  Now Imagine you are a pro fashion assistant so reply to this and here is the prompt ${prompt}
   `;
 
   const completion = await openai.chat.completions.create({
@@ -74,12 +78,13 @@ async function handleFashionQuery(
 async function analyzeOutfitWithContext(
   imagePaths: string[], 
   prompt: string,
+  messagesStr: string
 ): Promise<string> {
   const results = await Promise.all(
     imagePaths.map(async (imagePath) => {
       try {
         const initialAnalysis = await getOutfitAnalysis(imagePath);
-        return await refineFashionAdvice(initialAnalysis, prompt);
+        return await refineFashionAdvice(initialAnalysis, prompt, messagesStr);
       } catch (error) {
         return "I couldn't analyze this look. Want to try another photo? 📸";
       }
@@ -113,13 +118,15 @@ async function getOutfitAnalysis(imagePath: string): Promise<string> {
 
 async function refineFashionAdvice(
   initialAnalysis: string, 
-  prompt: string
+  prompt: string,
+  messagesStr: string
 ): Promise<string> {
   const refinementPrompt = `
-    Imagine you are a pro fashion assistant:
-    Initial Analysis:
-    ${initialAnalysis}
-
+    Previous conversation:
+  ${messagesStr}////
+    Now Imagine you are a pro fashion assistant:
+    Initial Analysis of Image uploaded by user:
+    ${initialAnalysis}/////
     User Prompt: "${prompt}",
   `;
 
@@ -134,6 +141,7 @@ async function refineFashionAdvice(
 
 async function generateStyleAnalysis(
   imagePaths: string[], 
+  messagesStr: string
 ): Promise<string> {
   const analyses = await Promise.all(
     imagePaths.map(async (imagePath) => {
@@ -141,7 +149,8 @@ async function generateStyleAnalysis(
         const analysis = await getOutfitAnalysis(imagePath);
         const enhancedAdvice = await refineFashionAdvice(
           analysis,
-          ""
+          "",
+          messagesStr
         );
         return enhancedAdvice;
       } catch(error) {
