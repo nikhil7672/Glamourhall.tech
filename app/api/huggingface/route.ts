@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { HfInference } from "@huggingface/inference";
 import OpenAI from "openai";
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+import { createClient } from '@supabase/supabase-js';
 
 interface StylePreferences {
   styleType?: string;
@@ -14,32 +15,66 @@ const openai = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY
 });
 
+const supabaseUrl:string = process.env.SUPABASE_URL || '';
+const supabaseAnonKey:string = process.env.SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const prompt = formData.get("text") as string | null;
     const imagePaths = formData.getAll("imagePaths") as string[];
-    const messagesStr = formData.get("messages") as string;
-    const messages = JSON.parse(messagesStr || '[]');
+    const conversationId = formData.get("conversationId") as string;
+    const userId = formData.get("userId") as string;
+
+    let conversationContext = "";
+    let preferences = ''
+    if (conversationId) {
+      const { data: conversation } = await supabase
+        .from('conversations')
+        .select('messages')
+        .eq('id', conversationId)
+        .single();
+      
+      if (conversation?.messages) {
+        conversationContext = JSON.stringify(conversation.messages);
+      }
+    }
+    if (userId) {
+      const { data: user_preferences } = await supabase
+        .from('user_preferences')
+        .select('preferences')
+        .eq('user_id', userId)
+        .single();
+      
+      if (user_preferences?.preferences) {
+        preferences = JSON.stringify(user_preferences.preferences);
+      }
+    }
+    const messages = JSON.parse(conversationContext || '[]');
+    
+    // Take only last 10 messages to reduce processing time
+    const finalHistoryContext = messages.slice(-5)
+    .map(msg => `${msg.type}: ${msg.content.slice(0, 100)}`)
+    .join('\n');
     // Handle text-only fashion queries
     if (prompt && imagePaths.length === 0) {
       return NextResponse.json({ 
-        result: await handleFashionQuery(prompt, messagesStr) 
+        result: await handleFashionQuery(prompt, finalHistoryContext, preferences) 
       });
     }
 
     // Handle both image and text analysis
     if (prompt && imagePaths.length > 0) {
       return NextResponse.json({ 
-        result: await analyzeOutfitWithContext(imagePaths, prompt, messagesStr) 
+        result: await analyzeOutfitWithContext(imagePaths, prompt, finalHistoryContext, preferences) 
       });
     }
 
     // Handle image-only analysis
     if (imagePaths.length > 0) {
       return NextResponse.json({ 
-        result: await generateStyleAnalysis(imagePaths, messagesStr) 
+        result: await generateStyleAnalysis(imagePaths, finalHistoryContext, preferences) 
       });
     }
 
@@ -59,17 +94,26 @@ export async function POST(req: NextRequest) {
 async function handleFashionQuery(
   prompt: string, 
   messagesStr: string,
+  preferences: string,
 ): Promise<string> {
   const fashionPrompt = `
-    Previous conversation:
-  ${messagesStr}./////
-  Now Imagine you are a pro fashion assistant so reply to this and here is the prompt ${prompt}
+ Now Imagine you are a pro fashion assistant so reply to this and here is the prompt ${prompt}
+ User preferences:
+ ${preferences}
+  dont show color code name it,
+Previous conversation Context:
+  ${messagesStr}.
   `;
 
   const completion = await openai.chat.completions.create({
     model: "deepseek-chat",
-    messages: [{ role: "user", content: fashionPrompt }],
-    max_tokens: 500,
+    messages: [
+      {
+        role: "user",
+        content: fashionPrompt
+      }
+    ],
+    max_tokens: 500
   });
 
   return completion.choices[0].message.content || "No style advice available.";
@@ -78,13 +122,14 @@ async function handleFashionQuery(
 async function analyzeOutfitWithContext(
   imagePaths: string[], 
   prompt: string,
-  messagesStr: string
+  messagesStr: string,
+  preferences: string
 ): Promise<string> {
   const results = await Promise.all(
     imagePaths.map(async (imagePath) => {
       try {
         const initialAnalysis = await getOutfitAnalysis(imagePath);
-        return await refineFashionAdvice(initialAnalysis, prompt, messagesStr);
+        return await refineFashionAdvice(initialAnalysis, prompt, messagesStr, preferences);
       } catch (error) {
         return "I couldn't analyze this look. Want to try another photo? 📸";
       }
@@ -119,7 +164,8 @@ async function getOutfitAnalysis(imagePath: string): Promise<string> {
 async function refineFashionAdvice(
   initialAnalysis: string, 
   prompt: string,
-  messagesStr: string
+  messagesStr: string,
+  preferences: string
 ): Promise<string> {
   const refinementPrompt = `
     Previous conversation:
@@ -128,6 +174,8 @@ async function refineFashionAdvice(
     Initial Analysis of Image uploaded by user:
     ${initialAnalysis}/////
     User Prompt: "${prompt}",
+     User preferences:
+ ${preferences}, dont show color code name it
   `;
 
   const completion = await openai.chat.completions.create({
@@ -162,4 +210,5 @@ async function generateStyleAnalysis(
 
   return analyses.join('\n\n');
 }
+
 

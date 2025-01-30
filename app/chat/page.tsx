@@ -1,7 +1,7 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -27,6 +27,7 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { NotificationDialog } from "@/components/notificationDialog";
 import { RiChatNewFill } from "react-icons/ri";
+import { StylePreferenceStepper } from "@/components/StylePreferenceStepper";
 
 interface Message {
   type: "user" | "ai";
@@ -44,7 +45,8 @@ interface MenuItem {
 export default function ChatPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const conversationId = searchParams.get("id");
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [localStorageUser, setLocalStorageUser] = useState<any>(null);
@@ -116,6 +118,7 @@ export default function ChatPage() {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
+  const [hasPreferences, setHasPreferences] = useState<boolean | null>(true);
 
   // Menu Configuration
   const menuItems: MenuItem[] = [
@@ -265,8 +268,12 @@ export default function ChatPage() {
       uploadedImagePaths.forEach((path: any) => {
         formData.append("imagePaths", path); // Send file paths instead of file objects
       });
-
-      formData.append("messages", JSON.stringify(messages?.slice(-5)));
+      if (conversationId) {
+        formData.append("conversationId", conversationId);
+      }
+      if (localStorageUser) {
+        formData.append("userId", localStorageUser?.id);
+      }
 
       const userMessage = {
         type: "user",
@@ -404,6 +411,7 @@ export default function ChatPage() {
             localStorage.setItem("user", JSON.stringify(userData.user));
             sessionStorage.setItem("user", JSON.stringify(userData.user));
             setLocalStorageUser(userData.user);
+            checkUserPreferences(userData.user.id);
           } else {
             console.error("Failed to create user");
           }
@@ -411,6 +419,7 @@ export default function ChatPage() {
           localStorage.setItem("user", JSON.stringify(data.user));
           sessionStorage.setItem("user", JSON.stringify(data.user));
           setLocalStorageUser(data.user);
+          checkUserPreferences(data.user.id);
         }
       }
     }
@@ -440,6 +449,7 @@ export default function ChatPage() {
     setImagePreviews([]);
     setImageFiles([]);
     setHasStartedChat(false);
+    router.push("/chat", { scroll: false });
   };
 
   // Load specific chat
@@ -452,8 +462,42 @@ export default function ChatPage() {
       setActiveConversationId(conversationId);
       setMessages(data.messages);
       setHasStartedChat(true);
+      router.push(`/chat?id=${conversationId}`, { scroll: false });
     } catch (error) {
       console.error("Error loading conversation:", error);
+    }
+  };
+
+  const handleConversationClick = (conversationId: string) => {
+    loadConversation(conversationId);
+    if (!isDesktop) {
+      setIsMobileSidebarOpen(false);
+    }
+  };
+
+  const checkUserPreferences = async (userId: any) => {
+    try {
+      const response = await fetch(`/api/preferences?userId=${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch preferences");
+      }
+
+      const data = await response.json();
+      const hasExistingPreferences = data.preferences && typeof data.preferences === 'object' && Object.keys(data.preferences).length > 0;
+
+      setHasPreferences(hasExistingPreferences);
+
+      return hasExistingPreferences;
+    } catch (error) {
+      console.error("Error checking preferences:", error);
+      setHasPreferences(false)
+      return false;
     }
   };
   // Authentication Effect
@@ -470,6 +514,14 @@ export default function ChatPage() {
   }, [status]);
 
   useEffect(() => {
+    if (conversationId && conversationId !== activeConversationId) {
+      loadConversation(conversationId);
+    } else if (!conversationId && messages.length === 0) {
+      startNewChat();
+    }
+  }, [conversationId]);
+
+  useEffect(() => {
     setIsMobileSidebarOpen(isDesktop);
   }, [isDesktop]);
 
@@ -483,7 +535,6 @@ export default function ChatPage() {
     if (localStorageUser?.id) {
       fetchUserConversations();
     }
-
   }, [localStorageUser]);
 
   useEffect(() => {
@@ -496,6 +547,7 @@ export default function ChatPage() {
     const user = localStorage.getItem("user");
     if (user) {
       setLocalStorageUser(JSON.parse(user));
+      checkUserPreferences(user?.id);
     }
   }, []);
   // Loading State
@@ -605,7 +657,7 @@ export default function ChatPage() {
                       : ""
                   }`}
                   onClick={() => {
-                    loadConversation(conversation.id);
+                    handleConversationClick(conversation.id);
                     if (!isDesktop) {
                       setIsMobileSidebarOpen(false);
                     }
@@ -976,6 +1028,15 @@ export default function ChatPage() {
         onClose={() => setIsNotificationOpen(false)}
         notifications={notifications}
       />
+      {!hasPreferences && <StylePreferenceStepper
+        isOpen={!hasPreferences}
+        onClose={() => setHasPreferences(true)}
+        onSubmit={async (preferences: any) => {
+          setHasPreferences(true);
+          // Additional logic here if needed
+        }}
+        userId={localStorageUser?.id}
+      /> }
     </div>
   );
 }
