@@ -19,6 +19,7 @@ import {
   FaComments,
   FaCommentDots,
   FaPlus,
+  FaCogs,
 } from "react-icons/fa";
 import { BsBellFill } from "react-icons/bs";
 import { useMediaQuery } from "@/utils/useMediaQuery";
@@ -119,7 +120,13 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
   const [hasPreferences, setHasPreferences] = useState<boolean | null>(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  // Function to open the Preferences dialog
+  const viewPreferenceDialog = () => router.push('/preferences');
+  
+  // Function to close the Preferences dialog
+  const closeDialog = () => setIsDialogOpen(false);
   // Menu Configuration
   const menuItems: MenuItem[] = [
     { icon: FaCommentDots, label: "Start New Chat", href: "/new-chat" },
@@ -496,7 +503,6 @@ export default function ChatPage() {
       return hasExistingPreferences;
     } catch (error) {
       console.error("Error checking preferences:", error);
-      setHasPreferences(false)
       return false;
     }
   };
@@ -738,92 +744,103 @@ export default function ChatPage() {
                   </div>
 
                   <Popover className="relative">
-                    <Popover.Button className="focus:outline-none">
-                      <div
-                        className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 
-      transition-all duration-200 flex items-center justify-center bg-gray-100"
-                      >
-                        {session?.user?.image ? (
-                          <Image
-                            src={session.user.image}
-                            alt="Profile Picture"
-                            width={40}
-                            height={40}
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                            <span className="text-2xl text-purple-500">
-                              {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                                localStorageUser?.full_name?.[0]?.toUpperCase()}
-                            </span>
-                          </div>
-                        )}
+      <Popover.Button className="focus:outline-none">
+        <div
+          className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 
+        transition-all duration-200 flex items-center justify-center bg-gray-100"
+        >
+          {session?.user?.image ? (
+            <Image
+              src={session.user.image}
+              alt="Profile Picture"
+              width={40}
+              height={40}
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+              <span className="text-2xl text-purple-500">
+                {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                  localStorageUser?.full_name?.[0]?.toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
+      </Popover.Button>
+
+      <Transition
+        as={Fragment}
+        enter="transition ease-out duration-200"
+        enterFrom="opacity-0 translate-y-1"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition ease-in duration-150"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 translate-y-1"
+      >
+        <Popover.Panel className="absolute right-0 z-50 mt-2 w-80 origin-top-right">
+          <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+            <div className="relative bg-white dark:bg-gray-800 p-6">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-200">
+                    {session?.user?.image ? (
+                      <Image
+                        src={session.user.image}
+                        alt="Profile"
+                        width={64}
+                        height={64}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+                        <span className="text-2xl text-purple-500">
+                          {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                            localStorageUser?.full_name?.[0]?.toUpperCase()}
+                        </span>
                       </div>
-                    </Popover.Button>
+                    )}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
+                    {localStorageUser?.fullName || localStorageUser?.full_name}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    {localStorageUser?.email}
+                  </p>
+                </div>
+              </div>
 
-                    <Transition
-                      as={Fragment}
-                      enter="transition ease-out duration-200"
-                      enterFrom="opacity-0 translate-y-1"
-                      enterTo="opacity-100 translate-y-0"
-                      leave="transition ease-in duration-150"
-                      leaveFrom="opacity-100 translate-y-0"
-                      leaveTo="opacity-0 translate-y-1"
-                    >
-                      <Popover.Panel className="absolute right-0 z-50 mt-2 w-80 origin-top-right">
-                        <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                          <div className="relative bg-white dark:bg-gray-800 p-6">
-                            <div className="flex items-start gap-4">
-                              <div className="flex-shrink-0">
-                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-200">
-                                  {session?.user?.image ? (
-                                    <Image
-                                      src={session.user.image}
-                                      alt="Profile"
-                                      width={64}
-                                      height={64}
-                                      className="object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                                      <span className="text-2xl text-purple-500">
-                                        {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                                          localStorageUser?.full_name?.[0]?.toUpperCase()}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
-                                  {localStorageUser?.fullName ||
-                                    localStorageUser?.full_name}
-                                </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                                  {localStorageUser?.email}
-                                </p>
-                              </div>
-                            </div>
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                  text-red-600 hover:bg-red-50 dark:text-red-400 
+                  dark:hover:bg-red-900/20 transition-colors duration-150"
+                >
+                  <FaSignOutAlt className="w-5 h-5" />
+                  <span className="text-sm font-medium">Sign Out</span>
+                </button>
 
-                            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                              <button
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg
-            text-red-600 hover:bg-red-50 dark:text-red-400 
-            dark:hover:bg-red-900/20 transition-colors duration-150"
-                              >
-                                <FaSignOutAlt className="w-5 h-5" />
-                                <span className="text-sm font-medium">
-                                  Sign Out
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </Popover.Panel>
-                    </Transition>
-                  </Popover>
+              <button
+  onClick={viewPreferenceDialog}
+  className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-lg 
+            text-purple-600 hover:bg-purple-50 dark:text-purple-400 
+            dark:hover:bg-blue-900/20 transition-colors duration-150"
+>
+  <FaCogs className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+  <span className="text-sm font-medium">Preferences</span>
+</button>
+
+              </div>
+            </div>
+          </div>
+        </Popover.Panel>
+      </Transition>
+
+      {/* Dialog for Preferences */}
+ 
+    </Popover>
                 </>
               )}
             </div>

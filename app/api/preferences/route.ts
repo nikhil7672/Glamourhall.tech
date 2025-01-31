@@ -81,3 +81,41 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PATCH preferences
+export async function PATCH(request: NextRequest) {
+  try {
+    const { userId, preferences } = await request.json();
+
+    if (!userId || !preferences) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from("user_preferences")
+      .update({
+        preferences,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    if (!data) {
+      return NextResponse.json(
+        { error: "Preferences not found for the given userId" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(data);
+
+  } catch (error) {
+    console.error("Error updating preferences:", error);
+    return NextResponse.json(
+      { error: "Failed to update preferences" },
+      { status: 500 }
+    );
+  }
+}
