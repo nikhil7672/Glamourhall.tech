@@ -90,7 +90,7 @@ export const NotificationDialog: React.FC<NotificationDialogProps> = ({
             <div className="px-4 py-3 border-t text-center">
               <Link
                 href="/notifications"
-                className="text-blue-600 hover:underline"
+                className="text-purple-600 hover:underline"
               >
                 View all notifications
               </Link>

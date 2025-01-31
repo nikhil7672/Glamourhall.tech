@@ -241,135 +241,155 @@ export function StylePreferenceStepper({
   const currentQuestion = steps[currentStep];
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={() => {}}>
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-sm bg-white rounded-xl p-6 shadow-xl">
-            <div className="mb-6">
-              <div className="h-2 w-full bg-gray-200 rounded-full">
-                <motion.div
-                  className="h-full bg-purple-500 rounded-full"
-                  animate={{
-                    width: `${((currentStep + 1) / steps.length) * 100}%`,
-                  }}
-                />
-              </div>
+<Transition appear show={isOpen} as={Fragment}>
+  <Dialog as="div" className="relative z-50" onClose={() => {}}>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm">
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <Dialog.Panel className="w-full max-w-sm bg-white rounded-2xl p-8 shadow-2xl transform transition-all">
+          {/* Progress bar */}
+          <div className="mb-8">
+            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-purple-600 rounded-full"
+                animate={{
+                  width: `${((currentStep + 1) / steps.length) * 100}%`,
+                }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              />
             </div>
+            <div className="mt-2 text-right text-sm text-gray-500">
+              Step {currentStep + 1} of {steps.length}
+            </div>
+          </div>
 
-            <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
-              {currentQuestion?.question}
-            </Dialog.Title>
-            <AnimatePresence mode="wait">
-  <motion.div
-    key={currentStep}
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-  >
-    {currentQuestion?.isCustomInput ? (
-  <div>
-    {currentQuestion.id === "fashion_icon" ? (
-      <input
-        type="text"
-        className="w-full h-10 border rounded-md px-3"
-        placeholder="Enter your fashion icon (e.g., David Beckham)"
-        value={preferences.fashion_icon || ""}
-        onChange={(e) => {
-          setPreferences({
-            ...preferences,
-            fashion_icon: e.target.value,
-          });
-          setError(""); 
-        }}
-      />
-    ) : currentQuestion.id === "age" ? (
-      <input
-        type="number"
-        className="w-full h-10 border rounded-md px-3"
-        placeholder="Enter your age"
-        min="10"
-        max="100"
-        value={preferences.age || ""}
-        onChange={(e) => {
-          setPreferences({
-            ...preferences,
-            age: Number(e.target.value),
-          });
-          setError(""); 
-        }}
-      />
-    ) : (
-      <input
-        type="color"
-        className="w-full h-10 border rounded-md"
-        value={preferences.customColor}
-        onChange={(e) => {
-          setPreferences({
-            ...preferences,
-            customColor: e.target.value,
-          });
-          setError(""); 
-        }}
-      />
-    )}
-  </div>
-) : (
-  <div className="grid gap-2">
-    {currentQuestion?.options?.map((option) => (
-      <button
-        key={option.value}
-        onClick={() => {
-          setPreferences({
-            ...preferences,
-            [currentQuestion.id]: option.value,
-          });
-          setError(""); 
-        }}
-        className={`p-3 border rounded-lg w-full text-left ${
-          preferences[currentQuestion.id] === option.value
-            ? "border-purple-500 bg-purple-50"
-            : "border-gray-200"
-        }`}
-      >
-        {option.label}
-      </button>
-    ))}
-  </div>
-)}
+          {/* Question Title */}
+          <Dialog.Title className="text-xl font-semibold text-gray-900 mb-6">
+            {currentQuestion?.question}
+          </Dialog.Title>
 
-  </motion.div>
-</AnimatePresence>
-
-
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-
-            <div className="mt-4 flex justify-between">
-              <button
-                onClick={handleBack}
-                disabled={currentStep === 0}
-                className="text-sm font-medium text-purple-900"
-              >
-                Back
-              </button>
-              {currentStep === steps.length - 1 ? (
-                <button
-                  onClick={handleSubmit}
-                  className="px-4 py-2 bg-purple-500 text-white rounded-lg"
-                >
-                  Complete
-                </button>
+          {/* Content with Animation */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {currentQuestion?.isCustomInput ? (
+                <div className="space-y-4">
+                  {currentQuestion.id === "fashion_icon" ? (
+                    <input
+                      type="text"
+                      className="w-full h-12 border-2 border-gray-200 rounded-xl px-4 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none"
+                      placeholder="Enter your fashion icon (e.g., David Beckham)"
+                      value={preferences.fashion_icon || ""}
+                      onChange={(e) => {
+                        setPreferences({
+                          ...preferences,
+                          fashion_icon: e.target.value,
+                        });
+                        setError("");
+                      }}
+                    />
+                  ) : currentQuestion.id === "age" ? (
+                    <input
+                      type="number"
+                      className="w-full h-12 border-2 border-gray-200 rounded-xl px-4 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none"
+                      placeholder="Enter your age"
+                      min="10"
+                      max="100"
+                      value={preferences.age || ""}
+                      onChange={(e) => {
+                        setPreferences({
+                          ...preferences,
+                          age: Number(e.target.value),
+                        });
+                        setError("");
+                      }}
+                    />
+                  ) : (
+                    <input
+                      type="color"
+                      className="w-full h-12 border-2 border-gray-200 rounded-xl cursor-pointer"
+                      value={preferences.customColor}
+                      onChange={(e) => {
+                        setPreferences({
+                          ...preferences,
+                          customColor: e.target.value,
+                        });
+                        setError("");
+                      }}
+                    />
+                  )}
+                </div>
               ) : (
-                <button
-                  onClick={handleNext}
-                  className="px-4 py-2 bg-purple-500 text-white rounded-lg"
-                >
-                  Next
-                </button>
+                <div className="grid gap-3">
+                  {currentQuestion?.options?.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setPreferences({
+                          ...preferences,
+                          [currentQuestion.id]: option.value,
+                        });
+                        setError("");
+                      }}
+                      className={`p-4 border-2 rounded-xl w-full text-left hover:bg-purple-50 transition-all ${
+                        preferences[currentQuestion.id] === option.value
+                          ? "border-purple-500 bg-purple-50 shadow-purple-100 shadow-inner"
+                          : "border-gray-200 hover:border-purple-200"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               )}
-            </div>
-          </Dialog.Panel>
-        </div>
-      </Dialog>
-    </Transition>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Error Message */}
+          {error && (
+            <p className="text-red-500 text-sm mt-4 bg-red-50 p-3 rounded-lg">
+              {error}
+            </p>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="mt-8 flex justify-between items-center pt-4 border-t border-gray-100">
+            <button
+              onClick={handleBack}
+              disabled={currentStep === 0}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all
+                ${currentStep === 0
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-purple-600 hover:bg-purple-50"
+                }`}
+            >
+              Back
+            </button>
+            
+            {currentStep === steps.length - 1 ? (
+              <button
+                onClick={handleSubmit}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-all"
+              >
+                Complete
+              </button>
+            ) : (
+              <button
+                onClick={handleNext}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-all"
+              >
+                Next
+              </button>
+            )}
+          </div>
+        </Dialog.Panel>
+      </div>
+    </div>
+  </Dialog>
+</Transition>
   );
 }

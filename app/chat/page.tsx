@@ -61,6 +61,7 @@ export default function ChatPage() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
   const [notificationCount, setNotificationCount] = useState(4);
+  const [fullLoading, setFullLoading] = useState(false)
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
@@ -72,46 +73,15 @@ export default function ChatPage() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isLoadingChats, setIsLoadingChats] = useState(false);
   const [notifications] = useState([
-    {
-      id: "1",
-      title: "New Style Recommendation",
-      message: "Check out the latest fashion trends we picked for you!",
-      timestamp: new Date(),
-      read: false,
-      type: "update" as const,
-    },
-    {
-      id: "2",
-      title: "Outfit Analysis Complete",
-      message: "Your recent outfit analysis is ready to view.",
-      timestamp: new Date(Date.now() - 3600000),
-      read: true,
-      type: "alert" as const,
-    },
-    {
-      id: "3",
-      title: "New Message",
-      message: "Your stylist has sent you a new message.",
-      timestamp: new Date(Date.now() - 7200000),
-      read: false,
-      type: "message" as const,
-    },
-    {
-      id: "4",
-      title: "Trending Colors",
-      message: "Spring color trends are now available!",
-      timestamp: new Date(Date.now() - 86400000),
-      read: false,
-      type: "update" as const,
-    },
-    {
-      id: "5",
-      title: "Style Match Found",
-      message: "We found a perfect match for your style preferences.",
-      timestamp: new Date(Date.now() - 172800000),
-      read: true,
-      type: "alert" as const,
-    },
+    // {
+    //   id: "1",
+    //   title: "New Style Recommendation",
+    //   message: "Check out the latest fashion trends we picked for you!",
+    //   timestamp: new Date(),
+    //   read: false,
+    //   type: "update" as const,
+    // },
+  
   ]);
 
   const [conversations, setConversations] = useState([]);
@@ -384,53 +354,64 @@ export default function ChatPage() {
   };
 
   const checkUser = async () => {
-    if (session?.user?.email) {
-      const response = await fetch("/api/auth/user-exists", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: session.user.email,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (!data.exists) {
-          // Create new user using register endpoint
-          const registerResponse = await fetch("/api/auth/register", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: session.user.email,
-              fullName: session.user.name || "",
-              password: "", // Empty for Google users
-              provider: "google",
-            }),
-          });
-
-          if (registerResponse.ok) {
-            const userData = await registerResponse.json();
-            // Store user data in storage
-            localStorage.setItem("user", JSON.stringify(userData.user));
-            sessionStorage.setItem("user", JSON.stringify(userData.user));
-            setLocalStorageUser(userData.user);
-            checkUserPreferences(userData.user.id);
+    setFullLoading(true); // Start the loading indicator
+  
+    try {
+      if (session?.user?.email) {
+        const response = await fetch("/api/auth/user-exists", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: session.user.email,
+          }),
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          if (!data.exists) {
+            // Create new user using register endpoint
+            const registerResponse = await fetch("/api/auth/register", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: session.user.email,
+                fullName: session.user.name || "",
+                password: "", // Empty for Google users
+                provider: "google",
+              }),
+            });
+  
+            if (registerResponse.ok) {
+              const userData = await registerResponse.json();
+              // Store user data in storage
+              localStorage.setItem("user", JSON.stringify(userData.user));
+              sessionStorage.setItem("user", JSON.stringify(userData.user));
+              setLocalStorageUser(userData.user);
+              checkUserPreferences(userData.user.id);
+            } else {
+              console.error("Failed to create user");
+            }
           } else {
-            console.error("Failed to create user");
+            localStorage.setItem("user", JSON.stringify(data.user));
+            sessionStorage.setItem("user", JSON.stringify(data.user));
+            setLocalStorageUser(data.user);
+            checkUserPreferences(data.user.id);
           }
         } else {
-          localStorage.setItem("user", JSON.stringify(data.user));
-          sessionStorage.setItem("user", JSON.stringify(data.user));
-          setLocalStorageUser(data.user);
-          checkUserPreferences(data.user.id);
+          console.error("Error checking user existence");
         }
       }
+    } catch (error) {
+      console.error("Error in checkUser:", error);
+    } finally {
+      setFullLoading(false); // Stop the loading indicator once the process is done
     }
   };
+  
 
   const fetchUserConversations = async () => {
     try {
@@ -557,7 +538,7 @@ export default function ChatPage() {
     }
   }, []);
   // Loading State
-  if (status === "loading") {
+  if (status === "loading" || fullLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
