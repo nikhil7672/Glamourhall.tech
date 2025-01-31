@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FcIdea } from "react-icons/fc";
 import { Button } from "@/components/ui/button";
-import { Facebook, Twitter, Instagram, Linkedin, LightbulbIcon } from "lucide-react";
+import { Facebook, Twitter, Instagram, Linkedin, LightbulbIcon, DollarSign, Tag } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -181,7 +181,7 @@ export function LandingPageComponent() {
         Testimonials
       </Link>
       <Link
-        href="#pricing"
+        href="/pricing"
         className={`block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700 ${
           mobile ? "text-lg" : ""
         }`}
@@ -282,6 +282,14 @@ export function LandingPageComponent() {
                         className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
                       >
                         <Star className="h-5 w-5 mr-2" /> Features
+                      </Link>
+                      <Link
+                        href="/pricing" // Updated href for Pricing
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center text-lg font-medium text-white hover:text-yellow-300 transition-colors duration-200"
+                      >
+                        <Tag className="h-5 w-5 mr-2" />
+                        Pricing
                       </Link>
                       <Link
                         href="/auth/login"
@@ -427,22 +435,22 @@ export function LandingPageComponent() {
                   {[
                     {
                       icon: Zap,
-                      title: "Instant Feedback",
+                      title: "Style Suggestions",
                       description:
-                        "Get real-time fashion advice tailored just for you.",
-                    },
+                        "Receive personalized outfit recommendations based on your preferences and the latest trends.",
+                    },                    
                     {
                       icon: BookOpen,
-                      title: "Style Education",
+                      title: "Personalized Tips",
                       description:
-                        "Learn about fashion trends and how to style yourself better.",
-                    },
+                        "Get expert tips on how to elevate your style based on your wardrobe and preferences."
+                    },                    
                     {
                       icon: Users,
-                      title: "Community",
+                      title: "Fashion Collaboration",
                       description:
-                        "Join a community of fashion enthusiasts and share your style.",
-                    },
+                        "Collaborate with our AI to create outfits and refine your personal style."
+                    },                    
                     {
                       icon: Camera,
                       title: "Visual Analysis",
@@ -451,10 +459,10 @@ export function LandingPageComponent() {
                     },
                     {
                       icon: Settings,
-                      title: "Customization",
+                      title: "Manage Preferences",
                       description:
-                        "Personalize your experience based on your preferences.",
-                    },
+                        "Easily add, edit, and manage your style preferences for a more tailored experience."
+                    },                    
                     {
                       icon: HelpCircle,
                       title: "24/7 Support",
@@ -508,7 +516,7 @@ export function LandingPageComponent() {
                         their best, no matter the occasion.
                       </p>
                     </div>
-                    <Button className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-full shadow-md hover:bg-purple-700 transition-colors duration-300 w-fit">
+                    <Button onClick={()=> router.push('/auth/login')} className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-full shadow-md hover:bg-purple-700 transition-colors duration-300 w-fit">
                       Learn More About Us
                     </Button>
                   </div>
@@ -608,7 +616,7 @@ export function LandingPageComponent() {
             </section>
 
             {/* Pricing Section */}
-            <section
+            {/* <section
               id="pricing"
               className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900"
             >
@@ -703,7 +711,7 @@ export function LandingPageComponent() {
                   ))}
                 </div>
               </div>
-            </section>
+            </section> */}
 
             {/* CTA Section */}
             <section className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-r from-purple-500 to-blue-500 text-white">
@@ -717,7 +725,7 @@ export function LandingPageComponent() {
                 </p>
                 <Button
                   className="px-8 py-4 bg-white text-purple-600 font-semibold rounded-full shadow-lg hover:bg-gray-100 hover:shadow-xl transition-all duration-300"
-                  onClick={() => setShowChat(true)}
+                  onClick={() => router.push('/auth/login')}
                 >
                   Get Started Now
                 </Button>
@@ -937,44 +945,12 @@ export function LandingPageComponent() {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                Connect
-              </h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="#"
-                    className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-                  >
-                    <Facebook className="mr-2" size={16} /> Facebook
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-                  >
-                    <Twitter className="mr-2" size={16} /> Twitter
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-                  >
-                    <Instagram className="mr-2" size={16} /> Instagram
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-                  >
-                    <Linkedin className="mr-2" size={16} /> LinkedIn
-                  </Link>
-                </li>
-              </ul>
-            </div>
+  <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">AI Fashion Challenge</h3>
+  <p className="text-sm text-gray-600 dark:text-gray-400">
+    Ready for a style challenge? Upload your outfit and let our AI analyze it for suggestions and improvements. See how your fashion choices measure up!
+  </p>
+</div>
+
           </div>
           <div className="mt-12 border-t pt-8">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400">

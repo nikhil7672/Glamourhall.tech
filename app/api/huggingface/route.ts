@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     
     // Take only last 10 messages to reduce processing time
     const finalHistoryContext = messages.slice(-5)
-    .map(msg => `${msg.type}: ${msg.content.slice(0, 100)}`)
+    .map((msg:any) => `${msg.type}: ${msg.content.slice(0, 100)}`)
     .join('\n');
     // Handle text-only fashion queries
     if (prompt && imagePaths.length === 0) {
@@ -189,7 +189,8 @@ async function refineFashionAdvice(
 
 async function generateStyleAnalysis(
   imagePaths: string[], 
-  messagesStr: string
+  messagesStr: string,
+  preferences: string
 ): Promise<string> {
   const analyses = await Promise.all(
     imagePaths.map(async (imagePath) => {
@@ -198,7 +199,8 @@ async function generateStyleAnalysis(
         const enhancedAdvice = await refineFashionAdvice(
           analysis,
           "",
-          messagesStr
+          messagesStr,
+          preferences
         );
         return enhancedAdvice;
       } catch(error) {

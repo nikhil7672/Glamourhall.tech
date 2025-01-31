@@ -92,3 +92,40 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const conversationId = params.id;
+
+    if (!conversationId) {
+      return NextResponse.json(
+        { error: "Conversation ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Delete conversation
+    const { error } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", conversationId);
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json(
+      { message: "Conversation deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting conversation:", error);
+    return NextResponse.json(
+      { error: "Failed to delete conversation" },
+      { status: 500 }
+    );
+  }
+}

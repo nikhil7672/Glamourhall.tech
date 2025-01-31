@@ -20,6 +20,8 @@ import {
   FaCommentDots,
   FaPlus,
   FaCogs,
+  FaRegCreditCard,
+  FaTrash,
 } from "react-icons/fa";
 import { BsBellFill } from "react-icons/bs";
 import { useMediaQuery } from "@/utils/useMediaQuery";
@@ -61,7 +63,7 @@ export default function ChatPage() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
   const [notificationCount, setNotificationCount] = useState(4);
-  const [fullLoading, setFullLoading] = useState(false)
+  const [fullLoading, setFullLoading] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
@@ -81,7 +83,6 @@ export default function ChatPage() {
     //   read: false,
     //   type: "update" as const,
     // },
-  
   ]);
 
   const [conversations, setConversations] = useState([]);
@@ -93,8 +94,8 @@ export default function ChatPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Function to open the Preferences dialog
-  const viewPreferenceDialog = () => router.push('/preferences');
-  
+  const viewPreferenceDialog = () => router.push("/preferences");
+
   // Function to close the Preferences dialog
   const closeDialog = () => setIsDialogOpen(false);
   // Menu Configuration
@@ -355,7 +356,7 @@ export default function ChatPage() {
 
   const checkUser = async () => {
     setFullLoading(true); // Start the loading indicator
-  
+
     try {
       if (session?.user?.email) {
         const response = await fetch("/api/auth/user-exists", {
@@ -367,7 +368,7 @@ export default function ChatPage() {
             email: session.user.email,
           }),
         });
-  
+
         if (response.ok) {
           const data = await response.json();
           if (!data.exists) {
@@ -384,7 +385,7 @@ export default function ChatPage() {
                 provider: "google",
               }),
             });
-  
+
             if (registerResponse.ok) {
               const userData = await registerResponse.json();
               // Store user data in storage
@@ -411,7 +412,214 @@ export default function ChatPage() {
       setFullLoading(false); // Stop the loading indicator once the process is done
     }
   };
-  
+
+  <div className="overflow-y-auto h-[calc(100%-4rem)]">
+    {isLoadingChats ? (
+      <div className="flex justify-center p-4">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
+      </div>
+    ) : (
+      conversations.map((conversation: any) => (
+        <div
+          key={conversation.id}
+          className={`group relative px-4 py-3 hover:bg-gray-100 cursor-pointer ${
+            activeConversationId === conversation.id ? "bg-gray-100" : ""
+          }`}
+          onClick={() => {
+            handleConversationClick(conversation.id);
+            if (!isDesktop) {
+              setIsMobileSidebarOpen(false);
+            }
+          }}
+        >
+          {/* Conversation Title */}
+          <div className="font-medium truncate">{conversation.title}</div>
+          <div className="text-xs text-gray-400">
+            {new Date(conversation.created_at).toLocaleDateString()}
+          </div>
+        </div>
+      ))
+    )}
+  </div>;
+
+  const groupConversationsByTimePeriod = (conversations: any[]) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const last7Days = new Date(today);
+    last7Days.setDate(today.getDate() - 7);
+    const last30Days = new Date(today);
+    last30Days.setDate(today.getDate() - 30);
+
+    const groupedConversations = {
+      today: [],
+      yesterday: [],
+      last7Days: [],
+      last30Days: [],
+      older: [],
+    };
+
+    conversations.forEach((conversation) => {
+      const conversationDate = new Date(conversation.created_at);
+
+      if (conversationDate.toDateString() === today.toDateString()) {
+        groupedConversations.today.push(conversation);
+      } else if (conversationDate.toDateString() === yesterday.toDateString()) {
+        groupedConversations.yesterday.push(conversation);
+      } else if (conversationDate >= last7Days) {
+        groupedConversations.last7Days.push(conversation);
+      } else if (conversationDate >= last30Days) {
+        groupedConversations.last30Days.push(conversation);
+      } else {
+        groupedConversations.older.push(conversation);
+      }
+    });
+
+    return groupedConversations;
+  };
+
+  const truncateTitle = (title: string, wordLimit = 5) => {
+    if (!title) return "Untitled Conversation";
+    const words = title.split(" ");
+    return words.length > wordLimit
+      ? words.slice(0, wordLimit).join(" ") + "..."
+      : title;
+  };
+
+  const handleDeleteConversation = async (
+    conversationId: string,
+    e: React.MouseEvent
+  ) => {
+    // Prevent click from triggering conversation selection
+    e.stopPropagation();
+
+    try {
+      // API call to delete conversation
+      const response = await fetch(
+        `/api/auth/conversations/${conversationId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        fetchUserConversations();
+      } else {
+        console.error("Failed to delete conversation");
+      }
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+    }
+  };
+
+  // Modify the conversations rendering in the sidebar
+  const renderConversationGroup = (title: string, conversations: any[]) => {
+    if (conversations.length === 0) return null;
+
+    return (
+      <div key={title} className="mb-4">
+        {/* Sidebar-style title */}
+        <div className="px-4 py-3 text-sm font-bold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md uppercase tracking-wide flex items-center justify-between">
+          <span>{title}</span>
+          <span className="bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-2 py-0.5 rounded-md text-xs">
+            {conversations.length}
+          </span>
+        </div>
+
+        {/* Conversation List */}
+        {conversations.map((conversation) => (
+          <div
+            key={conversation.id}
+            className={`group relative px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-between rounded-md ${
+              activeConversationId === conversation.id
+                ? "bg-gray-100 dark:bg-gray-800"
+                : ""
+            }`}
+            onClick={() => {
+              handleConversationClick(conversation.id);
+              if (!isDesktop) {
+                setIsMobileSidebarOpen(false);
+              }
+            }}
+          >
+            <div className="flex-1 mr-2 pr-8 relative">
+              {/* Conversation Title */}
+              <div className="flex-1 min-w-0 relative group">
+                {/* Truncated Title */}
+                <div className="font-medium truncate text-gray-900 dark:text-gray-100">
+                  {truncateTitle(conversation.title)}
+                </div>
+
+                {/* Tooltip (Hidden by Default, Shows on Hover) */}
+                <div className="absolute left-0 top-full mt-1 w-max max-w-xs bg-gray-900 text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  {conversation.title}
+                </div>
+              </div>
+
+              {/* Timestamp & Unread Count */}
+              <div className="text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center">
+                <span>
+                  {new Date(conversation.created_at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                {conversation.unreadCount > 0 && (
+                  <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">
+                    {conversation.unreadCount}
+                  </span>
+                )}
+              </div>
+
+              {/* Delete Conversation Button - Absolute Positioning */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent conversation selection
+                  handleDeleteConversation(conversation.id, e);
+                }}
+                className="absolute right-0 top-1/2 -translate-y-1/2 
+                text-gray-400 hover:text-red-500 
+                transition-colors duration-200 
+                md:opacity-0 md:group-hover:opacity-100 
+                dark:text-gray-500 dark:hover:text-red-400"
+              >
+                <FaTrash className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Modify the conversations rendering in the sidebar
+  const renderConversations = () => {
+    if (isLoadingChats) {
+      return (
+        <div className="flex justify-center p-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
+        </div>
+      );
+    }
+
+    const groupedConversations = groupConversationsByTimePeriod(conversations);
+
+    return (
+      <div className="overflow-y-auto h-[calc(100%-4rem)]">
+        {renderConversationGroup("Today", groupedConversations.today)}
+        {renderConversationGroup("Yesterday", groupedConversations.yesterday)}
+        {renderConversationGroup("Last 7 Days", groupedConversations.last7Days)}
+        {renderConversationGroup(
+          "Last 30 Days",
+          groupedConversations.last30Days
+        )}
+        {renderConversationGroup("Older", groupedConversations.older)}
+      </div>
+    );
+  };
 
   const fetchUserConversations = async () => {
     try {
@@ -477,7 +685,10 @@ export default function ChatPage() {
       }
 
       const data = await response.json();
-      const hasExistingPreferences = data.preferences && typeof data.preferences === 'object' && Object.keys(data.preferences).length > 0;
+      const hasExistingPreferences =
+        data.preferences &&
+        typeof data.preferences === "object" &&
+        Object.keys(data.preferences).length > 0;
 
       setHasPreferences(hasExistingPreferences);
 
@@ -589,32 +800,6 @@ export default function ChatPage() {
               <FaTimes size={24} />
             </button>
           </div>
-
-          {/* Navigation Menu */}
-          {/* <nav className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-1">
-              {menuItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={`
-                    flex items-center gap-3 px-4 py-3 rounded-lg
-                    text-gray-700 dark:text-gray-300
-                    hover:bg-gray-100 dark:hover:bg-gray-700
-                    transition-colors duration-150
-                    ${
-                      pathname === item.href
-                        ? "bg-purple-50 dark:bg-gray-700 text-purple-600 dark:text-purple-400"
-                        : ""
-                    }
-                  `}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </Link>
-              ))}
-            </div>
-          </nav> */}
           <button
             onClick={() => {
               startNewChat();
@@ -635,50 +820,44 @@ export default function ChatPage() {
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
               </div>
             ) : (
-              conversations.map((conversation: any) => (
-                <div
-                  key={conversation.id}
-                  className={`group relative px-4 py-3 hover:bg-gray-100 cursor-pointer ${
-                    activeConversationId === conversation.id
-                      ? "bg-gray-100"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    handleConversationClick(conversation.id);
-                    if (!isDesktop) {
-                      setIsMobileSidebarOpen(false);
-                    }
-                  }}
-                >
-                  {/* Conversation Title */}
-                  <div className="font-medium truncate">
-                    {conversation.title}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {new Date(conversation.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              ))
+              // conversations.map((conversation: any) => (
+              //   <div
+              //     key={conversation.id}
+              //     className={`group relative px-4 py-3 hover:bg-gray-100 cursor-pointer ${
+              //       activeConversationId === conversation.id
+              //         ? "bg-gray-100"
+              //         : ""
+              //     }`}
+              //     onClick={() => {
+              //       handleConversationClick(conversation.id);
+              //       if (!isDesktop) {
+              //         setIsMobileSidebarOpen(false);
+              //       }
+              //     }}
+              //   >
+              //     {/* Conversation Title */}
+              //     <div className="font-medium truncate">
+              //       {conversation.title}
+              //     </div>
+              //     <div className="text-xs text-gray-400">
+              //       {new Date(conversation.created_at).toLocaleDateString()}
+              //     </div>
+              //   </div>
+              // ))
+              renderConversations()
             )}
           </div>
-
-          {/* Logout Button */}
-          {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
             <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg
-                text-red-600 hover:bg-red-50 dark:text-red-400 
-                dark:hover:bg-red-900/20 transition-colors duration-150
-                bg-gray-100 dark:bg-gray-700 shadow-md"
+              onClick={() => router.push('/pricing')}
+              className="w-full flex items-center gap-3 px-8 py-4 text-lg bg-gradient-to-r from-purple-400 to-blue-400 text-white font-medium rounded-lg shadow-md hover:shadow-lg hover:brightness-95 transform hover:scale-100 transition-all duration-200 ease-in-out"
             >
-              <FaSignOutAlt className="w-5 h-5" />
-              <span className="text-sm font-medium">Logout</span>
+              <FaRegCreditCard className="mr-3 h-6 w-6 transform transition-transform duration-200 hover:rotate-6" />
+              <span className="text-sm font-medium">Upgrade Plan</span>
             </button>
-          </div> */}
+          </div>
         </div>
       </motion.aside>
-
-      {/* Main Content */}
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen">
         {/* Fixed Header */}
@@ -725,103 +904,106 @@ export default function ChatPage() {
                   </div>
 
                   <Popover className="relative">
-      <Popover.Button className="focus:outline-none">
-        <div
-          className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 
+                    <Popover.Button className="focus:outline-none">
+                      <div
+                        className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 
         transition-all duration-200 flex items-center justify-center bg-gray-100"
-        >
-          {session?.user?.image ? (
-            <Image
-              src={session.user.image}
-              alt="Profile Picture"
-              width={40}
-              height={40}
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-              <span className="text-2xl text-purple-500">
-                {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                  localStorageUser?.full_name?.[0]?.toUpperCase()}
-              </span>
-            </div>
-          )}
-        </div>
-      </Popover.Button>
-
-      <Transition
-        as={Fragment}
-        enter="transition ease-out duration-200"
-        enterFrom="opacity-0 translate-y-1"
-        enterTo="opacity-100 translate-y-0"
-        leave="transition ease-in duration-150"
-        leaveFrom="opacity-100 translate-y-0"
-        leaveTo="opacity-0 translate-y-1"
-      >
-        <Popover.Panel className="absolute right-0 z-50 mt-2 w-80 origin-top-right">
-          <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-            <div className="relative bg-white dark:bg-gray-800 p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-200">
-                    {session?.user?.image ? (
-                      <Image
-                        src={session.user.image}
-                        alt="Profile"
-                        width={64}
-                        height={64}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                        <span className="text-2xl text-purple-500">
-                          {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                            localStorageUser?.full_name?.[0]?.toUpperCase()}
-                        </span>
+                      >
+                        {session?.user?.image ? (
+                          <Image
+                            src={session.user.image}
+                            alt="Profile Picture"
+                            width={40}
+                            height={40}
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+                            <span className="text-2xl text-purple-500">
+                              {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                                localStorageUser?.full_name?.[0]?.toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
-                    {localStorageUser?.fullName || localStorageUser?.full_name}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                    {localStorageUser?.email}
-                  </p>
-                </div>
-              </div>
+                    </Popover.Button>
 
-              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-200"
+                      enterFrom="opacity-0 translate-y-1"
+                      enterTo="opacity-100 translate-y-0"
+                      leave="transition ease-in duration-150"
+                      leaveFrom="opacity-100 translate-y-0"
+                      leaveTo="opacity-0 translate-y-1"
+                    >
+                      <Popover.Panel className="absolute right-0 z-50 mt-2 w-80 origin-top-right">
+                        <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                          <div className="relative bg-white dark:bg-gray-800 p-6">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-200">
+                                  {session?.user?.image ? (
+                                    <Image
+                                      src={session.user.image}
+                                      alt="Profile"
+                                      width={64}
+                                      height={64}
+                                      className="object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+                                      <span className="text-2xl text-purple-500">
+                                        {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                                          localStorageUser?.full_name?.[0]?.toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
+                                  {localStorageUser?.fullName ||
+                                    localStorageUser?.full_name}
+                                </h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                  {localStorageUser?.email}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                              <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg
                   text-red-600 hover:bg-red-50 dark:text-red-400 
                   dark:hover:bg-red-900/20 transition-colors duration-150"
-                >
-                  <FaSignOutAlt className="w-5 h-5" />
-                  <span className="text-sm font-medium">Sign Out</span>
-                </button>
+                              >
+                                <FaSignOutAlt className="w-5 h-5" />
+                                <span className="text-sm font-medium">
+                                  Sign Out
+                                </span>
+                              </button>
 
-              <button
-  onClick={viewPreferenceDialog}
-  className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-lg 
+                              <button
+                                onClick={viewPreferenceDialog}
+                                className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-lg 
             text-purple-600 hover:bg-purple-50 dark:text-purple-400 
             dark:hover:bg-blue-900/20 transition-colors duration-150"
->
-  <FaCogs className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-  <span className="text-sm font-medium">Preferences</span>
-</button>
+                              >
+                                <FaCogs className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                <span className="text-sm font-medium">
+                                  Preferences
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </Popover.Panel>
+                    </Transition>
 
-              </div>
-            </div>
-          </div>
-        </Popover.Panel>
-      </Transition>
-
-      {/* Dialog for Preferences */}
- 
-    </Popover>
+                    {/* Dialog for Preferences */}
+                  </Popover>
                 </>
               )}
             </div>
@@ -1026,15 +1208,17 @@ export default function ChatPage() {
         onClose={() => setIsNotificationOpen(false)}
         notifications={notifications}
       />
-      {!hasPreferences && <StylePreferenceStepper
-        isOpen={!hasPreferences}
-        onClose={() => setHasPreferences(true)}
-        onSubmit={async (preferences: any) => {
-          setHasPreferences(true);
-          // Additional logic here if needed
-        }}
-        userId={localStorageUser?.id}
-      /> }
+      {!hasPreferences && (
+        <StylePreferenceStepper
+          isOpen={!hasPreferences}
+          onClose={() => setHasPreferences(true)}
+          onSubmit={async (preferences: any) => {
+            setHasPreferences(true);
+            // Additional logic here if needed
+          }}
+          userId={localStorageUser?.id}
+        />
+      )}
     </div>
   );
 }
