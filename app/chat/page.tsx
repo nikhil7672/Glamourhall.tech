@@ -847,7 +847,7 @@ export default function ChatPage() {
               renderConversations()
             )}
           </div>
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+          {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
             <button
               onClick={() => router.push('/pricing')}
               className="w-full flex items-center gap-3 px-8 py-4 text-lg bg-gradient-to-r from-purple-400 to-blue-400 text-white font-medium rounded-lg shadow-md hover:shadow-lg hover:brightness-95 transform hover:scale-100 transition-all duration-200 ease-in-out"
@@ -855,7 +855,7 @@ export default function ChatPage() {
               <FaRegCreditCard className="mr-3 h-6 w-6 transform transition-transform duration-200 hover:rotate-6" />
               <span className="text-sm font-medium">Upgrade Plan</span>
             </button>
-          </div>
+          </div> */}
         </div>
       </motion.aside>
       {/* Main Content */}

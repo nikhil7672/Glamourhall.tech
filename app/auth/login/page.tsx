@@ -246,7 +246,7 @@ export default function LoginPage() {
       ) : (
         <>
           <Image src="/google.png" alt="Google" width={16} height={16} />
-          Log in with Google
+          Continue with Google
         </>
       )}
     </Button>

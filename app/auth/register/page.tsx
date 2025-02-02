@@ -277,7 +277,7 @@ export default function RegisterPage() {
                       width={16}
                       height={16}
                     />
-                    Log in with Google
+                    Continue with Google
                   </>
                 )}
               </Button>

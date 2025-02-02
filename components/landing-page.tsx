@@ -180,14 +180,14 @@ export function LandingPageComponent() {
       >
         Testimonials
       </Link>
-      <Link
+      {/* <Link
         href="/pricing"
         className={`block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700 ${
           mobile ? "text-lg" : ""
         }`}
       >
         Pricing
-      </Link>
+      </Link> */}
       {/* <Link
         href="/blogs"
         className={`block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-700 ${
@@ -895,14 +895,14 @@ export function LandingPageComponent() {
                     Features
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     href="#pricing"
                     className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
                   >
                     Pricing
                   </Link>
-                </li>
+                </li> */}
                 {/* <li>
                   <Link
                     href="/blogs"
