@@ -207,6 +207,13 @@ export function LandingPageComponent() {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <Link className="flex items-center" href="/">
+            <Image
+      src="/fashion-wear.png" // Replace with the path to your image
+      alt="Logo" // Provide an alt text for accessibility
+      width={40} // Set the desired width
+      height={40} // Set the desired height
+      className="h-10 w-10" // Optional: set class for styling
+    />
               <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
                 GlamourHall
               </span>

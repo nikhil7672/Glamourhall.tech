@@ -54,12 +54,13 @@ export default function ChatPage() {
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [localStorageUser, setLocalStorageUser] = useState<any>(null);
   const initialPrompts = [
-    { icon: "💃", text: "Help me style an outfit for a wedding" },
-    { icon: "🎨", text: "What colors are trending this season?" },
-    { icon: "💄", text: "Recommend makeup looks for my skin tone" },
-    { icon: "🛍️", text: "Create a capsule wardrobe for me" },
-    { icon: "✨", text: "Give me fashion tips for my body type" },
+    { icon: "👕", text: "Help me style an outfit for a wedding" },
+    { icon: "🌈", text: "What colors are trending this season?" },
+    { icon: "🖼️", text: "Recommend makeup looks for my skin tone" },
+    { icon: "👜", text: "Create a capsule wardrobe for me" },
+    { icon: "📊", text: "Give me fashion tips for my body type" },
   ];
+
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
   const [notificationCount, setNotificationCount] = useState(4);
@@ -789,6 +790,13 @@ export default function ChatPage() {
           {/* Sidebar Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <div className="flex items-center gap-4">
+              <Image
+                src="/fashion-wear.png" // Replace with the path to your image
+                alt="Logo" // Provide an alt text for accessibility
+                width={40} // Set the desired width
+                height={40} // Set the desired height
+                className="h-10 w-10" // Optional: set class for styling
+              />
               <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
                 Glamourhall
               </span>
@@ -800,6 +808,7 @@ export default function ChatPage() {
               <FaTimes size={24} />
             </button>
           </div>
+
           <button
             onClick={() => {
               startNewChat();
@@ -814,48 +823,15 @@ export default function ChatPage() {
           </button>
 
           {/* Conversations List */}
-          <div className="overflow-y-auto h-[calc(100%-4rem)]">
-            {isLoadingChats ? (
-              <div className="flex justify-center p-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
-              </div>
-            ) : (
-              // conversations.map((conversation: any) => (
-              //   <div
-              //     key={conversation.id}
-              //     className={`group relative px-4 py-3 hover:bg-gray-100 cursor-pointer ${
-              //       activeConversationId === conversation.id
-              //         ? "bg-gray-100"
-              //         : ""
-              //     }`}
-              //     onClick={() => {
-              //       handleConversationClick(conversation.id);
-              //       if (!isDesktop) {
-              //         setIsMobileSidebarOpen(false);
-              //       }
-              //     }}
-              //   >
-              //     {/* Conversation Title */}
-              //     <div className="font-medium truncate">
-              //       {conversation.title}
-              //     </div>
-              //     <div className="text-xs text-gray-400">
-              //       {new Date(conversation.created_at).toLocaleDateString()}
-              //     </div>
-              //   </div>
-              // ))
-              renderConversations()
-            )}
-          </div>
-          {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
-            <button
-              onClick={() => router.push('/pricing')}
-              className="w-full flex items-center gap-3 px-8 py-4 text-lg bg-gradient-to-r from-purple-400 to-blue-400 text-white font-medium rounded-lg shadow-md hover:shadow-lg hover:brightness-95 transform hover:scale-100 transition-all duration-200 ease-in-out"
-            >
-              <FaRegCreditCard className="mr-3 h-6 w-6 transform transition-transform duration-200 hover:rotate-6" />
-              <span className="text-sm font-medium">Upgrade Plan</span>
-            </button>
-          </div> */}
+          {/* <div className="overflow-y-auto overflow-x-hidden h-[calc(100%-4rem)]"> */}
+          {isLoadingChats ? (
+            <div className="flex justify-center p-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
+            </div>
+          ) : (
+            renderConversations()
+          )}
+          {/* </div> */}
         </div>
       </motion.aside>
       {/* Main Content */}
@@ -873,7 +849,13 @@ export default function ChatPage() {
                   className="text-gray-600 hover:text-gray-800"
                 />
               </button>
-
+              <Image
+                src="/fashion-wear.png" // Replace with the path to your image
+                alt="Logo" // Provide an alt text for accessibility
+                width={40} // Set the desired width
+                height={40} // Set the desired height
+                className="h-10 w-10" // Optional: set class for styling
+              />
               <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
                 GlamourHall
               </span>
@@ -1023,7 +1005,13 @@ export default function ChatPage() {
               {!hasStartedChat && messages.length <= 1 && (
                 <div className="text-center mb-8">
                   <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 flex items-center justify-center">
-                    <span className="text-white text-3xl">👗</span>
+                    <Image
+                      src="/wedding.png" // Replace with the path to your image
+                      alt="Fashion Icon" // Provide an alt text for accessibility
+                      width={48} // Set the desired width
+                      height={48} // Set the desired height
+                      className="rounded-full" // Ensure the image is rounded
+                    />
                   </div>
                   <h2 className="text-2xl font-bold mb-2">
                     Your Personal Style Guide
@@ -1145,18 +1133,18 @@ export default function ChatPage() {
         </div>
 
         {/* Input Bar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/30 backdrop-blur-md border-t shadow z-10">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/60 backdrop-purple-md border-t shadow z-10">
           <div className="max-w-2xl mx-auto px-4 py-3">
             <form onSubmit={handleSendMessage} className="relative lg:ml-16">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <input
-                    type="text"
-                    placeholder="Ask about fashion, styling, or trends..."
-                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:border-lavender focus:ring focus:ring-lavender transition-colors"
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                  />
+                <input
+  type="text"
+  placeholder="Fashion tips? We've got you covered!"
+  className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+  value={userInput}
+  onChange={(e) => setUserInput(e.target.value)}
+/>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -1169,7 +1157,13 @@ export default function ChatPage() {
                     onClick={() => fileInputRef.current?.click()}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    <FaImage className="h-5 w-5" />
+                    <Image
+                      src="/picture.png" 
+                      alt="Upload Image" 
+                      width={20} 
+                      height={20} 
+                      className="h-5 w-5" 
+                    />
                   </button>
                 </div>
                 <button

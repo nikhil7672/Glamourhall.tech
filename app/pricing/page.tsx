@@ -96,7 +96,7 @@ const PricingPage = () => {
     try {
       const paymentData = {
         txnid: `TXN${Date.now()}${Math.random().toString(36).slice(2)}`,
-        amount: parseFloat(plan.price.replace(/[^0-9.]/g, '')) || 0,
+        amount: "100.00",
         email: "user@example.com", // Replace with actual user email
         product: plan.name,
         firstname: "John", // Replace with actual user name
