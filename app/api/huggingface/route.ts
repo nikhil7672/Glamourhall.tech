@@ -97,12 +97,14 @@ async function handleFashionQuery(
   preferences: string,
 ): Promise<string> {
   const fashionPrompt = `
- Now Imagine you are a pro fashion assistant so reply to this and here is the prompt ${prompt}
+ You are a pro personal fashion assistant of user 
+ User prompt:
+ ${prompt}
  User preferences:
  ${preferences}
-  dont show color code name it,
 Previous conversation Context:
   ${messagesStr}.
+  Give to the point answer to make user satified and also add engaging emojis 
   `;
 
   const completion = await openai.chat.completions.create({
@@ -141,7 +143,7 @@ async function analyzeOutfitWithContext(
 
 async function getOutfitAnalysis(imagePath: string): Promise<string> {
   const analysisPrompt = `
-    Imagine you are a pro fashion assistant so analyze given image
+    You are a pro personal fashion assistant of user, analyze this image
   `;
 
   const analysis = await hf.chatCompletion({
@@ -170,12 +172,12 @@ async function refineFashionAdvice(
   const refinementPrompt = `
     Previous conversation:
   ${messagesStr}////
-    Now Imagine you are a pro fashion assistant:
+    you are a pro fashion assistant:
     Initial Analysis of Image uploaded by user:
     ${initialAnalysis}/////
     User Prompt: "${prompt}",
      User preferences:
- ${preferences}, dont show color code name it
+ ${preferences}, give to the point proper fashion feedback and suggestions with engaging emojis
   `;
 
   const completion = await openai.chat.completions.create({
