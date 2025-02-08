@@ -49,17 +49,15 @@ export async function POST(req: Request) {
       firstname: paymentData.firstname,
       email: paymentData.email,
       phone: paymentData.mobile,
-      surl: `${host}/verify/${txnId}`,
-      furl: `${host}/verify/${txnId}`,
+      surl: `${host}/api/verify/${txnId}`,
+      furl: `${host}/api/verify/${txnId}`,
       hash: hash,
-      curl: `${host}/cancel/${txnId}`, // Optional cancel URL
+      curl: `${host}/api/verify/${txnId}`, // Optional cancel URL
       udf1: '', // Optional user defined fields
       udf2: '',
       udf3: '',
       udf4: '',
       udf5: '',
-      service_provider: 'payu_paisa', // Optional for PayUMoney
-      currency: 'INR'
     };
 
     const response = await payuClient.paymentInitiate(paymentRequest);
