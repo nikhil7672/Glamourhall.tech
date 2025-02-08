@@ -3,54 +3,40 @@ import Link from 'next/link';
 
 // Metadata for SEO
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Glamourhall',
-  description: "Glamourhall's Privacy Policy outlining how we collect, use, and protect your data.",
+  title: 'About Us | Glamourhall',
+  description: "Learn more about Glamourhall, our mission, values, and the team behind our innovative services.",
 };
 
-export default function PrivacyPolicyPage() {
+export default function AboutPage() {
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
-      <p className="text-sm text-gray-500 mb-8">Last updated: February 07, 2025</p>
+      <h1 className="text-4xl font-bold mb-4">About Glamourhall</h1>
+      <p className="text-lg text-gray-700 mb-6">
+        Welcome to <strong>Glamourhall</strong>! We are operated and managed by <strong>AVISEKH GURUNG</strong>. Our focus is on delivering innovative solutions that blend technology and creativity to meet the diverse needs of our clients.
+      </p>
 
-      <p>This Privacy Policy describes Our policies and procedures on the collection, use, and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.</p>
-      <p>We use Your Personal data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy.</p>
+      <h2 className="text-2xl font-semibold mt-6">Our Mission</h2>
+      <p className="mt-2 text-gray-700">
+        Our mission at Glamourhall is to empower individuals and businesses through cutting-edge technology and creative solutions. We strive to deliver products and services that foster growth, innovation, and long-term success.
+      </p>
 
-      <h2 className="text-2xl font-semibold mt-6">Interpretation and Definitions</h2>
-      <h3 className="text-xl font-medium mt-4">Interpretation</h3>
-      <p>The words of which the initial letter is capitalized have meanings defined under the following conditions...</p>
-
-      <h3 className="text-xl font-medium mt-4">Definitions</h3>
-      <p>For the purposes of this Privacy Policy:</p>
-      <ul className="list-disc pl-5 space-y-2">
-        <li><strong>Account:</strong> A unique account created for You to access our Service.</li>
-        <li><strong>Company:</strong> Refers to Glamourhall.</li>
-        <li><strong>Cookies:</strong> Small files placed on Your device by a website.</li>
-        <li><strong>Country:</strong> Refers to West Bengal, India.</li>
-        <li><strong>Device:</strong> Any device that can access the Service.</li>
-        <li><strong>Personal Data:</strong> Information that identifies an individual.</li>
-        <li><strong>Website:</strong> Refers to Glamourhall, accessible from <a href="https://www.glamourhall.tech/" className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">glamourhall.tech</a></li>
+      <h2 className="text-2xl font-semibold mt-6">Our Values</h2>
+      <ul className="list-disc pl-5 space-y-2 mt-2 text-gray-700">
+        <li><strong>Innovation:</strong> We embrace new ideas and technologies to stay ahead in the industry.</li>
+        <li><strong>Integrity:</strong> We uphold honesty and transparency in all our dealings.</li>
+        <li><strong>Customer Focus:</strong> Our clients are at the heart of everything we do.</li>
+        <li><strong>Collaboration:</strong> We believe in the power of teamwork and partnerships to achieve excellence.</li>
       </ul>
 
-      <h2 className="text-2xl font-semibold mt-6">Collecting and Using Your Personal Data</h2>
-      <p>We may collect the following data:</p>
-      <ul className="list-disc pl-5 space-y-2">
-        <li>Email address</li>
-        <li>First and Last Name</li>
-        <li>Usage Data</li>
-      </ul>
+      <h2 className="text-2xl font-semibold mt-6">Meet AVISEKH GURUNG</h2>
+      <p className="mt-2 text-gray-700">
+        AVISEKH GURUNG is the visionary behind Glamourhall, bringing years of experience in technology and creative solutions. His leadership and passion drive the company's commitment to excellence and innovation.
+      </p>
 
-      <h2 className="text-2xl font-semibold mt-6">Children's Privacy</h2>
-      <p>Our Service does not address anyone under the age of 13...</p>
-
-      <h2 className="text-2xl font-semibold mt-6">Changes to This Privacy Policy</h2>
-      <p>We may update Our Privacy Policy from time to time. Changes are effective when posted on this page.</p>
-
-      <h2 className="text-2xl font-semibold mt-6">Contact Us</h2>
-      <p>If you have any questions about this Privacy Policy, You can contact us:</p>
-      <ul className="list-disc pl-5">
-        <li>By visiting this page on our website: <a href="https://www.glamourhall.tech/" className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">glamourhall.tech</a></li>
-      </ul>
+      <h2 className="text-2xl font-semibold mt-6">Contact Information</h2>
+      <p className="mt-2 text-gray-700">
+        For inquiries, support, or collaborations, feel free to reach out to us via our <Link href="/contact" className="text-blue-500 underline">Contact Page</Link>.
+      </p>
 
       <p className="mt-8">
         <Link href="/" className="text-blue-500 underline">← Back to Home</Link>
