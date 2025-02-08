@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { HfInference } from "@huggingface/inference";
-import OpenAI from "openai";
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 import { createClient } from '@supabase/supabase-js';
+import { ChatOpenAI } from "@langchain/openai";
+import { HumanMessage } from "@langchain/core/messages";
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
-interface StylePreferences {
-  styleType?: string;
-  occasion?: string;
-  colorPreferences?: string[];
-  seasonalPreference?: string;
-}
-const openai = new OpenAI({
-  baseURL: 'https://api.deepseek.com',
-  apiKey: process.env.DEEPSEEK_API_KEY
-});
-
-const supabaseUrl:string = process.env.SUPABASE_URL || '';
-const supabaseAnonKey:string = process.env.SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+const openai = new ChatOpenAI({
+  openAIApiKey: process.env.DEEPSEEK_API_KEY,
+  configuration: { baseURL: 'https://api.deepseek.com' },
+  modelName: "deepseek-chat"
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,51 +23,26 @@ export async function POST(req: NextRequest) {
     const conversationId = formData.get("conversationId") as string;
     const userId = formData.get("userId") as string;
 
-    let conversationContext = "";
-    let preferences = ''
-    if (conversationId) {
-      const { data: conversation } = await supabase
-        .from('conversations')
-        .select('messages')
-        .eq('id', conversationId)
-        .single();
-      
-      if (conversation?.messages) {
-        conversationContext = JSON.stringify(conversation.messages);
-      }
-    }
-    if (userId) {
-      const { data: user_preferences } = await supabase
-        .from('user_preferences')
-        .select('preferences')
-        .eq('user_id', userId)
-        .single();
-      
-      if (user_preferences?.preferences) {
-        preferences = JSON.stringify(user_preferences.preferences);
-      }
-    }
+    const conversationContext = await getConversationContext(conversationId);
+    const preferences = await getUserPreferences(userId);
+
     const messages = JSON.parse(conversationContext || '[]');
-    
-    // Take only last 10 messages to reduce processing time
     const finalHistoryContext = messages.slice(-5)
-    .map((msg:any) => `${msg.type}: ${msg.content.slice(0, 100)}`)
-    .join('\n');
-    // Handle text-only fashion queries
+      .map((msg: any) => `${msg.type}: ${msg.content.slice(0, 100)}`)
+      .join('\n');
+
     if (prompt && imagePaths.length === 0) {
       return NextResponse.json({ 
         result: await handleFashionQuery(prompt, finalHistoryContext, preferences) 
       });
     }
 
-    // Handle both image and text analysis
     if (prompt && imagePaths.length > 0) {
       return NextResponse.json({ 
         result: await analyzeOutfitWithContext(imagePaths, prompt, finalHistoryContext, preferences) 
       });
     }
 
-    // Handle image-only analysis
     if (imagePaths.length > 0) {
       return NextResponse.json({ 
         result: await generateStyleAnalysis(imagePaths, finalHistoryContext, preferences) 
@@ -91,11 +62,27 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handleFashionQuery(
-  prompt: string, 
-  messagesStr: string,
-  preferences: string,
-): Promise<string> {
+async function getConversationContext(conversationId: string) {
+  if (!conversationId) return '';
+  const { data: conversation } = await supabase
+    .from('conversations')
+    .select('messages')
+    .eq('id', conversationId)
+    .single();
+  return conversation?.messages ? JSON.stringify(conversation.messages) : '';
+}
+
+async function getUserPreferences(userId: string) {
+  if (!userId) return '';
+  const { data: user_preferences } = await supabase
+    .from('user_preferences')
+    .select('preferences')
+    .eq('user_id', userId)
+    .single();
+  return user_preferences?.preferences ? JSON.stringify(user_preferences.preferences) : '';
+}
+
+async function handleFashionQuery(prompt: string, messagesStr: string, preferences: string): Promise<string> {
   const fashionPrompt = `
  You are a pro personal fashion assistant of user 
  User prompt:
@@ -104,48 +91,29 @@ async function handleFashionQuery(
  ${preferences}
 Previous conversation Context:
   ${messagesStr}.
-  Give to the point answer to make user satified and also add engaging emojis 
+  Give to the point answer to make user satisfied and also add engaging emojis 
   `;
 
-  const completion = await openai.chat.completions.create({
-    model: "deepseek-chat",
-    messages: [
-      {
-        role: "user",
-        content: fashionPrompt
-      }
-    ],
-    max_tokens: 500
-  });
-
-  return completion.choices[0].message.content || "No style advice available.";
+  const response = await openai.call([new HumanMessage(fashionPrompt)]);
+  return response.text || "No style advice available.";
 }
 
-async function analyzeOutfitWithContext(
-  imagePaths: string[], 
-  prompt: string,
-  messagesStr: string,
-  preferences: string
-): Promise<string> {
+async function analyzeOutfitWithContext(imagePaths: string[], prompt: string, messagesStr: string, preferences: string): Promise<string> {
   const results = await Promise.all(
     imagePaths.map(async (imagePath) => {
       try {
         const initialAnalysis = await getOutfitAnalysis(imagePath);
         return await refineFashionAdvice(initialAnalysis, prompt, messagesStr, preferences);
-      } catch (error) {
+      } catch {
         return "I couldn't analyze this look. Want to try another photo? 📸";
       }
     })
   );
-
   return results.join("\n\n") + "\n\nNeed specific styling suggestions? Just ask! ✨";
 }
 
 async function getOutfitAnalysis(imagePath: string): Promise<string> {
-  const analysisPrompt = `
-    You are a pro personal fashion assistant of user, analyze this image
-  `;
-
+  const analysisPrompt = `You are a pro personal fashion assistant of user, analyze this image`;
   const analysis = await hf.chatCompletion({
     model: "meta-llama/Llama-3.2-11B-Vision-Instruct",
     messages: [
@@ -159,16 +127,10 @@ async function getOutfitAnalysis(imagePath: string): Promise<string> {
     ],
     max_tokens: 500,
   });
-
   return analysis.choices[0].message.content || "Could not analyze the outfit.";
 }
 
-async function refineFashionAdvice(
-  initialAnalysis: string, 
-  prompt: string,
-  messagesStr: string,
-  preferences: string
-): Promise<string> {
+async function refineFashionAdvice(initialAnalysis: string, prompt: string, messagesStr: string, preferences: string): Promise<string> {
   const refinementPrompt = `
     Previous conversation:
   ${messagesStr}////
@@ -180,39 +142,20 @@ async function refineFashionAdvice(
  ${preferences}, give to the point proper fashion feedback and suggestions with engaging emojis
   `;
 
-  const completion = await openai.chat.completions.create({
-    model: "deepseek-chat",
-    messages: [{ role: "user", content: refinementPrompt }],
-    max_tokens: 500,
-  });
-
-  return completion.choices[0].message.content || "No style advice available.";
+  const response = await openai.call([new HumanMessage(refinementPrompt)]);
+  return response.text || "No style advice available.";
 }
 
-async function generateStyleAnalysis(
-  imagePaths: string[], 
-  messagesStr: string,
-  preferences: string
-): Promise<string> {
+async function generateStyleAnalysis(imagePaths: string[], messagesStr: string, preferences: string): Promise<string> {
   const analyses = await Promise.all(
     imagePaths.map(async (imagePath) => {
       try {
         const analysis = await getOutfitAnalysis(imagePath);
-        const enhancedAdvice = await refineFashionAdvice(
-          analysis,
-          "",
-          messagesStr,
-          preferences
-        );
-        return enhancedAdvice;
-      } catch(error) {
-        console.log(error)
+        return await refineFashionAdvice(analysis, "", messagesStr, preferences);
+      } catch {
         return "I couldn't analyze this look. Let's try another photo! 📸";
       }
     })
   );
-
   return analyses.join('\n\n');
 }
-
-
