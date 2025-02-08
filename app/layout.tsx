@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: "Glamourhall | AI-Powered Fashion Advice, Just for You",
   description: "Receive personalized fashion recommendations, outfit ideas, and style tips with Glamourhall. Your AI-powered fashion assistant helps you discover the latest trends and perfect your unique look.",
   icons: {
-    icon: '/model.ico'
+    icon: '/fashion-wear.ico'
   },
 };
 
@@ -35,7 +35,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-      <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="16x16" />
         <Script 
           strategy="afterInteractive" 
           src="https://www.googletagmanager.com/gtag/js?id=G-8DCQ8QXDG3"
