@@ -774,18 +774,17 @@ export default function ChatPage() {
       {/* Sidebar */}
       {/* Sidebar */}
       <motion.aside
-        initial={{ x: -300 }}
-        animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
-        className={`
-    fixed md:static md:translate-x-0 w-72 ${
-      isDesktop ? "h-screen" : "h-full"
-    } z-40 
-    bg-gradient-to-r from-purple-50 to-blue-50  
-    border border-gray-300 rounded-lg shadow-md // Add border, rounded corners, and shadow
+  initial={{ x: -300 }}
+  animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
+  className={`
+    fixed md:fixed md:translate-x-0 w-72 ${isDesktop ? "h-screen" : "h-full"} 
+    z-40 bg-gradient-to-r from-purple-50 to-blue-50  
+    border border-gray-300 rounded-lg shadow-md
     transition-transform duration-200
     md:block
+    ${isDesktop ? 'md:h-screen' : 'h-full'}
   `}
-      >
+>
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -835,7 +834,7 @@ export default function ChatPage() {
         </div>
       </motion.aside>
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen">
+      <div className="flex-1 flex flex-col h-screen md:ml-72">
         {/* Fixed Header */}
         <header className="fixed top-0 left-0 right-0 bg-white/30 backdrop-blur-md shadow z-10">
           <div className="px-4 py-3 flex justify-between items-center">
@@ -993,7 +992,7 @@ export default function ChatPage() {
         </header>
 
         {/* Chat Container */}
-        <div className="flex-1 overflow-hidden mt-[60px] mb-[80px] md:mb-12">
+        <div className="flex-1 overflow-hidden mt-[60px] mb-[80px] md:mb-12 md:ml-0">
           <div
             className={`h-full overflow-y-auto ${
               window.innerWidth < 768 ? "mb-20" : ""
@@ -1133,18 +1132,18 @@ export default function ChatPage() {
         </div>
 
         {/* Input Bar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/60 backdrop-purple-md border-t shadow z-10">
+        <div className="fixed md:left-72 bottom-0 left-0 right-0 bg-white/60 backdrop-purple-md border-t shadow z-10">
           <div className="max-w-2xl mx-auto px-4 py-3">
             <form onSubmit={handleSendMessage} className="relative lg:ml-16">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                <input
-  type="text"
-  placeholder="Fashion tips? We've got you covered!"
-  className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-  value={userInput}
-  onChange={(e) => setUserInput(e.target.value)}
-/>
+                  <input
+                    type="text"
+                    placeholder="Fashion tips? We've got you covered!"
+                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                  />
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -1158,11 +1157,11 @@ export default function ChatPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <Image
-                      src="/picture.png" 
-                      alt="Upload Image" 
-                      width={20} 
-                      height={20} 
-                      className="h-5 w-5" 
+                      src="/picture.png"
+                      alt="Upload Image"
+                      width={20}
+                      height={20}
+                      className="h-5 w-5"
                     />
                   </button>
                 </div>
@@ -1180,14 +1179,14 @@ export default function ChatPage() {
                       <img
                         src={preview}
                         alt={`Preview ${index}`}
-                        className="w-24 h-24 object-cover rounded-lg"
+                        className="w-12 h-12 object-cover rounded-lg"
                       />
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(index)}
-                        className="absolute top-0 right-0 text-red-600 bg-white rounded-full p-1"
+                        className="absolute top-0 right-0 text-red-600 bg-white rounded-full p-[0.4px]"
                       >
-                        <FaTimesCircle className="h-5 w-5" />
+                        <FaTimesCircle className="h-3 w-3" />
                       </button>
                     </div>
                   ))}
