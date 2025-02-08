@@ -479,7 +479,7 @@ export default function ChatPage() {
     return groupedConversations;
   };
 
-  const truncateTitle = (title: string, wordLimit = 5) => {
+  const truncateTitle = (title: string, wordLimit = 4) => {
     if (!title) return "Untitled Conversation";
     const words = title.split(" ");
     return words.length > wordLimit
@@ -532,66 +532,54 @@ export default function ChatPage() {
 
         {/* Conversation List */}
         {conversations.map((conversation) => (
-          <div
-            key={conversation.id}
-            className={`group relative px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-between rounded-md ${
-              activeConversationId === conversation.id
-                ? "bg-gray-100 dark:bg-gray-800"
-                : ""
-            }`}
-            onClick={() => {
-              handleConversationClick(conversation.id);
-              if (!isDesktop) {
-                setIsMobileSidebarOpen(false);
-              }
-            }}
-          >
-            <div className="flex-1 mr-2 pr-8 relative">
-              {/* Conversation Title */}
-              <div className="flex-1 min-w-0 relative group">
-                {/* Truncated Title */}
-                <div className="font-medium truncate text-gray-900 dark:text-gray-100">
-                  {truncateTitle(conversation.title)}
-                </div>
+  <div
+    key={conversation.id}
+    className={`group relative px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-between rounded-md ${
+      activeConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800" : ""
+    }`}
+    onClick={() => {
+      handleConversationClick(conversation.id);
+      if (!isDesktop) {
+        setIsMobileSidebarOpen(false);
+      }
+    }}
+  >
+    {/* Content Section */}
+    <div className="flex-1 mr-2">
+      {/* Conversation Title */}
+      <div className="font-medium truncate text-gray-900 dark:text-gray-100">
+        {truncateTitle(conversation.title)}
+      </div>
 
-                {/* Tooltip (Hidden by Default, Shows on Hover) */}
-                <div className="absolute left-0 top-full mt-1 w-max max-w-xs bg-gray-900 text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                  {conversation.title}
-                </div>
-              </div>
+      {/* Tooltip */}
+      <div className="absolute left-4 top-full mt-1 w-max max-w-xs bg-gray-900 text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+        {conversation.title}
+      </div>
 
-              {/* Timestamp & Unread Count */}
-              <div className="text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center">
-                <span>
-                  {new Date(conversation.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-                {conversation.unreadCount > 0 && (
-                  <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">
-                    {conversation.unreadCount}
-                  </span>
-                )}
-              </div>
+      {/* Timestamp & Unread Count */}
+      <div className="text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center mt-1">
+        <span>{new Date(conversation.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+        {conversation.unreadCount > 0 && (
+          <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">
+            {conversation.unreadCount}
+          </span>
+        )}
+      </div>
+    </div>
 
-              {/* Delete Conversation Button - Absolute Positioning */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent conversation selection
-                  handleDeleteConversation(conversation.id, e);
-                }}
-                className="absolute right-0 top-1/2 -translate-y-1/2 
-                text-gray-400 hover:text-red-500 
-                transition-colors duration-200 
-                md:opacity-0 md:group-hover:opacity-100 
-                dark:text-gray-500 dark:hover:text-red-400"
-              >
-                <FaTrash className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        ))}
+    {/* Delete Button - Aligned in One Line */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation(); // Prevent conversation selection
+        handleDeleteConversation(conversation.id, e);
+      }}
+      className="text-gray-400 hover:text-red-500 transition-colors duration-200 md:opacity-0 md:group-hover:opacity-100 dark:text-gray-500 dark:hover:text-red-400"
+    >
+      <FaTrash className="h-4 w-4" />
+    </button>
+  </div>
+))}
+
       </div>
     );
   };
@@ -774,17 +762,17 @@ export default function ChatPage() {
       {/* Sidebar */}
       {/* Sidebar */}
       <motion.aside
-  initial={{ x: -300 }}
-  animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
-  className={`
+        initial={{ x: -300 }}
+        animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
+        className={`
     fixed md:fixed md:translate-x-0 w-72 ${isDesktop ? "h-screen" : "h-full"} 
     z-40 bg-gradient-to-r from-purple-50 to-blue-50  
     border border-gray-300 rounded-lg shadow-md
     transition-transform duration-200
     md:block
-    ${isDesktop ? 'md:h-screen' : 'h-full'}
+    ${isDesktop ? "md:h-screen" : "h-full"}
   `}
->
+      >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -807,7 +795,6 @@ export default function ChatPage() {
               <FaTimes size={24} />
             </button>
           </div>
-
           <button
             onClick={() => {
               startNewChat();
@@ -817,10 +804,15 @@ export default function ChatPage() {
             }}
             className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-100"
           >
-            <RiChatNewFill className="w-4 h-4" />
+            <Image
+              src="/new-message.png" // Update with your image path
+              alt="New Chat"
+              width={16}
+              height={16}
+              className="w-6 h-6" // Match the size of the original icon
+            />
             <span>New Chat</span>
           </button>
-
           {/* Conversations List */}
           {/* <div className="overflow-y-auto overflow-x-hidden h-[calc(100%-4rem)]"> */}
           {isLoadingChats ? (
@@ -1066,20 +1058,20 @@ export default function ChatPage() {
                 >
                   {message.type === "ai" && (
                     <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
-                      <motion.span
+                      <motion.img
+                        src="/fashion-wear.png" // Update with your image path
+                        alt="Icon"
                         animate={{
                           y: ["0%", "-10%", "0%"],
                         }}
                         transition={{
-                          duration: 1.5,
+                          duration: 3,
                           repeat: Infinity,
                           repeatType: "loop",
                           ease: "easeInOut",
                         }}
-                        className="text-white"
-                      >
-                        ✨
-                      </motion.span>
+                        className="w-8 h-8 object-cover" // Adjust size as needed
+                      />
                     </div>
                   )}
                   <div className="max-w-[80%]">
@@ -1149,12 +1141,12 @@ export default function ChatPage() {
                     type="file"
                     onChange={handlePhotoUpload}
                     className="hidden"
-                    multiple
                   />
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    title="Upload Image"
                   >
                     <Image
                       src="/picture.png"
