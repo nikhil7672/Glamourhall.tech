@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link  rel="icon" href="/favicon.ico"/>
+      <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="16x16" />
         <Script 
           strategy="afterInteractive" 
           src="https://www.googletagmanager.com/gtag/js?id=G-8DCQ8QXDG3"
