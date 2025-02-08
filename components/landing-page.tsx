@@ -927,7 +927,7 @@ export function LandingPageComponent() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="/terms-of-service"
                     className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
                   >
                     Terms of Service
@@ -935,7 +935,7 @@ export function LandingPageComponent() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/privacy-policy"
                     className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
                   >
                     Privacy Policy
