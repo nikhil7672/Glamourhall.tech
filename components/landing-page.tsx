@@ -212,7 +212,7 @@ export function LandingPageComponent() {
       alt="Logo" // Provide an alt text for accessibility
       width={40} // Set the desired width
       height={40} // Set the desired height
-      className="h-10 w-10" // Optional: set class for styling
+      className="h-10 w-10 rounded-full shadow-md" // Optional: set class for styling
     />
               <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
                 GlamourHall

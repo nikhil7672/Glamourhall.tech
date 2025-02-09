@@ -4,6 +4,9 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { Sparkles, Loader2, Brain, BrainCircuit } from "lucide-react";
+import { useTheme } from "next-themes";
+import { TypingAnimation } from "../../components/typing-animation";
 import { motion } from "framer-motion";
 import { Popover, Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -22,6 +25,8 @@ import {
   FaCogs,
   FaRegCreditCard,
   FaTrash,
+  FaSun,
+  FaMoon,
 } from "react-icons/fa";
 import { BsBellFill } from "react-icons/bs";
 import { useMediaQuery } from "@/utils/useMediaQuery";
@@ -32,11 +37,15 @@ import { NotificationDialog } from "@/components/notificationDialog";
 import { RiChatNewFill } from "react-icons/ri";
 import { StylePreferenceStepper } from "@/components/StylePreferenceStepper";
 
+import { SessionProvider } from "next-auth/react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+
 interface Message {
   type: "user" | "ai";
   content: string;
   images?: string[];
   timestamp?: Date;
+  isHistory?: boolean;
 }
 
 interface MenuItem {
@@ -60,6 +69,7 @@ export default function ChatPage() {
     { icon: "👜", text: "Create a capsule wardrobe for me" },
     { icon: "📊", text: "Give me fashion tips for my body type" },
   ];
+  const { theme, setTheme } = useTheme();
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
@@ -268,11 +278,13 @@ export default function ChatPage() {
 
       const data = await response.json();
       if (data && data.result) {
+        setIsAITyping(false);
         setMessages((prevMessages) => [
           ...prevMessages,
           { type: "ai", content: data.result },
         ]);
       } else {
+        setIsAITyping(false);
         setMessages((prevMessages) => [
           ...prevMessages,
           { type: "ai", content: "Sorry, I could not process your request." },
@@ -302,6 +314,7 @@ export default function ChatPage() {
       setImageFiles([]);
     } catch (error) {
       console.error("Error:", error);
+      setIsAITyping(false);
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -532,54 +545,60 @@ export default function ChatPage() {
 
         {/* Conversation List */}
         {conversations.map((conversation) => (
-  <div
-    key={conversation.id}
-    className={`group relative px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-between rounded-md ${
-      activeConversationId === conversation.id ? "bg-gray-100 dark:bg-gray-800" : ""
-    }`}
-    onClick={() => {
-      handleConversationClick(conversation.id);
-      if (!isDesktop) {
-        setIsMobileSidebarOpen(false);
-      }
-    }}
-  >
-    {/* Content Section */}
-    <div className="flex-1 mr-2">
-      {/* Conversation Title */}
-      <div className="font-medium truncate text-gray-900 dark:text-gray-100">
-        {truncateTitle(conversation.title)}
-      </div>
+          <div
+            key={conversation.id}
+            className={`group relative px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-between rounded-md ${
+              activeConversationId === conversation.id
+                ? "bg-gray-100 dark:bg-gray-800"
+                : ""
+            }`}
+            onClick={() => {
+              handleConversationClick(conversation.id);
+              if (!isDesktop) {
+                setIsMobileSidebarOpen(false);
+              }
+            }}
+          >
+            {/* Content Section */}
+            <div className="flex-1 mr-2">
+              {/* Conversation Title */}
+              <div className="font-medium truncate text-gray-900 dark:text-gray-100">
+                {truncateTitle(conversation.title)}
+              </div>
 
-      {/* Tooltip */}
-      <div className="absolute left-4 top-full mt-1 w-max max-w-xs bg-gray-900 text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-        {conversation.title}
-      </div>
+              {/* Tooltip */}
+              <div className="absolute left-4 top-full mt-1 w-max max-w-xs bg-gray-900 text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                {conversation.title}
+              </div>
 
-      {/* Timestamp & Unread Count */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center mt-1">
-        <span>{new Date(conversation.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-        {conversation.unreadCount > 0 && (
-          <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">
-            {conversation.unreadCount}
-          </span>
-        )}
-      </div>
-    </div>
+              {/* Timestamp & Unread Count */}
+              <div className="text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center mt-1">
+                <span>
+                  {new Date(conversation.created_at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                {conversation.unreadCount > 0 && (
+                  <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">
+                    {conversation.unreadCount}
+                  </span>
+                )}
+              </div>
+            </div>
 
-    {/* Delete Button - Aligned in One Line */}
-    <button
-      onClick={(e) => {
-        e.stopPropagation(); // Prevent conversation selection
-        handleDeleteConversation(conversation.id, e);
-      }}
-      className="text-gray-400 hover:text-red-500 transition-colors duration-200 md:opacity-0 md:group-hover:opacity-100 dark:text-gray-500 dark:hover:text-red-400"
-    >
-      <FaTrash className="h-4 w-4" />
-    </button>
-  </div>
-))}
-
+            {/* Delete Button - Aligned in One Line */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent conversation selection
+                handleDeleteConversation(conversation.id, e);
+              }}
+              className="text-gray-400 hover:text-red-500 transition-colors duration-200 md:opacity-0 md:group-hover:opacity-100 dark:text-gray-500 dark:hover:text-red-400"
+            >
+              <FaTrash className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
       </div>
     );
   };
@@ -637,7 +656,7 @@ export default function ChatPage() {
     router.push("/chat", { scroll: false });
   };
 
-  // Load specific chat
+  // ... existing code ...
   const loadConversation = async (conversationId: string) => {
     try {
       const response = await fetch(`/api/auth/conversations/${conversationId}`);
@@ -645,7 +664,14 @@ export default function ChatPage() {
 
       const data = await response.json();
       setActiveConversationId(conversationId);
-      setMessages(data.messages);
+
+      // Add isHistory: true to all loaded messages
+      const historyMessages = data.messages.map((message: Message) => ({
+        ...message,
+        isHistory: true,
+      }));
+
+      setMessages(historyMessages);
       setHasStartedChat(true);
       router.push(`/chat?id=${conversationId}`, { scroll: false });
     } catch (error) {
@@ -749,9 +775,9 @@ export default function ChatPage() {
   return (
     <div
       className="min-h-screen flex flex-col md:flex-row 
-  bg-gradient-to-r from-blue-50 to-purple-50 
-  dark:from-gray-900 dark:to-purple-900
-  transition-colors duration-200"
+      bg-gradient-to-r from-blue-50 to-purple-50 
+      dark:from-gray-900 dark:to-gray-800
+      transition-colors duration-200"
     >
       {isMobileSidebarOpen && (
         <div
@@ -760,224 +786,232 @@ export default function ChatPage() {
         />
       )}
       {/* Sidebar */}
-      {/* Sidebar */}
       <motion.aside
         initial={{ x: -300 }}
         animate={{ x: isMobileSidebarOpen ? 0 : -300 }}
         className={`
-    fixed md:fixed md:translate-x-0 w-72 ${isDesktop ? "h-screen" : "h-full"} 
-    z-40 bg-gradient-to-r from-purple-50 to-blue-50  
-    border border-gray-300 rounded-lg shadow-md
-    transition-transform duration-200
-    md:block
-    ${isDesktop ? "md:h-screen" : "h-full"}
-  `}
+        fixed md:fixed md:translate-x-0 w-72 
+        ${isDesktop ? "h-screen" : "h-full"} 
+        z-40 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-700
+        border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg
+        transition-transform duration-300 ease-in-out
+        md:block
+      `}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-t-2xl">
             <div className="flex items-center gap-4">
               <Image
-                src="/fashion-wear.png" // Replace with the path to your image
-                alt="Logo" // Provide an alt text for accessibility
-                width={40} // Set the desired width
-                height={40} // Set the desired height
-                className="h-10 w-10" // Optional: set class for styling
+                src="/fashion-wear.png"
+                alt="Logo"
+                width={40}
+                height={40}
+                className="rounded-full shadow-md"
               />
-              <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
+              <span className="font-extrabold text-xl text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
                 Glamourhall
               </span>
             </div>
             <button
               onClick={() => setIsMobileSidebarOpen(false)}
-              className="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              className="md:hidden text-gray-500 hover:text-purple-500 dark:text-gray-400 dark:hover:text-purple-300 transition-colors"
             >
               <FaTimes size={24} />
             </button>
           </div>
+
+          {/* New Chat Button */}
           <button
             onClick={() => {
               startNewChat();
-              if (!isDesktop) {
-                setIsMobileSidebarOpen(false);
-              }
+              if (!isDesktop) setIsMobileSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-100"
+            className="w-full flex items-center gap-3 px-5 py-4 hover:bg-purple-100 dark:hover:bg-gray-700 transition-colors border-b border-gray-200 dark:border-gray-700"
           >
             <Image
-              src="/new-message.png" // Update with your image path
+              src="/new-message.png"
               alt="New Chat"
-              width={16}
-              height={16}
-              className="w-6 h-6" // Match the size of the original icon
+              width={24}
+              height={24}
+              className="w-6 h-6"
             />
-            <span>New Chat</span>
+            <span className="font-medium text-gray-800 dark:text-gray-300">
+              New Chat
+            </span>
           </button>
+
           {/* Conversations List */}
-          {/* <div className="overflow-y-auto overflow-x-hidden h-[calc(100%-4rem)]"> */}
-          {isLoadingChats ? (
-            <div className="flex justify-center p-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
-            </div>
-          ) : (
-            renderConversations()
-          )}
-          {/* </div> */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {isLoadingChats ? (
+              <div className="flex justify-center p-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-500 border-t-transparent" />
+              </div>
+            ) : (
+              renderConversations()
+            )}
+          </div>
         </div>
       </motion.aside>
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen md:ml-72">
         {/* Fixed Header */}
-        <header className="fixed top-0 left-0 right-0 bg-white/30 backdrop-blur-md shadow z-10">
+        <header className="fixed top-0 left-0 right-0 bg-white/30 backdrop-blur-md shadow-lg z-10 dark:bg-gray-900/30">
           <div className="px-4 py-3 flex justify-between items-center">
+            {/* Left Section: Logo and Menu */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                className="text-gray-900 mr-2 md:hidden"
+                className="md:hidden text-gray-900 dark:text-gray-100"
               >
                 <FaBars
                   size={24}
-                  className="text-gray-600 hover:text-gray-800"
+                  className="hover:text-purple-500 transition-colors"
                 />
               </button>
-              <Image
-                src="/fashion-wear.png" // Replace with the path to your image
-                alt="Logo" // Provide an alt text for accessibility
-                width={40} // Set the desired width
-                height={40} // Set the desired height
-                className="h-10 w-10" // Optional: set class for styling
-              />
-              <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
-                GlamourHall
-              </span>
+
+              <div className="flex items-center gap-2">
+                <img
+                  src="/fashion-wear.png"
+                  alt="Logo"
+                  className="w-8 h-8 object-cover rounded-full shadow-md"
+                />
+                <span className="font-bold text-xl text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
+                  GlamourHall
+                </span>
+              </div>
             </div>
 
-            {/* Profile section on the right */}
+            {/* Right Section: Theme Toggle, Notifications, Profile */}
             <div className="flex items-center gap-4">
+              {/* Notifications */}
               {(session?.user || localStorageUser) && (
-                <>
-                  <div className="relative">
-                    <button
-                      onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                      className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative"
-                    >
-                      <BsBellFill
-                        className={`text-gray-700 ${
-                          window.innerWidth < 768 ? "w-6 h-6" : "w-5 h-5"
-                        }`}
-                      />
-                      {notifications.length > 0 && (
-                        <span className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-medium px-1.5 border-2 border-white">
-                          {notifications.length > 99
-                            ? "99+"
-                            : notifications.length}
-                        </span>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                    className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition relative"
+                  >
+                    <BsBellFill className="text-gray-700 dark:text-gray-300 w-5 h-5" />
+                    {notifications.length > 0 && (
+                      <span className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-medium px-1.5 border-2 border-white">
+                        {notifications.length > 99
+                          ? "99+"
+                          : notifications.length}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Profile */}
+              {(session?.user || localStorageUser) && (
+                <Popover className="relative">
+                  <Popover.Button className="focus:outline-none">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 transition-all">
+                      {session?.user?.image ? (
+                        <Image
+                          src={session.user.image}
+                          alt="Profile"
+                          width={40}
+                          height={40}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+                          <span className="text-xl text-purple-500">
+                            {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                              localStorageUser?.full_name?.[0]?.toUpperCase()}
+                          </span>
+                        </div>
                       )}
-                    </button>
-                  </div>
+                    </div>
+                  </Popover.Button>
 
-                  <Popover className="relative">
-                    <Popover.Button className="focus:outline-none">
-                      <div
-                        className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 
-        transition-all duration-200 flex items-center justify-center bg-gray-100"
-                      >
-                        {session?.user?.image ? (
-                          <Image
-                            src={session.user.image}
-                            alt="Profile Picture"
-                            width={40}
-                            height={40}
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                            <span className="text-2xl text-purple-500">
-                              {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                                localStorageUser?.full_name?.[0]?.toUpperCase()}
-                            </span>
+                  {/* Dropdown Menu */}
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-200"
+                    enterFrom="opacity-0 translate-y-2"
+                    enterTo="opacity-100 translate-y-0"
+                    leave="transition ease-in duration-150"
+                    leaveFrom="opacity-100 translate-y-0"
+                    leaveTo="opacity-0 translate-y-2"
+                  >
+                    <Popover.Panel className="absolute right-0 z-50 mt-2 w-64 origin-top-right bg-white dark:bg-gray-800 rounded-xl shadow-xl ring-1 ring-black ring-opacity-5">
+                      <div className="p-4">
+                        {/* Profile Info */}
+                        <div className="flex items-center gap-4">
+                          <div className="relative flex-shrink-0 w-12 h-12">
+                            {session?.user?.image ? (
+                              <Image
+                                src={session.user.image}
+                                alt="Profile"
+                                fill
+                                sizes="(max-width: 48px) 100vw"
+                                className="object-cover rounded-full border-2 border-purple-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-purple-100 flex items-center justify-center rounded-full border-2 border-purple-300">
+                                <span className="text-lg text-purple-500">
+                                  {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                                    localStorageUser?.full_name?.[0]?.toUpperCase()}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </Popover.Button>
-
-                    <Transition
-                      as={Fragment}
-                      enter="transition ease-out duration-200"
-                      enterFrom="opacity-0 translate-y-1"
-                      enterTo="opacity-100 translate-y-0"
-                      leave="transition ease-in duration-150"
-                      leaveFrom="opacity-100 translate-y-0"
-                      leaveTo="opacity-0 translate-y-1"
-                    >
-                      <Popover.Panel className="absolute right-0 z-50 mt-2 w-80 origin-top-right">
-                        <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                          <div className="relative bg-white dark:bg-gray-800 p-6">
-                            <div className="flex items-start gap-4">
-                              <div className="flex-shrink-0">
-                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-200">
-                                  {session?.user?.image ? (
-                                    <Image
-                                      src={session.user.image}
-                                      alt="Profile"
-                                      width={64}
-                                      height={64}
-                                      className="object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                                      <span className="text-2xl text-purple-500">
-                                        {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                                          localStorageUser?.full_name?.[0]?.toUpperCase()}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
-                                  {localStorageUser?.fullName ||
-                                    localStorageUser?.full_name}
-                                </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                                  {localStorageUser?.email}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                              <button
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg
-                  text-red-600 hover:bg-red-50 dark:text-red-400 
-                  dark:hover:bg-red-900/20 transition-colors duration-150"
-                              >
-                                <FaSignOutAlt className="w-5 h-5" />
-                                <span className="text-sm font-medium">
-                                  Sign Out
-                                </span>
-                              </button>
-
-                              <button
-                                onClick={viewPreferenceDialog}
-                                className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-lg 
-            text-purple-600 hover:bg-purple-50 dark:text-purple-400 
-            dark:hover:bg-blue-900/20 transition-colors duration-150"
-                              >
-                                <FaCogs className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                                <span className="text-sm font-medium">
-                                  Preferences
-                                </span>
-                              </button>
-                            </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                              {localStorageUser?.fullName ||
+                                localStorageUser?.full_name}
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                              {localStorageUser?.email}
+                            </p>
                           </div>
                         </div>
-                      </Popover.Panel>
-                    </Transition>
+                        {/* Actions */}
+                        <div className="mt-4 space-y-2">
+                          {/* Theme Toggle Button */}
+                          <button
+                            onClick={() =>
+                              setTheme(theme === "dark" ? "light" : "dark")
+                            }
+                            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                          >
+                            {theme === "dark" ? (
+                              <>
+                                <FaSun className="w-5 h-5 text-yellow-400" />
+                                <span>Light Mode</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaMoon className="w-5 h-5" />
+                                <span>Dark Mode</span>
+                              </>
+                            )}
+                          </button>
 
-                    {/* Dialog for Preferences */}
-                  </Popover>
-                </>
+                          <button
+                            onClick={viewPreferenceDialog}
+                            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/20 transition"
+                          >
+                            <FaCogs className="w-5 h-5" />
+                            <span>Preferences</span>
+                          </button>
+
+                          <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 transition"
+                          >
+                            <FaSignOutAlt className="w-5 h-5" />
+                            <span>Sign Out</span>
+                          </button>
+                        </div>
+                      </div>
+                    </Popover.Panel>
+                  </Transition>
+                </Popover>
               )}
             </div>
           </div>
@@ -995,34 +1029,36 @@ export default function ChatPage() {
               {/* Welcome Section - Only show if chat hasn't started */}
               {!hasStartedChat && messages.length <= 1 && (
                 <div className="text-center mb-8">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 flex items-center justify-center">
+                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-purple-200 to-blue-200 flex items-center justify-center shadow-lg dark:from-purple-200 dark:to-blue-800">
                     <Image
-                      src="/wedding.png" // Replace with the path to your image
-                      alt="Fashion Icon" // Provide an alt text for accessibility
-                      width={48} // Set the desired width
-                      height={48} // Set the desired height
-                      className="rounded-full" // Ensure the image is rounded
+                      src="/wedding.png"
+                      alt="Fashion Icon"
+                      width={64}
+                      height={64}
+                      className="rounded-full"
                     />
                   </div>
-                  <h2 className="text-2xl font-bold mb-2">
+                  <h2 className="text-2xl font-extrabold mb-3 text-center text-gray-900 dark:text-gray-100">
                     Your Personal Style Guide
                   </h2>
-                  <p className="text-gray-600 mb-8">
+                  <p className="text-gray-700 dark:text-gray-300 text-center mb-10">
                     Get personalized fashion advice, trend updates, and style
                     recommendations
                   </p>
 
                   {/* Featured Prompts */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl mx-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto p-4">
                     {initialPrompts.map((prompt, index) => (
                       <button
                         key={index}
                         onClick={() => handlePromptClick(prompt.text)}
-                        className="group p-4 rounded-xl border border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-300 text-left"
+                        className="group p-5 rounded-2xl border border-gray-300 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800 transition-all duration-300 shadow-md dark:shadow-lg text-left"
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{prompt.icon}</span>
-                          <span className="text-sm text-gray-700 group-hover:text-purple-700">
+                        <div className="flex items-center gap-4">
+                          <span className="text-3xl dark:text-gray-200">
+                            {prompt.icon}
+                          </span>
+                          <span className="text-base text-gray-800 dark:text-gray-300 group-hover:text-purple-700 dark:group-hover:text-purple-300">
                             {prompt.text}
                           </span>
                         </div>
@@ -1057,33 +1093,31 @@ export default function ChatPage() {
                   } mb-4`}
                 >
                   {message.type === "ai" && (
-                    <div className="w-12 h-12 mr-2 rounded-full bg-gradient-to-r from-pink-300 to-blue-700 flex items-center justify-center">
+                    <div className="w-14 h-14 mr-3 rounded-full bg-gradient-to-r from-pink-400 to-blue-600 flex items-center justify-center shadow-lg dark:from-pink-700 dark:to-blue-800">
                       <motion.img
-                        src="/fashion-wear.png" // Update with your image path
+                        src="/fashion-wear.png"
                         alt="Icon"
-                        animate={{
-                          y: ["0%", "-10%", "0%"],
-                        }}
+                        animate={{ y: ["0%", "-10%", "0%"] }}
                         transition={{
-                          duration: 3,
+                          duration: 2.5,
                           repeat: Infinity,
                           repeatType: "loop",
                           ease: "easeInOut",
                         }}
-                        className="w-8 h-8 object-cover" // Adjust size as needed
+                        className="w-9 h-9 object-cover"
                       />
                     </div>
                   )}
-                  <div className="max-w-[80%]">
+                  <div className="max-w-[75%]">
                     {/* Image Section */}
                     {message.images && message.images.length > 0 && (
-                      <div className="mb-2 mt-2 flex flex-wrap gap-2">
-                        {message.images.map((image, index) => (
+                      <div className="mb-3 mt-2 flex flex-wrap gap-3">
+                        {message.images.map((image, imgIndex) => (
                           <img
-                            key={index}
+                            key={imgIndex}
                             src={image}
-                            alt={`Message Image ${index}`}
-                            className="w-32 h-32 object-cover rounded-lg"
+                            alt={`Message Image ${imgIndex}`}
+                            className="w-36 h-36 object-cover rounded-xl shadow-md"
                           />
                         ))}
                       </div>
@@ -1091,16 +1125,18 @@ export default function ChatPage() {
                     {/* Text Content Section */}
                     {message.content && (
                       <div
-                        className={`relative inline-block rounded-2xl px-4 py-3 ${
+                        className={`relative inline-block rounded-2xl px-5 py-4 shadow-lg ${
                           message.type === "user"
-                            ? "bg-gradient-to-r from-purple-500 to-pink-400 text-white"
-                            : "bg-gradient-to-r from-pink-100 to-blue-100 text-black"
+                            ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         }`}
                       >
-                        {message.type === "ai" ? (
-                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        {message.type === "ai" &&
+                        index === messages.length - 1 &&
+                        !message.isHistory ? (
+                          <TypingAnimation content={message.content} />
                         ) : (
-                          message.content
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
                         )}
                       </div>
                     )}
@@ -1108,31 +1144,72 @@ export default function ChatPage() {
                 </div>
               ))}
 
-              {isAITyping && (
-                <div className="flex justify-start mb-4">
-                  <div className="max-w-[85%] md:max-w-[70%] rounded-lg p-3.5 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-none">
-                    <div className="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                  </div>
-                </div>
-              )}
+{isAITyping && (
+  <div className="flex justify-start my-3 pb-20 md:pb-3">
+    <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-purple-100/20 dark:border-purple-800/20">
+      
+      {/* Brain Icon (Replaces Sparkles) */}
+      <div className="relative w-9 h-9 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: [0, 10, -10, 0] }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <BrainCircuit className="w-5 h-5 text-white" />
+        </motion.div>
+      </div>
+
+      {/* Text and Loader Animation */}
+      <div className="flex items-center gap-3 text-gray-700 dark:text-gray-200">
+        <span className="text-sm font-medium">Thinking...</span>
+        
+        {/* Single Loader Icon */}
+        {/* <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+        >
+          <Loader2 className="w-4 h-4 text-purple-500" />
+        </motion.div> */}
+
+        {/* Dots Animation */}
+        <motion.div className="flex gap-1 pt-1">
+          {[...Array(3)].map((_, i) => (
+            <motion.span
+              key={i}
+              className="w-1 h-1 rounded-full bg-purple-500"
+              initial={{ opacity: 0.2 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                duration: 0.6,
+                repeat: Infinity,
+                repeatType: "reverse",
+                delay: i * 0.2,
+              }}
+            />
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  </div>
+)}
+
             </div>
           </div>
         </div>
 
         {/* Input Bar */}
-        <div className="fixed md:left-72 bottom-0 left-0 right-0 bg-white/60 backdrop-purple-md border-t shadow z-10">
+        <div className="fixed md:left-72 bottom-0 left-0 right-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border-t shadow z-10">
           <div className="max-w-2xl mx-auto px-4 py-3">
             <form onSubmit={handleSendMessage} className="relative lg:ml-16">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <input
                     type="text"
-                    placeholder="Fashion tips? We've got you covered!"
-                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                    placeholder="Let's find your perfect look!"
+                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                   />
@@ -1141,16 +1218,17 @@ export default function ChatPage() {
                     type="file"
                     onChange={handlePhotoUpload}
                     className="hidden"
+                    multiple
                   />
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500"
                     title="Upload Image"
                   >
                     <Image
                       src="/picture.png"
-                      alt="Upload Image"
+                      alt="Upload"
                       width={20}
                       height={20}
                       className="h-5 w-5"
@@ -1176,9 +1254,9 @@ export default function ChatPage() {
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(index)}
-                        className="absolute top-0 right-0 text-red-600 bg-white rounded-full p-[0.4px]"
+                        className="absolute -top-1 -right-1 text-red-600 bg-white rounded-full p-1 shadow-sm"
                       >
-                        <FaTimesCircle className="h-3 w-3" />
+                        <FaTimesCircle className="h-4 w-4" />
                       </button>
                     </div>
                   ))}

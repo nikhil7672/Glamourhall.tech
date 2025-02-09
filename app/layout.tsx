@@ -19,6 +19,9 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Glamourhall | AI-Powered Fashion Advice, Just for You",
   description: "Receive personalized fashion recommendations, outfit ideas, and style tips with Glamourhall. Your AI-powered fashion assistant helps you discover the latest trends and perfect your unique look.",
+  icons: {
+    icon: '/favicon.ico'
+  },
 };
 
 
@@ -49,9 +52,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-900`}>
         <Providers>
           {" "}
           <Suspense fallback={ <div className="min-h-screen flex items-center justify-center">

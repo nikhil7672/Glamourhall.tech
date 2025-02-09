@@ -198,11 +198,15 @@ export default function PreferencesPage() {
  };
 
  return (
-   <div className="min-h-screen bg-gray-50 py-8">
-     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+   <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+     <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
        <div className="flex items-center justify-between mb-8">
-         <h1 className="text-3xl font-bold text-gray-900">Preferences</h1>
-         <Link href="#" onClick={handleBackClick} className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Preferences</h1>
+         <Link 
+        href="#" 
+        onClick={handleBackClick} 
+        className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+      >
            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
            </svg>
@@ -213,19 +217,21 @@ export default function PreferencesPage() {
        <div className="mb-8">
          <div className="relative pt-1">
            <div className="flex mb-2 items-center justify-between">
-             <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-200">
+             <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 dark:text-purple-300 bg-purple-200 dark:bg-purple-900">
                Step {currentStep + 1} of {steps.length}
              </span>
            </div>
-           <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200">
+           <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200 dark:bg-purple-900">
              <div style={{width: `${((currentStep + 1) / steps.length) * 100}%`}} 
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500"/>
+                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500 dark:bg-purple-600"/>
            </div>
          </div>
        </div>
 
        <div className="mb-8">
-         <h2 className="text-xl font-semibold mb-4">{currentStepData.question}</h2>
+         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+           {currentStepData.question}
+         </h2>
 
          {currentStepData.isCustomInput ? (
            <input
@@ -233,7 +239,7 @@ export default function PreferencesPage() {
              value={preferences[currentStepData.id] || ""}
              onChange={(e) => handleInputChange(currentStepData.id === "age" || currentStepData.id === "height" ? 
                Number(e.target.value) : e.target.value)}
-             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
              min={currentStepData.id === "age" ? "10" : "100"}
              max={currentStepData.id === "age" ? "100" : "250"}
            />
@@ -245,22 +251,24 @@ export default function PreferencesPage() {
                  onClick={() => handleInputChange(option.value)}
                  className={`p-4 rounded-lg border-2 text-left transition-colors ${
                    preferences[currentStepData.id] === option.value
-                     ? "border-purple-500 bg-purple-50"
-                     : "border-gray-200 hover:border-purple-200"
+                     ? "border-purple-500 bg-purple-50 dark:bg-purple-900"
+                     : "border-gray-200 dark:border-gray-600 hover:border-purple-200 dark:hover:border-purple-500"
                  }`}
                >
-                 {option.label}
+                 <span className="text-gray-900 dark:text-gray-100">
+                   {option.label}
+                 </span>
                </button>
              ))}
            </div>
          )}
        </div>
 
-       <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+       <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
          <button
            onClick={handlePrevious}
            disabled={currentStep === 0}
-           className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+           className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
          >
            Previous
          </button>
