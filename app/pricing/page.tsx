@@ -132,7 +132,7 @@ const PricingPage = () => {
       <div
         ref={formContainerRef}
         dangerouslySetInnerHTML={{ __html: formHtml }}
-        style={{ marginTop: "20px", border: "1px solid #ddd", padding: "10px" }}
+        className=""
       />
 
       {/* Main Content */}
@@ -141,12 +141,12 @@ const PricingPage = () => {
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="absolute top-6 left-6 bg-transparent text-gray-800 dark:text-white font-semibold py-2 px-4 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300 mt-4"
+            className="absolute top-6 left-6 bg-transparent text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300 mt-4"
           >
             &larr; Back
           </button>
 
-          <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-12 sm:text-5xl mt-4">
+          <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-12 sm:text-5xl mt-6">
             Choose Your Style Plan
           </h2>
 
@@ -154,11 +154,11 @@ const PricingPage = () => {
             {PLANS.map((plan, index) => (
               <div
                 key={index}
-                className={`relative rounded-3xl shadow-lg border border-gray-300 dark:border-gray-700 transition-transform duration-500 hover:scale-105 p-8 ${
+                className={`relative rounded-3xl shadow-lg border border-gray-300 dark:border-gray-600 transition-transform duration-500 hover:scale-105 p-8 ${
                   index === 1
                     ? "bg-gradient-to-t from-purple-500 via-purple-600 to-purple-700 text-white"
                     : index === 2
-                    ? "bg-white/10 backdrop-blur-lg text-gray-400"
+                    ? "bg-white/10 dark:bg-gray-700/10 backdrop-blur-lg text-gray-400 dark:text-gray-300"
                     : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 }`}
               >
@@ -169,7 +169,7 @@ const PricingPage = () => {
                   </span>
                 )}
                 {index === 2 && (
-                  <span className="absolute top-2 right-2 bg-gray-600 text-white text-xs font-semibold py-1 px-3 rounded-full">
+                  <span className="absolute top-2 right-2 bg-gray-600 dark:bg-gray-700 text-white text-xs font-semibold py-1 px-3 rounded-full">
                     Coming Soon
                   </span>
                 )}
@@ -184,7 +184,7 @@ const PricingPage = () => {
                     <li key={i} className="flex items-center space-x-3">
                       <svg
                         className={`h-5 w-5 ${
-                          index === 2 ? "text-gray-500" : "text-green-500"
+                          index === 2 ? "text-gray-500 dark:text-gray-400" : "text-green-500"
                         }`}
                         fill="currentColor"
                         viewBox="0 0 20 20"
@@ -206,8 +206,8 @@ const PricingPage = () => {
                         index === 1
                           ? "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
                           : index === 2
-                          ? "bg-gray-600 cursor-not-allowed opacity-50"
-                          : "bg-gray-800 text-white dark:bg-gray-700 dark:hover:bg-gray-600 hover:bg-gray-900"
+                          ? "bg-gray-600 dark:bg-gray-700 cursor-not-allowed opacity-50"
+                          : "bg-gray-800 dark:bg-gray-700 text-white hover:bg-gray-900 dark:hover:bg-gray-600"
                       }`}
                     onClick={() => handlePlanSelect(plan)}
                   >
