@@ -84,7 +84,7 @@ async function getUserPreferences(userId: string) {
 
 async function handleFashionQuery(prompt: string, messagesStr: string, preferences: string): Promise<string> {
   const fashionPrompt = `
- You are a pro personal fashion assistant of user 
+ Imagine are a best and professional personal fashion assistant of user 
  User prompt:
  ${prompt}
  User preferences:
@@ -132,14 +132,14 @@ async function getOutfitAnalysis(imagePath: string): Promise<string> {
 
 async function refineFashionAdvice(initialAnalysis: string, prompt: string, messagesStr: string, preferences: string): Promise<string> {
   const refinementPrompt = `
-    Previous conversation:
-  ${messagesStr}////
-    you are a pro fashion assistant:
+     Imagine are a best and professional personal fashion assistant of user:
     Initial Analysis of Image uploaded by user:
     ${initialAnalysis}/////
     User Prompt: "${prompt}",
      User preferences:
- ${preferences}, give to the point proper fashion feedback and suggestions with engaging emojis
+ ${preferences}, 
+  Imagine are a best and professional personal fashion assistant of user 
+  Give to the point answer to make user satisfied and also add engaging emojis 
   `;
 
   const response = await openai.call([new HumanMessage(refinementPrompt)]);

@@ -282,7 +282,7 @@ export default function ChatPage() {
       };
 
       // Make AI API request
-      const response = await fetch("/api/huggingface", {
+      const response = await fetch("/api/process", {
         method: "POST",
         body: formData,
         signal: controller.signal,
@@ -429,11 +429,12 @@ export default function ChatPage() {
               console.error("Failed to create user");
             }
           } else {
-            const parsedUser = JSON.parse(localStorage.getItem("user") || "{}");
-            localStorage.setItem("user", JSON.stringify(parsedUser));
-            sessionStorage.setItem("user", JSON.stringify(parsedUser));
-            setLocalStorageUser(parsedUser);
-            checkUserPreferences(parsedUser?.id);
+            const user = data?.user;
+            localStorage.setItem("user", JSON.stringify(user));
+            sessionStorage.setItem("user", JSON.stringify(user));
+            console.log(user,'user')
+            setLocalStorageUser(user);
+            checkUserPreferences(user?.id);
           }
         } else {
           console.error("Error checking user existence");
