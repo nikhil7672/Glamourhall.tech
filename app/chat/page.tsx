@@ -27,6 +27,7 @@ import {
   FaTrash,
   FaSun,
   FaMoon,
+  FaStopCircle,
 } from "react-icons/fa";
 import { BsBellFill } from "react-icons/bs";
 import { useMediaQuery } from "@/utils/useMediaQuery";
@@ -52,6 +53,14 @@ interface MenuItem {
   icon: React.ElementType;
   label: string;
   href: string;
+}
+
+interface GroupedConversations {
+  today: any[];
+  yesterday: any[];
+  last7Days: any[];
+  last30Days: any[];
+  older: any[];
 }
 
 export default function ChatPage() {
@@ -103,6 +112,9 @@ export default function ChatPage() {
   const messageInputRef = useRef<HTMLInputElement | null>(null);
   const [hasPreferences, setHasPreferences] = useState<boolean | null>(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isWaitingResponse, setIsWaitingResponse] = useState(false);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
   // Function to open the Preferences dialog
   const viewPreferenceDialog = () => router.push("/preferences");
@@ -209,36 +221,43 @@ export default function ChatPage() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Early return if no content
     if (!userInput.trim() && imagePreviews.length === 0) return;
-    setHasStartedChat(true);
 
-    // Add user message to chat
+    // Create new AbortController
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    // Set initial states
+    setHasStartedChat(true);
+    setIsWaitingResponse(true);
+    setIsAITyping(true);
+
+    // Store message content before clearing
+    const userMessageContent = userInput;
+    const userImages = [...imagePreviews];
+
+    // Add user message to chat immediately
     setMessages((prevMessages) => [
       ...prevMessages,
       { type: "user", content: userInput, images: imagePreviews },
     ]);
 
-    setIsAITyping(true);
-
-    const userMessageContent = userInput;
-    const userImages = [...imagePreviews];
+    // Clear input and images right away
+    setUserInput("");
+    setImagePreviews([]);
+    const textPrompt = userInput;
 
     try {
-      let uploadedImagePaths: any = [];
-      setImagePreviews([]);
-      const textPrompt = userInput;
-      setUserInput("");
-      // Upload images to the server
+      // Handle image uploads if any
+      let uploadedImagePaths: string[] = [];
       if (imageFiles.length > 0) {
         const uploadFormData = new FormData();
-        imageFiles.forEach((file) => {
-          uploadFormData.append("images", file);
-        });
+        imageFiles.forEach((file) => uploadFormData.append("images", file));
 
         const uploadResponse = await axios.post("/api/upload", uploadFormData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
+          signal: controller.signal,
         });
 
         if (uploadResponse.data.filePaths) {
@@ -248,73 +267,58 @@ export default function ChatPage() {
         }
       }
 
-      // Prepare data for AI processing
+      // Prepare AI request data
       const formData = new FormData();
-      if (userInput.trim()) {
-        formData.append("text", textPrompt);
-      }
+      if (textPrompt.trim()) formData.append("text", textPrompt);
+      uploadedImagePaths.forEach((path) => formData.append("imagePaths", path));
+      if (conversationId) formData.append("conversationId", conversationId);
+      if (localStorageUser) formData.append("userId", localStorageUser?.id);
 
-      uploadedImagePaths.forEach((path: any) => {
-        formData.append("imagePaths", path); // Send file paths instead of file objects
-      });
-      if (conversationId) {
-        formData.append("conversationId", conversationId);
-      }
-      if (localStorageUser) {
-        formData.append("userId", localStorageUser?.id);
-      }
-
+      // Create message objects
       const userMessage = {
-        type: "user",
+        type: "user" as const,
         content: userMessageContent,
         images: uploadedImagePaths,
       };
 
-      // Send data to AI API
+      // Make AI API request
       const response = await fetch("/api/huggingface", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
       const data = await response.json();
-      if (data && data.result) {
-        setIsAITyping(false);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { type: "ai", content: data.result },
-        ]);
-      } else {
-        setIsAITyping(false);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { type: "ai", content: "Sorry, I could not process your request." },
-        ]);
-      }
 
+      // Process AI response
       const aiMessage = {
-        type: "ai",
+        type: "ai" as const,
         content: data?.result || "Sorry, I could not process your request.",
       };
+      setIsWaitingResponse(false);
+      setIsAITyping(false);
+      // Update messages with AI response
+      setMessages((prevMessages) => [...prevMessages, aiMessage]);
 
-      // Reset input and image previews
+      // Handle conversation storage
       if (!activeConversationId) {
         const newConversation = await createConversation([
           userMessage,
           aiMessage,
         ]);
-        console.log(newConversation, "newConversation");
         setActiveConversationId(newConversation.id);
         fetchUserConversations();
       } else {
         await updateConversation([userMessage, aiMessage]);
       }
-
-      setUserInput("");
-      setImagePreviews([]);
-      setImageFiles([]);
     } catch (error) {
-      console.error("Error:", error);
+      setIsWaitingResponse(false);
       setIsAITyping(false);
+      if (error instanceof Error && error.name === "AbortError") {
+        console.log("Request cancelled by user");
+        return;
+      }
+      console.error("Error:", error);
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -323,11 +327,22 @@ export default function ChatPage() {
         },
       ]);
     } finally {
+      // Reset all states
+      setIsWaitingResponse(false);
       setIsAITyping(false);
-      setUserInput("");
-      setImagePreviews([]);
       setImageFiles([]);
+      setAbortController(null);
       scrollToBottom();
+    }
+  };
+
+  // Cancel handler
+  const handleCancel = () => {
+    if (abortController) {
+      abortController.abort();
+      setIsWaitingResponse(false);
+      setIsAITyping(false);
+      setAbortController(null);
     }
   };
 
@@ -405,16 +420,20 @@ export default function ChatPage() {
               // Store user data in storage
               localStorage.setItem("user", JSON.stringify(userData.user));
               sessionStorage.setItem("user", JSON.stringify(userData.user));
-              setLocalStorageUser(userData.user);
-              checkUserPreferences(userData.user.id);
+              const parsedUser = JSON.parse(
+                localStorage.getItem("user") || "{}"
+              );
+              setLocalStorageUser(parsedUser);
+              checkUserPreferences(parsedUser?.id);
             } else {
               console.error("Failed to create user");
             }
           } else {
-            localStorage.setItem("user", JSON.stringify(data.user));
-            sessionStorage.setItem("user", JSON.stringify(data.user));
-            setLocalStorageUser(data.user);
-            checkUserPreferences(data.user.id);
+            const parsedUser = JSON.parse(localStorage.getItem("user") || "{}");
+            localStorage.setItem("user", JSON.stringify(parsedUser));
+            sessionStorage.setItem("user", JSON.stringify(parsedUser));
+            setLocalStorageUser(parsedUser);
+            checkUserPreferences(parsedUser?.id);
           }
         } else {
           console.error("Error checking user existence");
@@ -465,7 +484,7 @@ export default function ChatPage() {
     const last30Days = new Date(today);
     last30Days.setDate(today.getDate() - 30);
 
-    const groupedConversations = {
+    const groupedConversations: GroupedConversations = {
       today: [],
       yesterday: [],
       last7Days: [],
@@ -616,7 +635,7 @@ export default function ChatPage() {
     const groupedConversations = groupConversationsByTimePeriod(conversations);
 
     return (
-      <div className="overflow-y-auto h-[calc(100%-4rem)]">
+      <div className="overflow-y-auto h-full">
         {renderConversationGroup("Today", groupedConversations.today)}
         {renderConversationGroup("Yesterday", groupedConversations.yesterday)}
         {renderConversationGroup("Last 7 Days", groupedConversations.last7Days)}
@@ -759,8 +778,9 @@ export default function ChatPage() {
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
-      setLocalStorageUser(JSON.parse(user));
-      checkUserPreferences(user?.id);
+      const parsedUser = JSON.parse(user);
+      setLocalStorageUser(parsedUser);
+      checkUserPreferences(parsedUser?.id);
     }
   }, []);
   // Loading State
@@ -844,12 +864,43 @@ export default function ChatPage() {
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto p-4">
             {isLoadingChats ? (
-              <div className="flex justify-center p-4">
+              <div className="flex justify-center p-4 h-full">
                 <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-500 border-t-transparent" />
               </div>
             ) : (
               renderConversations()
             )}
+          </div>
+
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => router.push("/pricing")}
+              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 p-0.5 transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.3)_0%,rgba(255,255,255,0)_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative flex items-center justify-center gap-3 rounded-[11px] bg-gradient-to-r from-purple-600 to-blue-500 px-6 py-3 text-white">
+                <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0)_100%)]" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                  />
+                </svg>
+                <span className="text-sm font-semibold">
+                  Upgrade to Premium
+                </span>
+                <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-white/10" />
+                <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-white/5" />
+              </div>
+            </button>
           </div>
         </div>
       </motion.aside>
@@ -1144,58 +1195,56 @@ export default function ChatPage() {
                 </div>
               ))}
 
-{isAITyping && (
-  <div className="flex justify-start my-3 pb-20 md:pb-3">
-    <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-purple-100/20 dark:border-purple-800/20">
-      
-      {/* Brain Icon (Replaces Sparkles) */}
-      <div className="relative w-9 h-9 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: [0, 10, -10, 0] }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <BrainCircuit className="w-5 h-5 text-white" />
-        </motion.div>
-      </div>
+              {isAITyping && (
+                <div className="flex justify-start my-3 pb-20 md:pb-3">
+                  <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-purple-100/20 dark:border-purple-800/20">
+                    {/* Brain Icon (Replaces Sparkles) */}
+                    <div className="relative w-9 h-9 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 flex items-center justify-center">
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        <BrainCircuit className="w-5 h-5 text-white" />
+                      </motion.div>
+                    </div>
 
-      {/* Text and Loader Animation */}
-      <div className="flex items-center gap-3 text-gray-700 dark:text-gray-200">
-        <span className="text-sm font-medium">Thinking...</span>
-        
-        {/* Single Loader Icon */}
-        {/* <motion.div
+                    {/* Text and Loader Animation */}
+                    <div className="flex items-center gap-3 text-gray-700 dark:text-gray-200">
+                      <span className="text-sm font-medium">Thinking...</span>
+
+                      {/* Single Loader Icon */}
+                      {/* <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
         >
           <Loader2 className="w-4 h-4 text-purple-500" />
         </motion.div> */}
 
-        {/* Dots Animation */}
-        <motion.div className="flex gap-1 pt-1">
-          {[...Array(3)].map((_, i) => (
-            <motion.span
-              key={i}
-              className="w-1 h-1 rounded-full bg-purple-500"
-              initial={{ opacity: 0.2 }}
-              animate={{ opacity: 1 }}
-              transition={{
-                duration: 0.6,
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: i * 0.2,
-              }}
-            />
-          ))}
-        </motion.div>
-      </div>
-    </div>
-  </div>
-)}
-
+                      {/* Dots Animation */}
+                      <motion.div className="flex gap-1 pt-1">
+                        {[...Array(3)].map((_, i) => (
+                          <motion.span
+                            key={i}
+                            className="w-1 h-1 rounded-full bg-purple-500"
+                            initial={{ opacity: 0.2 }}
+                            animate={{ opacity: 1 }}
+                            transition={{
+                              duration: 0.6,
+                              repeat: Infinity,
+                              repeatType: "reverse",
+                              delay: i * 0.2,
+                            }}
+                          />
+                        ))}
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1235,12 +1284,24 @@ export default function ChatPage() {
                     />
                   </button>
                 </div>
-                <button
-                  type="submit"
-                  className="p-3 rounded-full bg-gradient-to-r from-purple-500 to-blue-400 text-white hover:opacity-90 transition-opacity"
-                >
-                  <FaPaperPlane className="h-5 w-5" />
-                </button>
+                {isWaitingResponse ? (
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="p-3 rounded-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white shadow-lg hover:shadow-red-500/30 transition-all duration-300"
+                    title="Cancel"
+                  >
+                    <FaStopCircle className="h-5 w-5" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="p-3 rounded-full bg-gradient-to-r from-purple-500 to-blue-400 text-white hover:opacity-90 transition-opacity"
+                    title="Send"
+                  >
+                    <FaPaperPlane className="h-5 w-5" />
+                  </button>
+                )}
               </div>
               {imagePreviews.length > 0 && (
                 <div className="mt-4 flex gap-2 overflow-x-auto">
