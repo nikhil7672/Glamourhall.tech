@@ -10,10 +10,7 @@ interface Product {
   brand: string;
 }
 
-// Use Browserless if you want remote execution; otherwise, use local Puppeteer
-const USE_BROWSERLESS = true;  // Set to true to use Browserless
-
-// Replace with your actual Browserless API key if using Browserless
+// Replace with your actual Browserless API key
 const BROWSERLESS_API_KEY = 'RktIzwq6WkOQLVb6670d38d6014a1417b54cbb9fef';
 
 // User-Agent rotation to mimic different browsers and avoid detection
@@ -28,24 +25,15 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Main scraping function
+// Main scraping function for production
 export async function scrapeProducts(keyTerms: string): Promise<Product[]> {
+  const browserWSEndpoint = `wss://chrome.browserless.io?token=${BROWSERLESS_API_KEY}`;
   let browser;
   const products: Product[] = [];
 
   try {
-    // Configure Puppeteer for local or Browserless usage
-    if (USE_BROWSERLESS) {
-      const browserWSEndpoint = `wss://chrome.browserless.io?token=${BROWSERLESS_API_KEY}`;
-      browser = await puppeteer.connect({ browserWSEndpoint });
-    } else {
-      const puppeteerLocal = await import('puppeteer');  // Use Puppeteer for local execution
-      browser = await puppeteerLocal.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
-    }
-
+    // Connect to Browserless
+    browser = await puppeteer.connect({ browserWSEndpoint });
     const page = await browser.newPage();
 
     // Randomize User-Agent for each request
@@ -148,4 +136,3 @@ async function autoScroll(page: any): Promise<void> {
     });
   });
 }
-
