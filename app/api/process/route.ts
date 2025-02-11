@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       );
 
       // Increased concurrency limit to 4
-      const limit = pLimit(2);
+      const limit = pLimit(4);
       const limitedKeywords = keywords.slice(0, 2);
 
       const productPromises = limitedKeywords.map((term) =>
@@ -254,7 +254,7 @@ async function analyzeOutfitWithContext(
           preferences
         );
 
-        const limit = pLimit(2);
+        const limit = pLimit(4);
         const limitedKeywords = keywords.slice(0, 2);
         const productPromises = limitedKeywords.map((term) =>
           limit(() => cachedScrapeProducts(term))
@@ -380,7 +380,7 @@ async function generateStyleAnalysis(
           preferences
         );
 
-        const limit = pLimit(2);
+        const limit = pLimit(4);
         const limitedKeywords = keywords.slice(0, 2);
         const productPromises = limitedKeywords.map((term) =>
           limit(() => cachedScrapeProducts(term))
