@@ -65,9 +65,9 @@ export async function scrapeProducts(keyTerms: string): Promise<Product[]> {
     });
 
     // Navigate to the Myntra page with optimized settings
-    await page.goto(myntraUrl, {
-      waitUntil: 'domcontentloaded',  // Faster than networkidle0
-      timeout: 30000  // 30 seconds timeout
+      await page.goto(myntraUrl, {
+      waitUntil: 'networkidle2',  // Wait for network activity to settle
+      timeout: 120000  // 2 minutes timeout
     });
 
     // Wait for products to load or show no results
