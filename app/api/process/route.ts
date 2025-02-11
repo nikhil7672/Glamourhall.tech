@@ -3,14 +3,11 @@ import { HfInference } from "@huggingface/inference";
 import { createClient } from "@supabase/supabase-js";
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
-import { scrapeProducts } from "@/app/lib/scraper_prod";
+
 import pLimit from "p-limit";
+import { scrapeProducts } from "@/app/lib/scraper_prod";
 
-export const runtime = 'nodejs';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const maxDuration = 60;
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
@@ -31,19 +28,7 @@ async function cachedScrapeProducts(keyword: string): Promise<any[]> {
   if (productCache.has(keyword)) {
     return productCache.get(keyword)!;
   }
-
-  // Call the scraping API route
-  const response = await fetch(`${process.env.HOST}/api/scrape`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ keyword }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch products");
-  }
-
-  const { products } = await response.json();
+  const products = await scrapeProducts(keyword);
   productCache.set(keyword, products);
   return products;
 }
