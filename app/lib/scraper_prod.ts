@@ -1,8 +1,5 @@
 import puppeteer from 'puppeteer-core';
 import * as cheerio from 'cheerio';
-import { setTimeout } from 'timers/promises';
-import { addExtra } from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 // Define the product structure
 interface Product {
@@ -16,116 +13,91 @@ interface Product {
 // Replace with your actual Browserless API key
 const BROWSERLESS_API_KEY = 'RktIzwq6WkOQLVb6670d38d6014a1417b54cbb9fef';
 
-// User-Agent rotation to mimic different browsers and avoid detection
+// User-Agent rotation to mimic different browsers
 const userAgents = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15',
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'
 ];
 
-// Initialize puppeteer-extra with stealth plugin
-const puppeteerExtra = addExtra(puppeteer);
-puppeteerExtra.use(StealthPlugin());
-
-// Enhanced configuration
-const SCRAPING_CONFIG = {
-  maxRetries: 3,
-  retryDelay: 5000,
-  timeout: 45000,
-  browserlessEndpoint: `wss://chrome.browserless.io?token=${BROWSERLESS_API_KEY}`,
-  headers: {
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Sec-Fetch-Mode': 'navigate',
-  },
-  viewports: [
-    { width: 1920, height: 1080 },
-    { width: 1366, height: 768 },
-    { width: 414, height: 896 },
-  ],
-};
-
-// Sleep function for adding delays
+// Sleep function for delays
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Main scraping function for production
+// Main scraping function
 export async function scrapeProducts(keyTerms: string): Promise<Product[]> {
-  let retries = SCRAPING_CONFIG.maxRetries;
-  const cleanedTerms = keyTerms.replace(/[\[\]]/g, '').trim();
+  const browserWSEndpoint = `wss://chrome.browserless.io?token=${BROWSERLESS_API_KEY}`;
+  let products: Product[] = [];
 
-  while (retries > 0) {
-    const browser = await puppeteerExtra.connect({ 
-      browserWSEndpoint: SCRAPING_CONFIG.browserlessEndpoint,
-      headers: SCRAPING_CONFIG.headers,
+  try {
+    // Connect to Browserless via WebSocket
+    const browser = await puppeteer.connect({ browserWSEndpoint });
+    const page = await browser.newPage();
+
+    // Rotate User-Agent for each request
+    const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+    await page.setUserAgent(randomUserAgent);
+
+    // Set realistic HTTP headers to mimic a browser
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+      'Referer': 'https://www.google.com/'
     });
 
-    try {
-      const page = await browser.newPage();
-      
-      // Configure browser environment
-      await page.setJavaScriptEnabled(true);
-      await page.setUserAgent(userAgents[Math.floor(Math.random() * userAgents.length)]);
-      await page.setExtraHTTPHeaders(SCRAPING_CONFIG.headers);
-      
-      // Set random viewport
-      const viewport = SCRAPING_CONFIG.viewports[
-        Math.floor(Math.random() * SCRAPING_CONFIG.viewports.length)
-      ];
-      await page.setViewport(viewport);
+    await page.setViewport({ width: 1920, height: 1080 });
 
-      // Configure request interception
-      await page.setRequestInterception(true);
-      page.on('request', (req) => {
-        req.resourceType() === 'document' ? req.continue() : req.abort();
-      });
+    const myntraUrl = `https://www.myntra.com/${encodeURIComponent(keyTerms)}`;
+    let retryCount = 0;
+    const maxRetries = 5;
 
-      // Build proper Myntra search URL
-      const searchParams = new URLSearchParams({
-        rawQuery: cleanedTerms,
-        sort: 'relevance',
-      });
-      const myntraUrl = `https://www.myntra.com/${encodeURIComponent(cleanedTerms)}?${searchParams}`;
+    // Retry mechanism for handling 429 and 503 errors with exponential backoff
+    while (retryCount < maxRetries) {
+      try {
+        console.log(`Navigating to: ${myntraUrl}`);
+        await page.goto(myntraUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
-      // Navigate with enhanced timeout handling
-      await page.goto(myntraUrl, {
-        waitUntil: 'domcontentloaded',
-        timeout: SCRAPING_CONFIG.timeout,
-      });
+        // Wait for product listings or "no results" message
+        await Promise.race([
+          page.waitForSelector('.product-base', { timeout: 45000 }),
+          page.waitForSelector('.results-notFound', { timeout: 45000 })
+        ]);
 
-      // Improved element waiting with fallback
-      await Promise.race([
-        page.waitForSelector('.product-base, .results-items', { timeout: 15000 }),
-        page.waitForSelector('.empty-search-title', { timeout: 15000 }),
-      ]);
+        // Scroll to load dynamic content
+        await autoScroll(page);
 
-      // Dynamic scrolling with randomized behavior
-      for (let i = 0; i < 3; i++) {
-        await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.8));
-        await setTimeout(1000 + Math.random() * 2000);
+        // Extra delay before scraping
+        await sleep(2000);
+
+        // Get page content and parse products
+        const html = await page.content();
+        products = parseMyntra(html);
+
+        // Success – exit the retry loop
+        break;
+      } catch (error: any) {
+        if (error.message.includes('429') || error.message.includes('503')) {
+          const waitTime = Math.pow(2, retryCount) * 1000; // Exponential backoff
+          console.log(`Error (${error.message}) encountered. Retrying in ${waitTime / 1000} seconds...`);
+          await sleep(waitTime);
+          retryCount++;
+        } else {
+          console.error('Scraping Error:', error);
+          break;
+        }
       }
-
-      // Content extraction with fallback parsing
-      const html = await page.content();
-      const products = parseMyntra(html);
-
-      if (products.length > 0) {
-        return products.slice(0, 10);
-      }
-
-      retries--;
-      await setTimeout(SCRAPING_CONFIG.retryDelay * (SCRAPING_CONFIG.maxRetries - retries));
-      
-    } catch (error) {
-      console.error(`Scraping attempt ${4 - retries} failed:`, error);
-      retries--;
-      await setTimeout(SCRAPING_CONFIG.retryDelay);
-    } finally {
-      await browser?.close();
     }
+
+    // Close the browser session
+    await browser.close();
+  } catch (error) {
+    console.error('Connection Error:', error);
   }
 
-  return [];
+  // Filter out incomplete products
+  return products.filter(p => p.name && p.price);
 }
 
 // Function to parse Myntra product data using Cheerio
@@ -133,25 +105,19 @@ function parseMyntra(html: string): Product[] {
   const $ = cheerio.load(html);
   const products: Product[] = [];
 
-  $('[class*="product-base"], [class*="productCard"]').each((_, element) => {
-    try {
-      const product: Product = {
-        name: $(element).find('[class*="product-product"], [class*="title"]').text().trim(),
-        price: $(element).find('[class*="product-discountedPrice"], [class*="price"]').text().trim(),
-        image: $(element).find('img:first').attr('src') || '',
-        url: $(element).find('a:first').attr('href') || '',
-        brand: $(element).find('[class*="product-brand"], [class*="brand"]').text().trim(),
-      };
+  $('.product-base').each((_, element) => {
+    const anchor = $(element).find('a');
+    const href = anchor.attr('href') || '';
 
-      if (product.name && product.price) {
-        products.push({
-          ...product,
-          url: product.url.startsWith('http') ? product.url : `https://www.myntra.com/${product.url.replace(/^\//, '')}`
-        });
-      }
-    } catch (error) {
-      console.error('Error parsing product element:', error);
-    }
+    const product: Product = {
+      name: $(element).find('.product-product').text().trim(),
+      brand: $(element).find('.product-brand').text().trim(),
+      price: $(element).find('.product-price').text().trim(),
+      image: $(element).find('picture img').attr('src') || '',
+      url: href.startsWith('http') ? href : `https://www.myntra.com/${href.replace(/^\//, '')}`
+    };
+
+    products.push(product);
   });
 
   return products;
@@ -166,7 +132,6 @@ async function autoScroll(page: any): Promise<void> {
       const timer = setInterval(() => {
         window.scrollBy(0, distance);
         totalHeight += distance;
-
         if (totalHeight >= document.body.scrollHeight) {
           clearInterval(timer);
           resolve();
