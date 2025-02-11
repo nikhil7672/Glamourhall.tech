@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer-core';
-import chromium from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium';
 import * as cheerio from 'cheerio';
 
 interface Product {
@@ -11,37 +11,54 @@ interface Product {
 }
 
 export async function scrapeProducts(keyTerms: string): Promise<Product[]> {
-  const browser = await puppeteer.launch({
-    args: chromium.args,  // Arguments needed for serverless environments
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath,  // Vercel-compatible Chromium path
-    headless: chromium.headless,
-  });
-
-  const page = await browser.newPage();
-
-  // Set User-Agent and other headers to avoid detection
-  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-  await page.setViewport({ width: 1920, height: 1080 });
-
-  const myntraUrl = `https://www.myntra.com/${encodeURIComponent(keyTerms)}`;
-  let products: Product[] = [];
-
-  try {
-    await page.goto(myntraUrl, { waitUntil: 'networkidle0', timeout: 90000 });
-    await page.waitForSelector('.product-base', { timeout: 45000 });
-
-    await autoScroll(page);  // Scroll to load more products
-    const html = await page.content();
-    products = parseMyntra(html);  // Extract product details
-  } catch (error) {
-    console.error('Scraping error:', error);
-  } finally {
-    await browser.close();
+    const browser = await puppeteer.launch({
+      args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    
+    await page.setExtraHTTPHeaders({
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+    });
+  
+    await page.setViewport({
+      width: 1920,
+      height: 1080
+    });
+  
+    const myntraUrl = `https://www.myntra.com/${encodeURIComponent(keyTerms)}`;
+    let products: Product[] = [];
+  
+    try {
+      await page.goto(myntraUrl, {
+        waitUntil: 'networkidle0',
+        timeout: 90000
+      });
+  
+      await Promise.race([
+        page.waitForSelector('.product-base', { timeout: 45000 }),
+        page.waitForSelector('.results-notFound', { timeout: 45000 })
+      ]);
+  
+      await autoScroll(page);
+      await new Promise(r => setTimeout(r, 2000));
+      const html = await page.content();
+      products = await parseMyntra(html);
+    } catch (error) {
+      console.error('Scraping error:', error);
+    } finally {
+      await browser.close();
+    }
+  
+    return products.filter(p => p.name && p.price);
   }
-
-  return products.filter(p => p.name && p.price);
-}
 
 function parseMyntra(html: string): Product[] {
   const $ = cheerio.load(html);

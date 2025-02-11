@@ -6,6 +6,17 @@ import { HumanMessage } from "@langchain/core/messages";
 import { scrapeProducts } from "@/lib/scraper_prod";
 import pLimit from "p-limit";
 
+export const runtime = 'edge';
+export const config = {
+  api: {
+    responseLimit: false,
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+  maxDuration: 300, // 5 minutes
+}
+
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 const supabaseUrl = process.env.SUPABASE_URL || "";
