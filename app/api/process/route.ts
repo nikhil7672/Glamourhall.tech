@@ -6,7 +6,8 @@ import { HumanMessage } from "@langchain/core/messages";
 import { scrapeProducts } from "@/app/lib/scraper_prod";
 import pLimit from "p-limit";
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const maxDuration = 300;
