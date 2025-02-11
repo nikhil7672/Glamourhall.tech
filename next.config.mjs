@@ -21,27 +21,20 @@ const nextConfig = {
         },
       ];
     },
-    experimental: {
-      serverComponentsExternalPackages: [
-        'puppeteer-core',
-        'puppeteer-extra',
-        'puppeteer-extra-plugin-stealth',
-        '@puppeteer-extra/stealth/evasions'
-      ],
-      transpilePackages: [
-        'puppeteer-core',
-        'puppeteer-extra',
-        'puppeteer-extra-plugin-stealth',
-        '@puppeteer-extra/stealth'
-      ],
-    },
-    webpack: (config) => {
-      config.externals.push({
-        'utf-8-validate': 'commonjs utf-8-validate',
-        'bufferutil': 'commonjs bufferutil'
-      });
-      return config;
-    }
+     experimental: {
+    serverComponentsExternalPackages: [
+      'puppeteer-core',
+      'puppeteer-extra',
+      'puppeteer-extra-plugin-stealth',
+    ],
+  },
+  webpack: (config) => {
+    config.externals.push({
+      'utf-8-validate': 'commonjs utf-8-validate',
+      'bufferutil': 'commonjs bufferutil'
+    });
+    return config;
+  }
   };
   
   export default nextConfig;
