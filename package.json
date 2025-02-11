@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "PUPPETEER_SKIP_DOWNLOAD=true npm install puppeteer-core"
+    "lint": "next lint"
   },
   "dependencies": {
     "@google-cloud/aiplatform": "^3.34.0",
@@ -29,7 +28,6 @@
     "bcryptjs": "^2.4.3",
     "canvas-confetti": "^1.9.3",
     "cheerio": "^1.0.0",
-    "chrome-aws-lambda": "^10.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

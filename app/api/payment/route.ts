@@ -53,6 +53,7 @@ export async function POST(req: Request) {
       furl: `${host}/api/verify/${txnId}`,
       hash: hash,
       curl: `${host}/api/verify/${txnId}`, // Optional cancel URL
+      currency: 'USD',
       udf1: '', // Optional user defined fields
       udf2: '',
       udf3: '',

@@ -3,7 +3,7 @@ import { HfInference } from "@huggingface/inference";
 import { createClient } from "@supabase/supabase-js";
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
-import { scrapeProducts } from "@/lib/scraper_prod";
+import { scrapeProducts } from "@/app/lib/scraper_prod";
 import pLimit from "p-limit";
 
 export const runtime = 'edge';
@@ -30,7 +30,19 @@ async function cachedScrapeProducts(keyword: string): Promise<any[]> {
   if (productCache.has(keyword)) {
     return productCache.get(keyword)!;
   }
-  const products = await scrapeProducts(keyword);
+
+  // Call the scraping API route
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/scrape`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ keyword }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch products");
+  }
+
+  const { products } = await response.json();
   productCache.set(keyword, products);
   return products;
 }
