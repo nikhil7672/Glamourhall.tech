@@ -3,7 +3,7 @@ import { HfInference } from "@huggingface/inference";
 import { createClient } from "@supabase/supabase-js";
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
-import { scrapeProducts } from "@/lib/scraper";
+import { scrapeProducts } from "@/lib/scraper_prod";
 import pLimit from "p-limit";
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "PUPPETEER_SKIP_DOWNLOAD=true npm install puppeteer-core"
   },
   "dependencies": {
     "@google-cloud/aiplatform": "^3.34.0",
@@ -27,6 +28,7 @@
     "bcryptjs": "^2.4.3",
     "canvas-confetti": "^1.9.3",
     "cheerio": "^1.0.0",
+    "chrome-aws-lambda": "^10.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -45,7 +47,7 @@
     "openai": "^4.80.1",
     "p-limit": "^6.2.0",
     "payu-websdk": "^1.1.1",
-    "puppeteer": "^24.2.0",
+    "puppeteer-core": "^24.2.0",
     "react": "^18",
     "react-dom": "^18",
     "react-hot-toast": "^2.5.1",
