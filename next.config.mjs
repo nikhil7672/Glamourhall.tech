@@ -4,7 +4,10 @@ const nextConfig = {
       ignoreBuildErrors: true,  // Disable TypeScript type checking during the build
     },
     images: {
-      domains: ['lh3.googleusercontent.com'], // Add the domain to the list
+      domains: [
+        'lh3.googleusercontent.com',
+        'assets.myntassets.com'
+      ], // Add the domain to the list
     },
     async headers() {
       return [

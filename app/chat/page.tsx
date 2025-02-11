@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Sparkles, Loader2, Brain, BrainCircuit } from "lucide-react";
+import { Sparkles, Loader2, Brain, BrainCircuit, EyeIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { TypingAnimation } from "../../components/typing-animation";
 import { motion } from "framer-motion";
@@ -45,6 +45,7 @@ interface Message {
   type: "user" | "ai";
   content: string;
   images?: string[];
+  products?: any[];
   timestamp?: Date;
   isHistory?: boolean;
 }
@@ -193,6 +194,8 @@ export default function ChatPage() {
           content: msg.content,
           ...(msg.type === "user" &&
             msg.images?.length && { images: msg.images }),
+          ...(msg.type === "ai" &&
+            msg.products?.length && { products: msg.products })
         })),
       };
 
@@ -294,6 +297,7 @@ export default function ChatPage() {
       const aiMessage = {
         type: "ai" as const,
         content: data?.result || "Sorry, I could not process your request.",
+        products: data?.products || []
       };
       setIsWaitingResponse(false);
       setIsAITyping(false);
@@ -1190,6 +1194,51 @@ export default function ChatPage() {
                         ) : (
                           <ReactMarkdown>{message.content}</ReactMarkdown>
                         )}
+                      </div>
+                    )}
+                    {message.products && message.products.length > 0 && (
+                      <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
+                        {message.products.map((product, productIndex) => (
+                          <a
+                            key={productIndex}
+                            href={product.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group relative block bg-white dark:bg-gray-800 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 hover:rotate-1"
+                          >
+                            {/* Image with gradient overlay */}
+                            <div className="aspect-square relative bg-gray-100 dark:bg-gray-700">
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                sizes="(max-width: 640px) 50vw, 20vw"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                            </div>
+
+                            {/* Brand Badge */}
+                            {product.brand && (
+                              <div className="absolute top-3 left-3 bg-white/90 dark:bg-gray-900/90 px-2.5 py-1 rounded-full text-[10px] md:text-xs font-semibold text-amber-600 dark:text-amber-400 shadow-sm backdrop-blur-sm">
+                                {product.brand}
+                              </div>
+                            )}
+
+                            {/* Product Info */}
+                            <div className="p-3 md:p-4">
+                              <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
+                                {product.name}
+                              </h3>
+                              <p className="text-xs md:text-sm text-purple-600 dark:text-purple-400 font-bold mt-1">
+                                {product.price}
+                              </p>
+                            </div>
+
+                            {/* Hover Effect Border */}
+                            <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-400 rounded-xl transition-colors duration-300 pointer-events-none" />
+                          </a>
+                        ))}
                       </div>
                     )}
                   </div>

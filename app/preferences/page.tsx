@@ -18,81 +18,70 @@ interface Step {
 }
 
 interface PreferencesState {
- gender: string;
- age?: number;
- height?: number;
- style: string;
- body_shape: string;
- fit_preference: string;
- occasions: string[];
-}
+  gender: string;
+  age?: number;
+  height?: number;
+  body_shape?: string;
+  fit_preference?: string;
+  accessory_style?: string;
+ }
 
 interface User {
  id: string;
 }
 
 const steps: Step[] = [
- {
-   id: "gender",
-   question: "Select your gender",
+  {
+    id: "gender",
+    question: "Select your gender",
+    options: [
+      { value: "male", label: "Male ♂️" },
+      { value: "female", label: "Female ♀️" },
+      { value: "nonbinary", label: "Non-Binary ⚧️" },
+      { value: "prefer_not_say", label: "Prefer not to say 🙊" },
+    ],
+  },
+  {
+    id: "age",
+    question: "Enter your age",
+    isCustomInput: true,
+  },
+  {
+    id: "height", 
+    question: "Enter your height (cm)",
+    isCustomInput: true,
+  },
+  {
+    id: "body_shape",
+    question: "Which body shape best describes you?",
+    options: [
+      { value: "rectangle", label: "Rectangle ▭" },
+      { value: "hourglass", label: "Hourglass ⏳" },
+      { value: "pear", label: "Pear 🍐" }, 
+      { value: "apple", label: "Apple 🍎" },
+      { value: "triangle", label: "Triangle 🔺" },
+    ],
+  },
+  {
+    id: "fit_preference",
+    question: "How do you like your clothes to fit?",
+    options: [
+      { value: "slim", label: "Slim Fit 🏃" },
+      { value: "regular", label: "Regular Fit 👕" },
+      { value: "oversized", label: "Oversized 😎" },
+    ],
+  },
+  {
+   id: "accessory_style",
+   question: "How do you accessorize?",
    options: [
-     { value: "male", label: "Male ♂️" },
-     { value: "female", label: "Female ♀️" },
-     { value: "nonbinary", label: "Non-Binary ⚧️" },
-     { value: "prefer_not_say", label: "Prefer not to say 🙊" },
+     { value: "minimal", label: "Minimal ✨ (Simple jewelry)" },
+     { value: "statement", label: "Statement 💥 (Bold pieces)" },
+     { value: "functional", label: "Functional 🕶️ (Hats, belts)" },
+     { value: "none", label: "No Accessories 🙅" },
    ],
  },
- {
-   id: "age",
-   question: "Enter your age",
-   isCustomInput: true,
- },
- {
-   id: "height", 
-   question: "Enter your height (cm)",
-   isCustomInput: true,
- },
- {
-   id: "body_shape",
-   question: "Which body shape best describes you?",
-   options: [
-     { value: "rectangle", label: "Rectangle ▭" },
-     { value: "hourglass", label: "Hourglass ⏳" },
-     { value: "pear", label: "Pear 🍐" },
-     { value: "apple", label: "Apple 🍎" },
-     { value: "triangle", label: "Triangle 🔺" },
-   ],
- },
- {
-   id: "style",
-   question: "What's your preferred style?",
-   options: [
-     { value: "casual", label: "Casual 😎" },
-     { value: "professional", label: "Professional 💼" },
-     { value: "streetwear", label: "Streetwear 🧢" },
-     { value: "minimalist", label: "Minimalist ⚪" },
-   ],
- },
- {
-   id: "fit_preference",
-   question: "How do you like your clothes to fit?",
-   options: [
-     { value: "slim", label: "Slim Fit 🏃" },
-     { value: "regular", label: "Regular Fit 👕" },
-     { value: "oversized", label: "Oversized 😎" },
-   ],
- },
- {
-   id: "occasions",
-   question: "What occasions do you dress for most?",
-   options: [
-     { value: "casual", label: "Casual Days 🌅" },
-     { value: "work", label: "Work 💼" },
-     { value: "evening", label: "Evening Out 🌙" },
-     { value: "special", label: "Special Events ✨" },
-   ],
- }
-];
+ ];
 
 export default function PreferencesPage() {
  const [currentStep, setCurrentStep] = useState(0);
@@ -126,10 +115,9 @@ export default function PreferencesPage() {
            gender: "",
            age: undefined,
            height: undefined,
-           style: "",
            body_shape: "",
            fit_preference: "",
-           occasions: [],
+           accessory_style: "",
          });
        }
      };

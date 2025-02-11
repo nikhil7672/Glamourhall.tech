@@ -21,11 +21,9 @@ interface PreferencesState {
  gender: string;
  age?: number;
  height?: number;
- style: string;
-//  budget: string;
  body_shape?: string;
  fit_preference?: string;
- occasions: string[];
+ accessory_style?: string;
 }
 
 interface StylePreferenceStepperProps {
@@ -68,16 +66,6 @@ const steps: Step[] = [
    ],
  },
  {
-   id: "style",
-   question: "What's your preferred style?",
-   options: [
-     { value: "casual", label: "Casual 😎" },
-     { value: "professional", label: "Professional 💼" },
-     { value: "streetwear", label: "Streetwear 🧢" },
-     { value: "minimalist", label: "Minimalist ⚪" },
-   ],
- },
- {
    id: "fit_preference",
    question: "How do you like your clothes to fit?",
    options: [
@@ -86,25 +74,16 @@ const steps: Step[] = [
      { value: "oversized", label: "Oversized 😎" },
    ],
  },
-//  {
-//    id: "budget",
-//    question: "What's your shopping budget?",
-//    options: [
-//      { value: "budget", label: "Budget-Friendly 💰" },
-//      { value: "moderate", label: "Moderate 💰💰" },
-//      { value: "luxury", label: "Luxury 💰💰💰" },
-//    ],
-//  },
  {
-   id: "occasions",
-   question: "What occasions do you dress for most?",
-   options: [
-     { value: "casual", label: "Casual Days 🌅" },
-     { value: "work", label: "Work 💼" },
-     { value: "evening", label: "Evening Out 🌙" },
-     { value: "special", label: "Special Events ✨" },
-   ],
- },
+  id: "accessory_style",
+  question: "How do you accessorize?",
+  options: [
+    { value: "minimal", label: "Minimal ✨ (Simple jewelry)" },
+    { value: "statement", label: "Statement 💥 (Bold pieces)" },
+    { value: "functional", label: "Functional 🕶️ (Hats, belts)" },
+    { value: "none", label: "No Accessories 🙅" },
+  ],
+},
 ];
 
 export function StylePreferenceStepper({
@@ -118,11 +97,9 @@ export function StylePreferenceStepper({
    gender: "",
    age: undefined,
    height: undefined,
-   style: "",
-  //  budget: "",
    body_shape: "",
    fit_preference: "",
-   occasions: [],
+   accessory_style: "",
  });
  const [error, setError] = useState("");
 
