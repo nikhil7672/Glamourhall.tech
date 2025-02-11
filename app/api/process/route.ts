@@ -33,7 +33,7 @@ async function cachedScrapeProducts(keyword: string): Promise<any[]> {
   }
 
   // Call the scraping API route
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/scrape`, {
+  const response = await fetch(`${process.env.HOST}/api/scrape`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ keyword }),
