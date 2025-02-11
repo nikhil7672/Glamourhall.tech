@@ -22,7 +22,11 @@ const nextConfig = {
       ];
     },
     experimental: {
-      serverComponentsExternalPackages: ['@sparticuz/chromium']
+      serverComponentsExternalPackages: [
+        'puppeteer-core',
+        'puppeteer-extra',
+        'puppeteer-extra-plugin-stealth'
+      ],
     }
   };
   
