@@ -7,15 +7,9 @@ import { scrapeProducts } from "@/lib/scraper_prod";
 import pLimit from "p-limit";
 
 export const runtime = 'edge';
-export const config = {
-  api: {
-    responseLimit: false,
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-  maxDuration: 300, // 5 minutes
-}
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const maxDuration = 300;
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
