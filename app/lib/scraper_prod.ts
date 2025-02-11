@@ -25,14 +25,37 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Connect to Browserless with retry logic to handle 429 rate limiting errors
+async function connectBrowser(browserWSEndpoint: string): Promise<puppeteer.Browser> {
+  const maxRetries = 5;
+  let retryCount = 0;
+  while (retryCount < maxRetries) {
+    try {
+      console.log(`Attempting to connect to Browserless...`);
+      const browser = await puppeteer.connect({ browserWSEndpoint });
+      return browser;
+    } catch (error: any) {
+      if (error.message && error.message.includes("429")) {
+        const waitTime = Math.pow(2, retryCount) * 1000;
+        console.log(`Rate limited while connecting. Retrying in ${waitTime} ms...`);
+        await sleep(waitTime);
+        retryCount++;
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error("Failed to connect to Browserless after multiple retries");
+}
+
 // Main scraping function
 export async function scrapeProducts(keyTerms: string): Promise<Product[]> {
   const browserWSEndpoint = `wss://chrome.browserless.io?token=${BROWSERLESS_API_KEY}`;
   let products: Product[] = [];
 
   try {
-    // Connect to Browserless via WebSocket
-    const browser = await puppeteer.connect({ browserWSEndpoint });
+    // Use the connection function with retry logic
+    const browser = await connectBrowser(browserWSEndpoint);
     const page = await browser.newPage();
 
     // Rotate User-Agent for each request
@@ -48,12 +71,12 @@ export async function scrapeProducts(keyTerms: string): Promise<Product[]> {
     });
 
     await page.setViewport({ width: 1920, height: 1080 });
-
     const myntraUrl = `https://www.myntra.com/${encodeURIComponent(keyTerms)}`;
+
     let retryCount = 0;
     const maxRetries = 5;
 
-    // Retry mechanism for handling 429 and 503 errors with exponential backoff
+    // Retry mechanism for handling 429 and 503 errors during page navigation
     while (retryCount < maxRetries) {
       try {
         console.log(`Navigating to: ${myntraUrl}`);
@@ -71,16 +94,14 @@ export async function scrapeProducts(keyTerms: string): Promise<Product[]> {
         // Extra delay before scraping
         await sleep(2000);
 
-        // Get page content and parse products
         const html = await page.content();
         products = parseMyntra(html);
-
-        // Success – exit the retry loop
+        // Break on successful scraping
         break;
       } catch (error: any) {
-        if (error.message.includes('429') || error.message.includes('503')) {
-          const waitTime = Math.pow(2, retryCount) * 1000; // Exponential backoff
-          console.log(`Error (${error.message}) encountered. Retrying in ${waitTime / 1000} seconds...`);
+        if (error.message && (error.message.includes('429') || error.message.includes('503'))) {
+          const waitTime = Math.pow(2, retryCount) * 1000;  // Exponential backoff
+          console.log(`Encountered error (${error.message}). Retrying in ${waitTime} ms...`);
           await sleep(waitTime);
           retryCount++;
         } else {
