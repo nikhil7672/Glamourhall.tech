@@ -7,8 +7,6 @@ import { HumanMessage } from "@langchain/core/messages";
 import pLimit from "p-limit";
 import { scrapeProducts } from "@/app/lib/scraper_prod";
 
-
-
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 const supabaseUrl = process.env.SUPABASE_URL || "";
@@ -24,13 +22,46 @@ const openai = new ChatOpenAI({
 // Simple in-memory cache for product scraping
 const productCache = new Map<string, any[]>();
 
+// Add these constants at the top
+const SCRAPING_CONFIG = {
+  maxConcurrency: 1, // Reduced from 4 to 1
+  delayBetweenRequests: 5000, // 5 seconds
+  maxRetries: 3,
+  retryBaseDelay: 2000,
+};
+
+// Update the scraping function with retry logic
 async function cachedScrapeProducts(keyword: string): Promise<any[]> {
   if (productCache.has(keyword)) {
     return productCache.get(keyword)!;
   }
-  const products = await scrapeProducts(keyword);
-  productCache.set(keyword, products);
-  return products;
+
+  let retries = SCRAPING_CONFIG.maxRetries;
+  let result: any[] = [];
+  
+  while (retries > 0) {
+    try {
+      result = await scrapeWithDelay(keyword);
+      productCache.set(keyword, result);
+      return result;
+    } catch (error) {
+      retries--;
+      if (retries === 0) throw error;
+      await new Promise(resolve => 
+        setTimeout(resolve, SCRAPING_CONFIG.retryBaseDelay * (SCRAPING_CONFIG.maxRetries - retries))
+      );
+    }
+  }
+  
+  return result;
+}
+
+// Add delay helper function
+async function scrapeWithDelay(keyword: string) {
+  await new Promise(resolve => 
+    setTimeout(resolve, SCRAPING_CONFIG.delayBetweenRequests + Math.random() * 2000)
+  );
+  return scrapeProducts(keyword);
 }
 
 export async function POST(req: NextRequest) {
