@@ -273,7 +273,7 @@ export default function ChatPage() {
       // Prepare AI request data
       const formData = new FormData();
       if (textPrompt.trim()) formData.append("text", textPrompt);
-      uploadedImagePaths.forEach((path) => formData.append("imagePaths", path));
+      formData.append("imagePaths", JSON.stringify(uploadedImagePaths));
       if (conversationId) formData.append("conversationId", conversationId);
       if (localStorageUser) formData.append("userId", localStorageUser?.id);
 
@@ -285,7 +285,7 @@ export default function ChatPage() {
       };
 
       // Make AI API request
-      const response = await fetch("/api/process", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/fashion`, {
         method: "POST",
         body: formData,
         signal: controller.signal,
@@ -1230,9 +1230,9 @@ export default function ChatPage() {
                               <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
                                 {product.name}
                               </h3>
-                              <p className="text-xs md:text-sm text-purple-600 dark:text-purple-400 font-bold mt-1">
+                              {/* <p className="text-xs md:text-sm text-purple-600 dark:text-purple-400 font-bold mt-1">
                                 {product.price}
-                              </p>
+                              </p> */}
                             </div>
 
                             {/* Hover Effect Border */}
