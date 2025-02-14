@@ -10,6 +10,7 @@ import { TypingAnimation } from "../../components/typing-animation";
 import { motion } from "framer-motion";
 import { Popover, Transition } from "@headlessui/react";
 import { Fragment } from "react";
+import toast, { Toaster } from 'react-hot-toast'
 import {
   FaBars,
   FaTimes,
@@ -290,9 +291,115 @@ export default function ChatPage() {
         {
           method: "POST",
           body: formData,
+          headers: {
+            'x-user-id': localStorageUser?.id
+          },
           signal: controller.signal,
         }
       );
+
+      if (response.status === 429) {
+        const errorData = await response.json();
+        const resetTime = new Date(errorData.resetTime).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true // Force 12-hour format
+        });
+      
+        toast.error(
+          <div className="relative flex flex-col gap-4 p-6 max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+            {/* Header Row */}
+            <div className="flex justify-between items-start">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Request Limit Reached
+              </h3>
+              <button
+                onClick={() => toast.dismiss()}
+                className="p-1 -mt-1 -mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-gray-500 dark:text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Rest of the content */}
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <span className="text-2xl">⏳</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1.5 flex-wrap justify-center">
+                  <span className="whitespace-nowrap">Next requests available at</span>
+                  <span className="font-medium text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                    {resetTime}
+                  </span>
+                </p>
+              </div>
+            </div>
+            
+            {/* Upgrade Button */}
+            <motion.a
+              href="/pricing"
+              className="group relative overflow-hidden rounded-lg"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/pricing';
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-yellow-400 opacity-90 transition-all duration-300" />
+              <div className="relative flex items-center justify-center gap-2 px-6 py-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-amber-900"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm font-semibold text-amber-900 tracking-wide">
+                  Upgrade to Premium
+                </span>
+              </div>
+            </motion.a>
+          </div>,
+          {
+            duration: 10000,
+            icon: "⏳",
+            style: {
+              border: 'none',
+              padding: 0,
+              background: 'transparent',
+              boxShadow: 'none',
+            },
+            className: '!max-w-[500px] [&>div]:relative', // Added relative positioning
+          }
+        );
+        return;
+      }
+      
+      
+  
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
 
       const data = await response.json();
 
@@ -879,52 +986,39 @@ export default function ChatPage() {
               renderConversations()
             )}
           </div>
-{/* 
+
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <button
+            <motion.button
               onClick={() => router.push("/pricing")}
-              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 p-0.5 transition-all duration-300"
+              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 p-0.5 transition-all duration-300"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.3)_0%,rgba(255,255,255,0)_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative flex items-center justify-center gap-3 rounded-[11px] bg-gradient-to-r from-purple-600 to-blue-500 px-6 py-3 text-white">
-                <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0)_100%)]" />
+              <div className="relative flex items-center justify-center gap-3 rounded-[11px] bg-gradient-to-r from-amber-500 to-yellow-400 px-6 py-3.5">
+                <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0)_100%)]" />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
+                  className="h-6 w-6 text-amber-900"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  strokeWidth="2"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                   />
                 </svg>
-                <span className="text-sm font-semibold">
+                <span className="text-sm font-semibold text-amber-900 tracking-wide">
                   Upgrade to Premium
                 </span>
-                <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-white/10" />
-                <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-white/5" />
+                <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-amber-600/10" />
+                <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-amber-600/5" />
               </div>
-            </button>
-          </div> */}
-                    <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-600/20 hover:to-blue-600/20 p-0.5 transition-all duration-300">
-              <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0)_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative flex items-center justify-center gap-2 rounded-[11px] bg-gray-50 dark:bg-gray-900 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🇮🇳</span>
-                  <span className="text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent dark:from-purple-400 dark:to-blue-400">
-                    Proudly Made in India
-                  </span>
-                </div>
-                <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-purple-500/10 dark:bg-blue-500/10" />
-                <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-purple-500/5 dark:bg-blue-500/5" />
-              </div>
-            </div>
-          </div>
+            </motion.button>
+          </div> 
         </div>
       </motion.aside>
 
@@ -1435,6 +1529,7 @@ export default function ChatPage() {
             </form>
           </div>
         </div>
+        <Toaster />
       </div>
       <NotificationDialog
         isOpen={isNotificationOpen}
