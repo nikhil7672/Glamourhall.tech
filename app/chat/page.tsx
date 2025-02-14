@@ -880,7 +880,7 @@ export default function ChatPage() {
             )}
           </div>
 
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={() => router.push("/pricing")}
               className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 p-0.5 transition-all duration-300"
@@ -909,7 +909,7 @@ export default function ChatPage() {
                 <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-white/5" />
               </div>
             </button>
-          </div>
+          </div> */}
         </div>
       </motion.aside>
 
@@ -1200,79 +1200,89 @@ export default function ChatPage() {
                       </div>
                     )}
                     {message.products && message.products.length > 0 && (
-                      <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
-                        {message.products.map((product, productIndex) => {
-                          // Convert rating string to number (e.g., "4.4 out of 5 stars" -> 4.4)
-                          const ratingNumber = parseFloat(
-                            product.rating.split(" ")[0]
-                          );
+                      <div className="mt-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <Sparkles className="w-6 h-6 text-purple-500 dark:text-purple-400 transition-transform hover:scale-110" />
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                            Style Matches
+                          </h3>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
+                          {message.products.map((product, productIndex) => {
+                            const ratingNumber = parseFloat(
+                              product.rating.split(" ")[0]
+                            );
 
-                          return (
-                            <a
-                              key={productIndex}
-                              href={product.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="group relative block bg-white dark:bg-gray-800 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 hover:rotate-1"
-                            >
-                              {/* Image with gradient overlay */}
-                              <div className="aspect-square relative bg-gray-100 dark:bg-gray-700">
-                                <Image
-                                  src={product.image}
-                                  alt={product.name}
-                                  fill
-                                  className="object-cover transition-transform duration-300 group-hover:scale-110"
-                                  sizes="(max-width: 640px) 50vw, 20vw"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                              </div>
+                            return (
+                              <a
+                                key={productIndex}
+                                href={product.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group relative block bg-white dark:bg-gray-800 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 hover:rotate-1"
+                              >
+                                {/* Image with gradient overlay */}
+                                <div className="aspect-square relative bg-gray-100 dark:bg-gray-700">
+                                  <Image
+                                    src={product.image}
+                                    alt={product.name}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                    sizes="(max-width: 640px) 50vw, 20vw"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                </div>
 
-                              {/* Enhanced Rating and Reviews */}
-                              <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 px-2 py-1 rounded-lg backdrop-blur-sm shadow-sm transition-colors duration-200">
-                                <div className="flex flex-col space-y-0.5">
-                                  <div className="flex items-center space-x-0.5">
-                                    {[...Array(5)].map((_, i) => (
-                                      <span key={i} className="text-[0.65rem]">
-                                        {i < Math.floor(ratingNumber) ? (
-                                          <span className="text-amber-500 dark:text-amber-400">
-                                            ★
-                                          </span>
-                                        ) : i === Math.floor(ratingNumber) &&
-                                          ratingNumber % 1 >= 0.5 ? (
-                                          <span className="text-amber-500 dark:text-amber-400">
-                                            ★
-                                          </span>
-                                        ) : (
-                                          <span className="text-gray-300 dark:text-gray-600">
-                                            ☆
-                                          </span>
-                                        )}
+                                {/* Enhanced Rating and Reviews */}
+                                <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 px-2 py-1 rounded-lg backdrop-blur-sm shadow-sm transition-colors duration-200">
+                                  <div className="flex flex-col space-y-0.5">
+                                    <div className="flex items-center space-x-0.5">
+                                      {[...Array(5)].map((_, i) => (
+                                        <span
+                                          key={i}
+                                          className="text-[0.65rem]"
+                                        >
+                                          {i < Math.floor(ratingNumber) ? (
+                                            <span className="text-amber-500 dark:text-amber-400">
+                                              ★
+                                            </span>
+                                          ) : i === Math.floor(ratingNumber) &&
+                                            ratingNumber % 1 >= 0.5 ? (
+                                            <span className="text-amber-500 dark:text-amber-400">
+                                              ★
+                                            </span>
+                                          ) : (
+                                            <span className="text-gray-300 dark:text-gray-600">
+                                              ☆
+                                            </span>
+                                          )}
+                                        </span>
+                                      ))}
+                                      <span className="text-[0.65rem] ml-1 font-medium">
+                                        {isNaN(ratingNumber)
+                                          ? 0
+                                          : ratingNumber.toFixed(1)}
                                       </span>
-                                    ))}
-                                    <span className="text-[0.65rem] ml-1 font-medium">
-                                      {isNaN(ratingNumber)
-                                        ? 0
-                                        : ratingNumber.toFixed(1)}
-                                    </span>
-                                  </div>
-                                  <div className="text-[0.6rem] text-gray-500 dark:text-gray-400">
-                                    {product.reviews || 0} reviews
+                                    </div>
+                                    <div className="text-[0.6rem] text-gray-500 dark:text-gray-400">
+                                      {product.reviews || 0} reviews
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
 
-                              {/* Product Info */}
-                              <div className="p-3 md:p-4">
-                                <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
-                                  {product.name}
-                                </h3>
-                              </div>
+                                {/* Product Info */}
+                                <div className="p-3 md:p-4">
+                                  <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
+                                    {product.name}
+                                  </h3>
+                                </div>
 
-                              {/* Hover Effect Border */}
-                              <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-400 rounded-xl transition-colors duration-300 pointer-events-none" />
-                            </a>
-                          );
-                        })}
+                                {/* Hover Effect Border */}
+                                <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-400 rounded-xl transition-colors duration-300 pointer-events-none" />
+                              </a>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>
