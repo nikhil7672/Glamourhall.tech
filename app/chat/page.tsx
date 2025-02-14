@@ -879,8 +879,8 @@ export default function ChatPage() {
               renderConversations()
             )}
           </div>
-
-          {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+{/* 
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={() => router.push("/pricing")}
               className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 p-0.5 transition-all duration-300"
@@ -910,6 +910,21 @@ export default function ChatPage() {
               </div>
             </button>
           </div> */}
+                    <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-600/20 hover:to-blue-600/20 p-0.5 transition-all duration-300">
+              <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0)_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative flex items-center justify-center gap-2 rounded-[11px] bg-gray-50 dark:bg-gray-900 px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🇮🇳</span>
+                  <span className="text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent dark:from-purple-400 dark:to-blue-400">
+                    Proudly Made in India
+                  </span>
+                </div>
+                <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-purple-500/10 dark:bg-blue-500/10" />
+                <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-purple-500/5 dark:bg-blue-500/5" />
+              </div>
+            </div>
+          </div>
         </div>
       </motion.aside>
 

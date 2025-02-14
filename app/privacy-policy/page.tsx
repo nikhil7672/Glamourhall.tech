@@ -35,7 +35,14 @@ export default function AboutPage() {
 
       <h2 className="text-2xl font-semibold mt-6">Contact Information</h2>
       <p className="mt-2 text-gray-700">
-        For inquiries, support, or collaborations, feel free to reach out to us via our <Link href="/contact" className="text-blue-500 underline">Contact Page</Link>.
+        For inquiries or support, please email directly at{" "}
+        <a 
+          href="mailto:avisekhgurung099@gmail.com" 
+          className="text-blue-500 underline hover:text-blue-700"
+        >
+          avisekhgurung099@gmail.com
+        </a>
+        .
       </p>
 
       <p className="mt-8">

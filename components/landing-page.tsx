@@ -755,82 +755,100 @@ export function LandingPageComponent() {
       </main>
       {/* Footer */}
       <footer className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden">
-        {/* Background Accents */}
-        <div className="absolute top-0 left-0 w-32 h-32 bg-purple-400 opacity-20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-48 h-48 bg-blue-400 opacity-20 rounded-full blur-3xl animate-pulse delay-200"></div>
+  {/* Background Accents */}
+  <div className="absolute top-0 left-0 w-32 h-32 bg-purple-400 opacity-20 rounded-full blur-3xl animate-pulse"></div>
+  <div className="absolute bottom-0 right-0 w-48 h-48 bg-blue-400 opacity-20 rounded-full blur-3xl animate-pulse delay-200"></div>
 
-        <div className="container mx-auto px-6 py-12 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            {/* About Section */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                About GlamourHall
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                GlamourHall is your AI-powered fashion assistant, helping you
-                look your best every day with personalized style advice.
-              </p>
-            </div>
+  <div className="container mx-auto px-6 py-12 relative z-10">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-12">
+      {/* About Section */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          About GlamourHall
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+          GlamourHall is your AI-powered fashion assistant, helping you
+          look your best every day with personalized style advice.
+        </p>
+      </div>
 
-            {/* Quick Links */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                Quick Links
-              </h3>
-              <ul className="space-y-2">
-                {["Home", "About", "Features"].map((link, index) => (
-                  <li key={index}>
-                    <Link
-                      href={link === "Home" ? "/" : `#${link.toLowerCase()}`}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-transform duration-200 hover:translate-x-1"
-                    >
-                      {link}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      {/* Quick Links */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          Quick Links
+        </h3>
+        <ul className="space-y-2">
+          {["Home", "About", "Features"].map((link, index) => (
+            <li key={index}>
+              <Link
+                href={link === "Home" ? "/" : `#${link.toLowerCase()}`}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-transform duration-200 hover:translate-x-1"
+              >
+                {link}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-            {/* Legal Section */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                Legal
-              </h3>
-              <ul className="space-y-2">
-                {["Terms of Service", "Privacy Policy"].map((link, index) => (
-                  <li key={index}>
-                    <Link
-                      href={`/${link.toLowerCase().replace(/ /g, "-")}`}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-transform duration-200 hover:translate-x-1"
-                    >
-                      {link}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      {/* Legal Section */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          Legal
+        </h3>
+        <ul className="space-y-2">
+          {["Terms of Service", "Privacy Policy"].map((link, index) => (
+            <li key={index}>
+              <Link
+                href={`/${link.toLowerCase().replace(/ /g, "-")}`}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-transform duration-200 hover:translate-x-1"
+              >
+                {link}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-            {/* AI Fashion Challenge */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                AI Fashion Challenge
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                Ready for a style challenge? Upload your outfit and let our AI
-                analyze it for suggestions and improvements. See how your
-                fashion choices measure up!
-              </p>
-            </div>
-          </div>
+      {/* AI Fashion Challenge */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          AI Fashion Challenge
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+          Ready for a style challenge? Upload your outfit and let our AI
+          analyze it for suggestions and improvements. See how your
+          fashion choices measure up!
+        </p>
+      </div>
 
-          {/* Footer Bottom */}
-          <div className="mt-12 border-t pt-8 border-gray-300 dark:border-gray-700">
-            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-              © {new Date().getFullYear()} GlamourHall. All rights reserved.
-            </p>
-          </div>
+      {/* Made in India */}
+      <div className="flex flex-col items-center">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          Made in 🇮🇳 India
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+          Proudly designed and built in India, bringing AI-powered fashion
+          to the world!
+        </p>
+        <div className="mt-4 flex items-center space-x-2">
+          <span className="text-lg">🇮🇳</span>
+          <span className="text-gray-900 dark:text-white font-medium">
+            Support Local Innovation
+          </span>
         </div>
-      </footer>
+      </div>
+    </div>
+
+    {/* Footer Bottom */}
+    <div className="mt-12 border-t pt-8 border-gray-300 dark:border-gray-700 text-center">
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        © {new Date().getFullYear()} GlamourHall. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>
+
     </div>
   );
 }
