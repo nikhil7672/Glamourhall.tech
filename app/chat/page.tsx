@@ -195,7 +195,7 @@ export default function ChatPage() {
           ...(msg.type === "user" &&
             msg.images?.length && { images: msg.images }),
           ...(msg.type === "ai" &&
-            msg.products?.length && { products: msg.products })
+            msg.products?.length && { products: msg.products }),
         })),
       };
 
@@ -285,11 +285,14 @@ export default function ChatPage() {
       };
 
       // Make AI API request
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/fashion`, {
-        method: "POST",
-        body: formData,
-        signal: controller.signal,
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/fashion`,
+        {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        }
+      );
 
       const data = await response.json();
 
@@ -297,7 +300,7 @@ export default function ChatPage() {
       const aiMessage = {
         type: "ai" as const,
         content: data?.result || "Sorry, I could not process your request.",
-        products: data?.products || []
+        products: data?.products || [],
       };
       setIsWaitingResponse(false);
       setIsAITyping(false);
@@ -436,7 +439,7 @@ export default function ChatPage() {
             const user = data?.user;
             localStorage.setItem("user", JSON.stringify(user));
             sessionStorage.setItem("user", JSON.stringify(user));
-            console.log(user,'user')
+            console.log(user, "user");
             setLocalStorageUser(user);
             checkUserPreferences(user?.id);
           }
@@ -1198,47 +1201,78 @@ export default function ChatPage() {
                     )}
                     {message.products && message.products.length > 0 && (
                       <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
-                        {message.products.map((product, productIndex) => (
-                          <a
-                            key={productIndex}
-                            href={product.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group relative block bg-white dark:bg-gray-800 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 hover:rotate-1"
-                          >
-                            {/* Image with gradient overlay */}
-                            <div className="aspect-square relative bg-gray-100 dark:bg-gray-700">
-                              <Image
-                                src={product.image}
-                                alt={product.name}
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-110"
-                                sizes="(max-width: 640px) 50vw, 20vw"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                            </div>
+                        {message.products.map((product, productIndex) => {
+                          // Convert rating string to number (e.g., "4.4 out of 5 stars" -> 4.4)
+                          const ratingNumber = parseFloat(
+                            product.rating.split(" ")[0]
+                          );
 
-                            {/* Brand Badge */}
-                            {product.brand && (
-                              <div className="absolute top-3 left-3 bg-white/90 dark:bg-gray-900/90 px-2.5 py-1 rounded-full text-[10px] md:text-xs font-semibold text-amber-600 dark:text-amber-400 shadow-sm backdrop-blur-sm">
-                                {product.brand}
+                          return (
+                            <a
+                              key={productIndex}
+                              href={product.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group relative block bg-white dark:bg-gray-800 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 hover:rotate-1"
+                            >
+                              {/* Image with gradient overlay */}
+                              <div className="aspect-square relative bg-gray-100 dark:bg-gray-700">
+                                <Image
+                                  src={product.image}
+                                  alt={product.name}
+                                  fill
+                                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                  sizes="(max-width: 640px) 50vw, 20vw"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                               </div>
-                            )}
 
-                            {/* Product Info */}
-                            <div className="p-3 md:p-4">
-                              <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
-                                {product.name}
-                              </h3>
-                              {/* <p className="text-xs md:text-sm text-purple-600 dark:text-purple-400 font-bold mt-1">
-                                {product.price}
-                              </p> */}
-                            </div>
+                              {/* Enhanced Rating and Reviews */}
+                              <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 px-2 py-1 rounded-lg backdrop-blur-sm shadow-sm transition-colors duration-200">
+                                <div className="flex flex-col space-y-0.5">
+                                  <div className="flex items-center space-x-0.5">
+                                    {[...Array(5)].map((_, i) => (
+                                      <span key={i} className="text-[0.65rem]">
+                                        {i < Math.floor(ratingNumber) ? (
+                                          <span className="text-amber-500 dark:text-amber-400">
+                                            ★
+                                          </span>
+                                        ) : i === Math.floor(ratingNumber) &&
+                                          ratingNumber % 1 >= 0.5 ? (
+                                          <span className="text-amber-500 dark:text-amber-400">
+                                            ★
+                                          </span>
+                                        ) : (
+                                          <span className="text-gray-300 dark:text-gray-600">
+                                            ☆
+                                          </span>
+                                        )}
+                                      </span>
+                                    ))}
+                                    <span className="text-[0.65rem] ml-1 font-medium">
+                                      {isNaN(ratingNumber)
+                                        ? 0
+                                        : ratingNumber.toFixed(1)}
+                                    </span>
+                                  </div>
+                                  <div className="text-[0.6rem] text-gray-500 dark:text-gray-400">
+                                    {product.reviews || 0} reviews
+                                  </div>
+                                </div>
+                              </div>
 
-                            {/* Hover Effect Border */}
-                            <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-400 rounded-xl transition-colors duration-300 pointer-events-none" />
-                          </a>
-                        ))}
+                              {/* Product Info */}
+                              <div className="p-3 md:p-4">
+                                <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
+                                  {product.name}
+                                </h3>
+                              </div>
+
+                              {/* Hover Effect Border */}
+                              <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-400 rounded-xl transition-colors duration-300 pointer-events-none" />
+                            </a>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
