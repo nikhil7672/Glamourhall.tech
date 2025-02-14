@@ -6,7 +6,8 @@ const nextConfig = {
     images: {
       domains: [
         'lh3.googleusercontent.com',
-        'assets.myntassets.com'
+        'assets.myntassets.com',
+        'm.media-amazon.com'
       ], // Add the domain to the list
     },
     async headers() {
