@@ -31,7 +31,9 @@ export async function POST(request: Request) {
             id: existingUser.id,
             email: existingUser.email,
             fullName: existingUser.full_name,
-            provider: existingUser.provider
+            provider: existingUser.provider,
+            plan: existingUser.plan,
+            planExpiresAt: existingUser.plan_expires_at
           }
         }, { status: 200 });
       } else {

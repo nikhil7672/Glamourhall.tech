@@ -1,60 +1,79 @@
-"use client"
+"use client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import toast, { Toaster } from 'react-hot-toast'
 
-// Types
 interface Plan {
+  title: string;
   name: string;
   price: string;
   features: string[];
   isUpcoming?: boolean;
+  monthlyPrice: number;
+  annualPrice: number;
 }
 
-// Constants
 const PLANS: Plan[] = [
   {
-    name: "Basic",
-    price: "$0/month",
+    title: "Basic",
+    name: "basic",
+    price: "₹0/month",
     features: [
       "Limited outfit photo analysis",
-      "Basic style suggestions",
-      "Basic style feedback",
+      "Limited AI style suggestions",
+      "Personalized fashion assistant",
+      "Discover curated fashion insights",
+      "Customizable style profile",
+      "AI-powered style matches",
     ],
+    monthlyPrice: 0,
+    annualPrice: 0,
   },
   {
-    name: "Pro",
-    price: "$2.99/month",
+    title: "Premium",
+    name: "premium",
+    price: "₹49/month | ₹499/year",
     features: [
       "Unlimited outfit photo analysis",
-      "Advanced style suggestions",
+      "Unlimited AI style suggestion",
       "Personalized fashion assistant",
-      "Fully customizable style profile",
-      "24/7 priority support",
+      "Discover curated fashion insights",
+      "Customizable style profile",
+      "AI-powered style matches",
     ],
+    monthlyPrice: 49,
+    annualPrice: 499,
   },
   {
-    name: "Enterprise",
+    title: "Pro",
+    name: "pro",
     price: "Coming Soon",
     features: [
-      "AI-powered analysis",
+      "AI-powered deep fashion analysis",
       "Personal stylist access",
-      "VIP features & events",
-      "Enterprise controls",
-      "Dedicated support",
+      "VIP features & fashion events",
+      "Dedicated premium support",
+      "Elite AI-powered style matches",
+      "AI voice fashion assistant"
     ],
     isUpcoming: true,
+    monthlyPrice: 99,
+    annualPrice: 999,
   },
 ];
+
 
 const PricingPage = () => {
   const router = useRouter();
   const [formHtml, setFormHtml] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
-  // Clear error after 5 seconds
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => setError(null), 5000);
@@ -62,13 +81,11 @@ const PricingPage = () => {
     }
   }, [error]);
 
-  // Handle form submission when formHtml is updated
   useEffect(() => {
     if (formHtml && formContainerRef.current) {
       const formData = formContainerRef.current.querySelector("#payment_post") as HTMLFormElement;
       if (formData) {
         try {
-          // Validate form before submission
           if (!formData.action || !formData.method) {
             throw new Error('Invalid payment form');
           }
@@ -83,30 +100,61 @@ const PricingPage = () => {
     }
   }, [formHtml]);
 
-  // Function to handle the payment API call
   const handlePlanSelect = async (plan: Plan) => {
+
+
+    const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (!userData) {
+      router.push('/auth/login');
+      return;
+    }
+
+    let user;
+    try {
+      user = JSON.parse(userData);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      router.push('/auth/login');
+      return;
+    }
+
+    if (plan.name === "basic") {
+      router.push("/chat");
+      return;
+    }
+
+    if (user.plan === 'premium') {
+      toast.error('You\'re already on the premium plan!', {
+        duration: 4000,
+        position: 'top-center',
+      });
+      return;
+    }
+   
     if (plan.isUpcoming) {
       setError("This plan is not available yet");
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
     try {
+      setLoadingPlan(plan.name);
+      setError(null);
+      const price = billingCycle === "annual" ? plan.annualPrice : plan.monthlyPrice;
+      
       const paymentData = {
         txnid: `TXN${Date.now()}${Math.random().toString(36).slice(2)}`,
-        amount: "1.00",
-        email: "user@example.com", // Replace with actual user email
+        amount: price.toString(),
+        email: user.email,
         product: plan.name,
-        firstname: "John", // Replace with actual user name
-        mobile: "1234567890", // Replace with actual user mobile
+        firstname: user.name || "Customer",
+        mobile: user.mobile || "0000000000",
+        userId: user.id,
+        billingCycle,
       };
 
       const response = await axios.post("/api/payment", paymentData);
 
       if (response.data?.data) {
-        console.log('Payment form received:', response.data);
         setFormHtml(response.data.data);
       } else {
         throw new Error(response.data?.error || "Payment initialization failed");
@@ -115,114 +163,242 @@ const PricingPage = () => {
       console.error("Payment request failed:", error);
       setError(error instanceof Error ? error.message : 'Payment initialization failed');
     } finally {
-      setIsLoading(false);
+      setLoadingPlan(null);
     }
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-b from-purple-200/20 to-transparent dark:from-purple-900/20 blur-3xl transform rotate-12" />
+        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-t from-blue-200/20 to-transparent dark:from-blue-900/20 blur-3xl transform -rotate-12" />
+      </div>
+
       {/* Error Toast */}
       {error && (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-xl z-50"
+        >
           {error}
-        </div>
+        </motion.div>
       )}
 
-      {/* Payment Form Container */}
+      {/* Hidden Payment Form */}
       <div
         ref={formContainerRef}
         dangerouslySetInnerHTML={{ __html: formHtml }}
-        className=""
+        className="hidden"
       />
 
-      {/* Main Content */}
-      <section className="w-full py-16 md:py-24 lg:py-12 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-6 text-center">
-          {/* Back Button */}
-          <button
-            onClick={() => router.back()}
-            className="absolute top-6 left-6 bg-transparent text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300 mt-4"
-          >
-            &larr; Back
-          </button>
+      {/* Main Content Container */}
+      <div className="container mx-auto px-4 py-16 relative z-10">
+        {/* Back Button */}
+        <button
+          onClick={() => router.back()}
+          className="mb-8 inline-flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
 
-          <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-12 sm:text-5xl mt-6">
-            Choose Your Style Plan
-          </h2>
+        {/* Page Title */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+            Choose Your Plan
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 text-xl">
+            Select the perfect plan for your style journey
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 justify-center gap-10 lg:grid-cols-3 xl:gap-12">
-            {PLANS.map((plan, index) => (
-              <div
-                key={index}
-                className={`relative rounded-3xl shadow-lg border border-gray-300 dark:border-gray-600 transition-transform duration-500 hover:scale-105 p-8 ${
-                  index === 1
-                    ? "bg-gradient-to-t from-purple-500 via-purple-600 to-purple-700 text-white"
-                    : index === 2
-                    ? "bg-white/10 dark:bg-gray-700/10 backdrop-blur-lg text-gray-400 dark:text-gray-300"
-                    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+        {/* Billing Toggle */}
+        <div className="flex justify-center mb-12">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-1 rounded-xl shadow-md">
+            <div className="flex space-x-1">
+              <button
+                onClick={() => setBillingCycle("monthly")}
+                className={`px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  billingCycle === "monthly"
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
-                {/* Plan Labels */}
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingCycle("annual")}
+                className={`px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  billingCycle === "annual"
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                Annual
+                <span className="ml-1 text-xs font-normal bg-green-500 text-white px-2 py-1 rounded-full">
+                  Save 15%
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {PLANS.map((plan, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`relative rounded-2xl overflow-hidden group ${
+                index === 1 ? "transform scale-105" : ""
+              }`}
+            >
+              <div className={`h-full p-8 backdrop-blur-lg ${
+                index === 1
+                  ? "bg-gradient-to-br from-blue-500/90 via-purple-500/90 to-blue-600/90 shadow-lg shadow-blue-500/50"
+                  : index === 2
+                  ? "bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-400 dark:from-amber-600 dark:via-amber-700 dark:to-amber-600 border-amber-400/50 dark:border-amber-500/30 shadow-[0_0_20px_5px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_10px_rgba(245,158,11,0.4)] transition-shadow duration-300 relative overflow-hidden"
+                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+              } relative z-10`}>
+                {/* Glass effect overlay */}
+                {(index === 1 || index === 2) && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 dark:from-gray-900/5 dark:to-gray-900/10 pointer-events-none z-0" />
+                )}
+
+                {/* Glow effect for premium */}
                 {index === 1 && (
-                  <span className="absolute top-2 right-2 bg-purple-600 text-white text-xs font-semibold py-1 px-3 rounded-full shadow-lg">
-                    Most Popular
-                  </span>
-                )}
-                {index === 2 && (
-                  <span className="absolute top-2 right-2 bg-gray-600 dark:bg-gray-700 text-white text-xs font-semibold py-1 px-3 rounded-full">
-                    Coming Soon
-                  </span>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition duration-300" />
                 )}
 
-                {/* Plan Details */}
-                <h3 className="text-2xl font-semibold mb-4">{plan.name}</h3>
-                <p className="text-3xl font-extrabold mb-6">{plan.price}</p>
+                {/* Card Content */}
+                <div className="relative z-10">
+                  {/* Plan Badge */}
+                  {index === 1 && (
+                    <div className="absolute top-4 right-4">
+                      <span className="bg-white/20 backdrop-blur-md text-white text-xs font-semibold px-4 py-1.5 rounded-full border border-white/30">
+                        Most Popular
+                      </span>
+                    </div>
+                  )}
 
-                {/* Features List */}
-                <ul className="space-y-4 text-left">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center space-x-3">
-                      <svg
-                        className={`h-5 w-5 ${
-                          index === 2 ? "text-gray-500 dark:text-gray-400" : "text-green-500"
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
-                      </svg>
-                      <span className="text-base">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                  {index === 2 && (
+                    <div className="absolute top-4 right-4">
+                      <span className="bg-gray-100/20 dark:bg-gray-800/30 backdrop-blur-md text-white text-xs font-semibold px-4 py-1.5 rounded-full border border-gray-200/30 dark:border-gray-700/30">
+                        Coming Soon
+                      </span>
+                    </div>
+                  )}
 
-                {/* Action Button */}
-                <div className="mt-8">
+                  {/* Plan Details */}
+                  <div className="text-center mb-8">
+                    <h3 className={`text-2xl font-bold mb-4 ${
+                      index === 1 || index === 2
+                        ? "text-white" 
+                  
+                        : "text-gray-900 dark:text-white"
+                    }`}>
+                      {plan.title}
+                    </h3>
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className={`text-5xl font-extrabold ${
+                        index === 1 || index === 2
+                          ? "text-white" 
+                          : "text-gray-900 dark:text-white"
+                      }`}>
+                        ₹{billingCycle === "annual" ? plan.annualPrice : plan.monthlyPrice}
+                      </span>
+                      <span className={`text-lg ${
+                        index === 1 
+                          ? "text-purple-200" :
+                          index === 2 
+                          ? "text-amber-100"
+                          : "text-gray-500 dark:text-gray-400"
+                      }`}>
+                        /{billingCycle}
+                      </span>
+                    </div>
+                    {/* Show yearly savings only for non-upcoming annual plans */}
+                    {billingCycle === "annual" &&  (
+                      <p className={`mt-2 text-sm ${
+                        index === 1 
+                          ? "text-green-300" 
+                          : "text-green-500 dark:text-green-400"
+                      }`}>
+                        Save ₹{(plan.monthlyPrice * 12) - plan.annualPrice} yearly
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Features List */}
+                  <div className="space-y-4 mb-8">
+                    {plan.features.map((feature, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <svg
+                          className={`h-5 w-5 ${
+                            index === 1 
+                              ? "text-blue-200" 
+                              : index === 2
+                              ? "text-amber-600"
+                              : "text-blue-500 dark:text-purple-400"
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span className={`text-sm ${
+                          index === 1 
+                            ? "text-purple-100" 
+                            : index === 2
+                            ? "text-amber-100"
+                            : "text-gray-600 dark:text-gray-300"
+                        }`}>
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Action Button */}
                   <button
-                    disabled={index === 2 || isLoading}
-                    className={`w-full py-3 px-6 rounded-full text-lg font-semibold transition-all duration-300 
-                      ${isLoading ? 'opacity-50 cursor-wait' : ''} 
-                      ${
-                        index === 1
-                          ? "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                          : index === 2
-                          ? "bg-gray-600 dark:bg-gray-700 cursor-not-allowed opacity-50"
-                          : "bg-gray-800 dark:bg-gray-700 text-white hover:bg-gray-900 dark:hover:bg-gray-600"
-                      }`}
                     onClick={() => handlePlanSelect(plan)}
+                    disabled={loadingPlan !== null || plan.isUpcoming}
+                    className={`w-full py-4 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                      index === 1
+                        ? "bg-white/90 backdrop-blur-sm text-blue-600 hover:bg-white hover:text-blue-700 border border-blue-200/50"
+                        : index === 2
+                        ? "bg-gray-100/30 dark:bg-gray-700/30 backdrop-blur-sm text-gray-400 cursor-not-allowed border border-gray-200/30 dark:border-gray-600/30"
+                        : "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+                    } ${loadingPlan === plan.name ? "opacity-75 cursor-wait" : ""}`}
                   >
-                    {isLoading ? 'Processing...' : 
-                     index === 2 ? "Notify Me" :
-                     index === 1 ? "Recommended" : 
-                     "Choose Plan"}
+                    {loadingPlan === plan.name 
+                      ? "Processing..." 
+                      : plan.isUpcoming 
+                      ? "Coming Soon" 
+                      : index === 1 
+                      ? "Upgrade Now" 
+                      : "Get Started"}
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
+            </motion.div>
+          ))}
         </div>
-      </section>
-    </>
+      </div>
+      <Toaster />
+    </div>
   );
 };
 

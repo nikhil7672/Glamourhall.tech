@@ -81,6 +81,7 @@ export async function POST(request: Request) {
           full_name: fullName,
           password: hashedPassword,
           provider,
+          plan: 'basic',
         },
       ])
       .select()

@@ -1,55 +1,68 @@
+"use client"
 import Link from 'next/link';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaArrowRight, FaSyncAlt } from 'react-icons/fa';
 
 interface PaymentStatusPageProps {
   params: { status: string; txnid: string };
 }
-
-export const metadata = {
-  title: 'Payment Status | Glamourhall',
-  description: 'View your payment status for transactions with Glamourhall.',
-};
 
 export default function PaymentStatusPage({ params }: PaymentStatusPageProps) {
   const { status, txnid } = params;
   const isSuccess = status.toLowerCase() === 'success';
 
   return (
-    <main className="min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 flex items-center justify-center px-4">
-      <div className="bg-white bg-opacity-90 shadow-2xl rounded-2xl p-10 max-w-md w-full text-center border border-gray-200 animate-fadeIn transition-transform transform hover:scale-105">
-        
-        {isSuccess ? (
-          <>
-            <FaCheckCircle className="h-24 w-24 text-green-500 mx-auto animate-bounce" />
-            <h1 className="text-3xl font-extrabold text-gray-800 mt-4">Payment Successful!</h1>
-            <p className="text-gray-600 mt-2">
-              Thank you for your payment. Your transaction has been successfully processed.
-            </p>
-          </>
-        ) : (
-          <>
-            <FaTimesCircle className="h-24 w-24 text-red-500 mx-auto animate-pulse" />
-            <h1 className="text-3xl font-extrabold text-gray-800 mt-4">Payment Failed!</h1>
-            <p className="text-gray-600 mt-2">
-              Oops! Something went wrong with your transaction. Please try again or contact support.
-            </p>
-          </>
-        )}
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center px-4">
+      <div className="bg-white/95 backdrop-blur-lg shadow-2xl rounded-3xl p-8 max-w-md w-full text-center border border-gray-100/50 transform transition-all hover:scale-[1.02]">
+        <div className="space-y-6">
+          {/* Icon and Status */}
+          <div className="p-6 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 inline-block">
+            {isSuccess ? (
+              <FaCheckCircle className="h-20 w-20 text-green-500 animate-bounce" />
+            ) : (
+              <FaTimesCircle className="h-20 w-20 text-red-500 animate-pulse" />
+            )}
+          </div>
 
-        <div className="mt-6 bg-gray-100 p-4 rounded-md shadow-md">
-          <p className="text-sm text-gray-500">Transaction ID:</p>
-          <p className="text-lg font-mono text-gray-800">{txnid}</p>
-        </div>
+          {/* Title and Message */}
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {isSuccess ? 'Payment Successful!' : 'Payment Failed!'}
+            </h1>
+            <p className="text-gray-600">
+              {isSuccess
+                ? 'Thank you for your payment. Your transaction has been successfully processed.'
+                : 'Oops! Something went wrong with your transaction. Please try again or contact support.'}
+            </p>
+          </div>
 
-        <div className="mt-8 flex justify-center space-x-4">
-          <Link href="/" className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-md hover:from-purple-600 hover:to-blue-600 transition shadow-lg">
-            Go to Home
-          </Link>
-          {!isSuccess && (
-            <Link href="/contact" className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition shadow-lg">
-              Contact Support
-            </Link>
-          )}
+          {/* Transaction ID */}
+          <div className="mt-4 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+            <p className="text-sm text-gray-500">Transaction ID:</p>
+            <p className="text-lg font-mono text-gray-800 font-medium">{txnid}</p>
+          </div>
+
+          {/* Buttons */}
+          <div className="mt-6 flex flex-col gap-4">
+            {!isSuccess ? (
+              <Link
+                href="/pricing"
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                prefetch={true}
+              >
+                <span>Retry Payment</span>
+                <FaSyncAlt className="w-4 h-4" />
+              </Link>
+            ) : (
+              <Link
+                href="/chat"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                prefetch={true}
+              >
+                <span>Start Chatting</span>
+                <FaArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </main>

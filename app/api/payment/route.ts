@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       key: merchantKey,
       txnid: txnId,
       amount: paymentData.amount.toString(),
-      productinfo: JSON.stringify(paymentData.product),
+      productinfo: paymentData.product,
       firstname: paymentData.firstname,
       email: paymentData.email
     };
@@ -53,10 +53,9 @@ export async function POST(req: Request) {
       furl: `${host}/api/verify/${txnId}`,
       hash: hash,
       curl: `${host}/api/verify/${txnId}`, // Optional cancel URL
-      currency: 'USD',
-      udf1: '', // Optional user defined fields
-      udf2: '',
-      udf3: '',
+      udf1: paymentData?.userId, // Optional user defined fields
+      udf2: paymentData?.billingCycle,
+      udf3: paymentData?.product,
       udf4: '',
       udf5: '',
     };

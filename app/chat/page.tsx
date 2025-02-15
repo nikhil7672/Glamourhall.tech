@@ -29,6 +29,8 @@ import {
   FaSun,
   FaMoon,
   FaStopCircle,
+  FaCheckCircle,
+  FaCrown,
 } from "react-icons/fa";
 import { BsBellFill } from "react-icons/bs";
 import { useMediaQuery } from "@/utils/useMediaQuery";
@@ -134,6 +136,36 @@ export default function ChatPage() {
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
+    
+    const MAX_FILES = 2; // Set your limit
+    if (files.length > MAX_FILES || imageFiles?.length > MAX_FILES) {
+      toast.error(`Max ${MAX_FILES} files allowed.`);
+      return;
+    }
+   // Validate file types and sizes
+   const MAX_FILE_SIZE = 2 * 1024 * 1024; // 5MB in bytes
+   const validFiles = Array.from(files).filter((file) => {
+     // Check if the file is an image
+     if (!file.type.startsWith('image/')) {
+       toast.error(`File "${file.name}" is not an image.`);
+       return false;
+     }
+ 
+     // Check file size
+     if (file.size > MAX_FILE_SIZE || imageFiles?.length > MAX_FILE_SIZE) {
+       toast.error(`File "${file.name}" exceeds the maximum size of ${MAX_FILE_SIZE / 1024 / 1024}MB.`);
+       return false;
+     }
+ 
+     return true;
+   });
+     // Process valid files
+  if (validFiles.length > 0) {
+    // Your file processing logic here
+    console.log('Valid files:', validFiles);
+  } else {
+    toast.error('No valid files were selected.');
+  }
     setImageFiles((prev) => [...prev, ...Array.from(files)]);
 
     const newImagePreviews = Array.from(files).map((file) => {
@@ -988,36 +1020,60 @@ export default function ChatPage() {
           </div>
 
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <motion.button
-              onClick={() => router.push("/pricing")}
-              className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 p-0.5 transition-all duration-300"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.3)_0%,rgba(255,255,255,0)_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative flex items-center justify-center gap-3 rounded-[11px] bg-gradient-to-r from-amber-500 to-yellow-400 px-6 py-3.5">
-                <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0)_100%)]" />
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-amber-900"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                  />
-                </svg>
-                <span className="text-sm font-semibold text-amber-900 tracking-wide">
-                  Upgrade to Premium
-                </span>
-                <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-amber-600/10" />
-                <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-amber-600/5" />
+            {localStorageUser?.plan === 'premium' ? (
+              <div className="relative flex flex-col items-center justify-center gap-1 rounded-lg bg-gradient-to-br from-amber-400 to-yellow-300 dark:from-amber-600 dark:to-yellow-500 px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow">
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%)] opacity-0 hover:opacity-100 transition-opacity" />
+                
+                {/* Content */}
+                <div className="relative z-10 flex flex-col items-center">
+                  <FaCrown className="h-5 w-5 text-amber-800 dark:text-amber-100 mb-1.5" />
+                  <div className="text-center">
+                    <p className="text-[0.75rem] font-semibold text-amber-900 dark:text-amber-50 tracking-wide uppercase">
+                      Premium Account
+                    </p>
+                    <p className="text-[0.65rem] text-amber-800/90 dark:text-amber-100/80 mt-0.5 font-medium">
+                      Active
+                    </p>
+                  </div>
+                </div>
+
+                {/* Decorative elements */}
+                <div className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-amber-500/10 dark:bg-amber-400/10" />
+                <div className="absolute -left-2 -bottom-2 h-6 w-6 rounded-full bg-yellow-400/10 dark:bg-yellow-300/10" />
               </div>
-            </motion.button>
+            ) : (
+              <motion.button
+                onClick={() => router.push("/pricing")}
+                className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 p-0.5 transition-all duration-300"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.3)_0%,rgba(255,255,255,0)_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative flex items-center justify-center gap-3 rounded-[11px] bg-gradient-to-r from-amber-500 to-yellow-400 px-6 py-3.5">
+                  <div className="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_0%,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0)_100%)]" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 text-amber-900"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                  <span className="text-sm font-semibold text-amber-900 tracking-wide">
+                    Upgrade to Premium
+                  </span>
+                  <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-amber-600/10" />
+                  <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-amber-600/5" />
+                </div>
+              </motion.button>
+            )}
           </div> 
         </div>
       </motion.aside>
@@ -1136,6 +1192,34 @@ export default function ChatPage() {
                             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                               {localStorageUser?.email}
                             </p>
+                            {/* Add plan display */}
+                            <div className="mt-1 space-y-1">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                localStorageUser?.plan === 'premium'
+                                  ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-900 dark:from-amber-600 dark:to-yellow-500 dark:text-amber-100'
+                                  : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                              }`}>
+                                {localStorageUser?.plan === 'premium' ? (
+                                  <>
+                                    <FaCrown className="w-3.5 h-3.5 mr-1.5" />
+                                    Premium Account
+                                  </>
+                                ) : (
+                                  `Account: ${localStorageUser?.plan?.toUpperCase() || 'BASIC'}`
+                                )}
+                              </span>
+                              
+                              {/* Add expiration date for premium users */}
+                              {localStorageUser?.plan === 'premium' && localStorageUser?.planExpiresAt && (
+                                <p className="text-[0.7rem] text-amber-700 dark:text-amber-200/80 font-medium ml-2">
+                                  Valid till: {new Date(localStorageUser.planExpiresAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
                         {/* Actions */}
@@ -1419,14 +1503,6 @@ export default function ChatPage() {
                     <div className="flex items-center gap-3 text-gray-700 dark:text-gray-200">
                       <span className="text-sm font-medium">Thinking...</span>
 
-                      {/* Single Loader Icon */}
-                      {/* <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-        >
-          <Loader2 className="w-4 h-4 text-purple-500" />
-        </motion.div> */}
-
                       {/* Dots Animation */}
                       <motion.div className="flex gap-1 pt-1">
                         {[...Array(3)].map((_, i) => (
@@ -1470,6 +1546,7 @@ export default function ChatPage() {
                     type="file"
                     onChange={handlePhotoUpload}
                     className="hidden"
+                    accept="image/*"
                     multiple
                   />
                   <button

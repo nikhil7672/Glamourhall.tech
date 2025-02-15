@@ -264,7 +264,7 @@ export default function PreferencesPage() {
                 <button
                   key={option.value}
                   onClick={() => handleInputChange(option.value)}
-                  className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                  className={`p-4 rounded-lg  text-left transition-all duration-200 ${
                     preferences[currentStepData.id] === option.value
                       ? "border-transparent bg-gradient-to-r from-purple-500 to-blue-500 text-white"
                       : "border-gray-200 dark:border-gray-600 hover:border-purple-400"
@@ -281,7 +281,7 @@ export default function PreferencesPage() {
           <button
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
@@ -290,14 +290,14 @@ export default function PreferencesPage() {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 focus:outline-none  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Saving..." : "Save Preferences"}
             </button>
           ) : (
             <button
               onClick={handleNext}
-              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 focus:outline-none  transition-colors"
             >
               Next
             </button>

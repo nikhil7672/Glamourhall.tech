@@ -159,7 +159,7 @@ export function StylePreferenceStepper({
           <div className="mb-8">
             <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-purple-600 rounded-full"
+                className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
                 animate={{
                   width: `${((currentStep + 1) / steps.length) * 100}%`,
                 }}
@@ -211,10 +211,11 @@ export function StylePreferenceStepper({
                         });
                         setError("");
                       }}
-                      className={`p-4 border-2 rounded-xl w-full text-left transition-all
-                        ${preferences[currentQuestion.id] === option.value
-                          ? "border-purple-500 bg-purple-50 dark:bg-purple-900 shadow-purple-100 dark:shadow-purple-800 shadow-inner"
-                          : "border-gray-200 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-gray-800"
+                      className={`p-4 rounded-xl w-full text-left transition-all duration-300
+                        ${
+                          preferences[currentQuestion.id] === option.value
+                            ? "border-transparent bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg"
+                            : "border-gray-200 dark:border-gray-700 hover:border-transparent hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-blue-500/20"
                         } text-gray-900 dark:text-white`}
                     >
                       {option.label}
@@ -235,30 +236,22 @@ export function StylePreferenceStepper({
             <button
               onClick={handleBack}
               disabled={currentStep === 0}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all
-                ${currentStep === 0
-                  ? "text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                  : "text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-gray-800"
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300
+                ${
+                  currentStep === 0
+                    ? "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent hover:from-purple-600 hover:to-blue-600"
                 }`}
             >
               Back
             </button>
             
-            {currentStep === steps.length - 1 ? (
-              <button
-                onClick={handleSubmit}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-600 transition-all"
-              >
-                Complete
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-600 transition-all"
-              >
-                Next
-              </button>
-            )}
+            <button
+              onClick={currentStep === steps.length - 1 ? handleSubmit : handleNext}
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-600 transition-all duration-300 shadow-lg"
+            >
+              {currentStep === steps.length - 1 ? "Complete" : "Next"}
+            </button>
           </div>
         </Dialog.Panel>
       </div>
