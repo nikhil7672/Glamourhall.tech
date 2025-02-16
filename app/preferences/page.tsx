@@ -8,6 +8,8 @@ import toast, { Toaster } from "react-hot-toast";
 interface Option {
   value: string;
   label: string;
+  emoji?: string;
+  imageUrl?: string;
 }
 
 interface Step {
@@ -24,6 +26,7 @@ interface PreferencesState {
   body_shape?: string;
   fit_preference?: string;
   accessory_style?: string;
+  preferred_store?: string;
 }
 
 interface User {
@@ -81,12 +84,49 @@ const steps: Step[] = [
       { value: "none", label: "No Accessories 🙅" },
     ],
   },
+  {
+    id: "preferred_store",
+    question: "Choose your favorite stores",
+    options: [
+      {
+        value: "amazon",
+        label: "Amazon",
+        emoji: "🅰️",
+        imageUrl: "/ama.svg"
+      },
+      {
+        value: "flipkart",
+        label: "Flipkart",
+        emoji: "🅱️",
+        imageUrl: "/flipkart.svg"
+      },
+      {
+        value: "ajio",
+        label: "Ajio",
+        emoji: "🅾️",
+        imageUrl: "/ajio.svg"
+      },
+      {
+        value: "puma",
+        label: "Puma",
+        emoji: "🐆",
+        imageUrl: "/puma.svg"
+      },
+    ],
+  },
 ];
 
 export default function PreferencesPage() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [preferences, setPreferences] =
-    useState<PreferencesState | null>(null);
+  const [preferences, setPreferences] = useState<PreferencesState>({
+    gender: "",
+    age: 25,
+    height: 170,
+    body_shape: "",
+    fit_preference: "",
+    accessory_style: "",
+    preferred_store: "",
+  });
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,16 +149,25 @@ export default function PreferencesPage() {
           const response = await fetch(`/api/preferences?userId=${user.id}`);
           if (!response.ok) throw new Error("Failed to fetch preferences");
           const data = await response.json();
-          setPreferences(data.preferences);
+          setPreferences(data.preferences || {
+            gender: "",
+            age: 25,
+            height: 170,
+            body_shape: "",
+            fit_preference: "",
+            accessory_style: "",
+            preferred_store: "",
+          });
         } catch (error) {
           console.error("Error fetching preferences:", error);
           setPreferences({
             gender: "",
-            age: undefined,
-            height: undefined,
+            age: 25,
+            height: 170,
             body_shape: "",
             fit_preference: "",
             accessory_style: "",
+            preferred_store: "",
           });
         }
       };
@@ -193,26 +242,28 @@ export default function PreferencesPage() {
           <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500">
             Preferences
           </h1>
-          <Link
-            href="#"
-            onClick={handleBackClick}
-            className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center gap-4">
+            <Link
+              href="#"
+              onClick={handleBackClick}
+              className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Back
-          </Link>
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Back
+            </Link>
+          </div>
         </div>
 
         <div className="mb-8">
@@ -230,10 +281,23 @@ export default function PreferencesPage() {
                 className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300"
               />
             </div>
+            <div className="flex justify-center space-x-2 mt-4">
+              {steps.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentStep(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    currentStep === index
+                      ? "bg-gradient-to-r from-purple-500 to-blue-500 scale-125"
+                      : "bg-gray-300 dark:bg-gray-600 hover:bg-gradient-to-r hover:from-purple-400 hover:to-blue-400"
+                  }`}
+                  aria-label={`Go to step ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Step container with fade-in effect */}
         <div key={currentStep} className="fade-in">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
             {currentStepData.question}
@@ -259,18 +323,32 @@ export default function PreferencesPage() {
               max={currentStepData.id === "age" ? "100" : "250"}
             />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`grid ${currentStepData.id === 'preferred_store' ? 'grid-cols-2 md:grid-cols-4 gap-4' : 'grid-cols-1 md:grid-cols-2 gap-4'}`}>
               {currentStepData.options?.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => handleInputChange(option.value)}
-                  className={`p-4 rounded-lg  text-left transition-all duration-200 ${
-                    preferences[currentStepData.id] === option.value
-                      ? "border-transparent bg-gradient-to-r from-purple-500 to-blue-500 text-white"
-                      : "border-gray-200 dark:border-gray-600 hover:border-purple-400"
-                  }`}
+                  className={`p-3 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center group
+                    ${
+                      preferences[currentStepData.id] === option.value
+                        ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg scale-105"
+                        : "border-gray-200 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-md hover:scale-[1.02]"
+                    }`}
                 >
-                  <span>{option.label}</span>
+                  {option.imageUrl ? (
+                    <div className="flex flex-col items-center space-y-2">
+                      <img
+                        src={option.imageUrl}
+                        alt={option.label}
+                        className="h-20 w-20 object-scale-down mb-2 transition-transform duration-300 group-hover:scale-110"
+                      />
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                        {option.label}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-center">{option.label}</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -278,50 +356,52 @@ export default function PreferencesPage() {
         </div>
 
         <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <button
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+        
+          </div>
 
           {currentStep === steps.length - 1 ? (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 focus:outline-none  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Saving..." : "Save Preferences"}
             </button>
           ) : (
             <button
               onClick={handleNext}
-              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 focus:outline-none  transition-colors"
-            >
-              Next
-            </button>
-          )}
+              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 focus:outline-none transition-colors"
+              >
+                Next
+              </button>
+            )}
+          </div>
         </div>
+        <Toaster />
+  
+        <style jsx>{`
+          .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+          }
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}</style>
       </div>
-      <Toaster />
-
-      {/* Inline CSS for fade-in animation */}
-      <style jsx>{`
-        .fade-in {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
+    );
+  }

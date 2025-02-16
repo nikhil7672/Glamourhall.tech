@@ -8,6 +8,7 @@ interface StepOption {
  value: string;
  label: string;
  emoji?: string;
+ imageUrl?: string;
 }
 
 interface Step {
@@ -24,6 +25,7 @@ interface PreferencesState {
  body_shape?: string;
  fit_preference?: string;
  accessory_style?: string;
+ preferred_store?: string;
 }
 
 interface StylePreferenceStepperProps {
@@ -84,6 +86,36 @@ const steps: Step[] = [
     { value: "none", label: "No Accessories 🙅" },
   ],
 },
+{
+  id: "preferred_store",
+  question: "Choose your favorite stores",
+  options: [
+    { 
+      value: "amazon", 
+      label: "Amazon",
+      emoji: "🅰️",
+      imageUrl: "/ama.svg" 
+    },
+    { 
+      value: "flipkart", 
+      label: "Flipkart",
+      emoji: "🅱️",
+      imageUrl: "/flipkart.svg" 
+    },
+    { 
+      value: "ajio", 
+      label: "Ajio",
+      emoji: "🅾️",
+      imageUrl: "/ajio.svg" 
+    },
+    { 
+      value: "puma", 
+      label: "Puma",
+      emoji: "🐆",
+      imageUrl: "/puma.svg" 
+    },
+  ],
+},
 ];
 
 export function StylePreferenceStepper({
@@ -100,6 +132,7 @@ export function StylePreferenceStepper({
    body_shape: "",
    fit_preference: "",
    accessory_style: "",
+   preferred_store: "",
  });
  const [error, setError] = useState("");
 
@@ -119,6 +152,11 @@ export function StylePreferenceStepper({
        setError("Please enter a valid height between 100 and 250 cm.");
        return;
      }
+   } else if (currentQuestion.id === "preferred_store") {
+     if (!preferences.preferred_store) {
+       setError("Please select a store");
+       return;
+     }
    } else if (!currentQuestion?.isCustomInput && !preferences[currentQuestion.id]) {
      setError("Please select an option before proceeding.");
      return;
@@ -134,6 +172,16 @@ export function StylePreferenceStepper({
  };
 
  const handleSubmit = async () => {
+   const currentQuestion = steps[currentStep];
+   
+   // Check if current step is store selection and validate
+   if (currentQuestion.id === "preferred_store") {
+     if (!preferences.preferred_store) {
+       setError("Please select a store");
+       return;
+     }
+   }
+
    try {
      await fetch("/api/preferences", {
        method: "POST",
@@ -200,25 +248,45 @@ export function StylePreferenceStepper({
                   />
                 </div>
               ) : (
-                <div className="grid gap-3">
+                <div className={`grid ${currentQuestion.id === 'preferred_store' ? 'grid-cols-2' : 'grid-cols-1'} gap-3 gap-y-4`}>
                   {currentQuestion?.options?.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => {
-                        setPreferences({
-                          ...preferences,
-                          [currentQuestion.id]: option.value,
-                        });
+                        if (currentQuestion.id === "preferred_store") {
+                          setPreferences({
+                            ...preferences,
+                            [currentQuestion.id]: option.value,
+                          });
+                        } else {
+                          setPreferences({
+                            ...preferences,
+                            [currentQuestion.id]: option.value,
+                          });
+                        }
                         setError("");
                       }}
-                      className={`p-4 rounded-xl w-full text-left transition-all duration-300
+                      className={`p-3 rounded-xl w-full transition-all duration-300 flex flex-col items-center justify-center gap-2
                         ${
-                          preferences[currentQuestion.id] === option.value
+                          (currentQuestion.id === "preferred_store" 
+                            ? preferences.preferred_store === option.value
+                            : preferences[currentQuestion.id] === option.value)
                             ? "border-transparent bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg"
                             : "border-gray-200 dark:border-gray-700 hover:border-transparent hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-blue-500/20"
                         } text-gray-900 dark:text-white`}
                     >
-                      {option.label}
+                      {option.imageUrl ? (
+                        <>
+                          <img 
+                            src={option.imageUrl} 
+                            alt={option.label} 
+                            className="h-16 w-16 object-contain"
+                          />
+                          <span className="text-sm text-center">{option.label}</span>
+                        </>
+                      ) : (
+                        option.label
+                      )}
                     </button>
                   ))}
                 </div>
@@ -248,7 +316,12 @@ export function StylePreferenceStepper({
             
             <button
               onClick={currentStep === steps.length - 1 ? handleSubmit : handleNext}
-              className="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-600 transition-all duration-300 shadow-lg"
+              disabled={currentStep === steps.length - 1 && !preferences.preferred_store}
+              className={`px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-600 transition-all duration-300 shadow-lg ${
+                currentStep === steps.length - 1 && !preferences.preferred_store 
+                  ? "opacity-50 cursor-not-allowed" 
+                  : ""
+              }`}
             >
               {currentStep === steps.length - 1 ? "Complete" : "Next"}
             </button>
