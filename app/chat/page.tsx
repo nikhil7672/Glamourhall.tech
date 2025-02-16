@@ -1414,16 +1414,20 @@ export default function ChatPage() {
                                 rel="noopener noreferrer"
                                 className="group relative block bg-white dark:bg-gray-800 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2 hover:rotate-1"
                               >
-                                {/* Image with gradient overlay */}
-                                <div className="aspect-square relative bg-gray-100 dark:bg-gray-700">
-                                  <Image
+                                {/* Image container */}
+                                <div className="aspect-square relative bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                                  <img
                                     src={product.image}
                                     alt={product.name}
-                                    fill
-                                    className="object-cover transition-transform duration-300 group-hover:scale-110"
-                                    sizes="(max-width: 640px) 50vw, 20vw"
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    loading="lazy"
                                   />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+                                  
+                                  {/* Loading skeleton */}
+                                  {!product.image && (
+                                    <div className="absolute inset-0 animate-pulse bg-gray-200 dark:bg-gray-600" />
+                                  )}
                                 </div>
 
                                 {/* Enhanced Rating and Reviews */}
