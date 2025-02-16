@@ -1402,9 +1402,9 @@ export default function ChatPage() {
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
                           {message.products.map((product, productIndex) => {
-                            const ratingNumber = parseFloat(
-                              product.rating.split(" ")[0]
-                            );
+                            // const ratingNumber = parseFloat(
+                            //   product.rating.split(" ")[0]
+                            // );
 
                             return (
                               <a
@@ -1431,7 +1431,7 @@ export default function ChatPage() {
                                 </div>
 
                                 {/* Enhanced Rating and Reviews */}
-                                <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 px-2 py-1 rounded-lg backdrop-blur-sm shadow-sm transition-colors duration-200">
+                                {/* <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 px-2 py-1 rounded-lg backdrop-blur-sm shadow-sm transition-colors duration-200">
                                   <div className="flex flex-col space-y-0.5">
                                     <div className="flex items-center space-x-0.5">
                                       {[...Array(5)].map((_, i) => (
@@ -1465,7 +1465,7 @@ export default function ChatPage() {
                                       {product.reviews || 0} reviews
                                     </div>
                                   </div>
-                                </div>
+                                </div> */}
 
                                 {/* Product Info */}
                                 <div className="p-3 md:p-4">
