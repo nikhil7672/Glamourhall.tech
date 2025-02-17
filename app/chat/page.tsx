@@ -1447,7 +1447,7 @@ export default function ChatPage() {
                               </a>
 
                               {/* AR Try On Button */}
-                              <button
+                              {/* <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleARTryOn(product.image);
@@ -1468,7 +1468,7 @@ export default function ChatPage() {
                                   <circle cx="12" cy="14" r="3"/>
                                 </svg>
                                 Try On
-                              </button>
+                              </button> */}
                             </div>
                           ))}
                         </div>
