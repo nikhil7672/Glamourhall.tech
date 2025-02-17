@@ -40,6 +40,7 @@ import ReactMarkdown from "react-markdown";
 import { NotificationDialog } from "@/components/notificationDialog";
 import { RiChatNewFill } from "react-icons/ri";
 import { StylePreferenceStepper } from "@/components/StylePreferenceStepper";
+import { ARTryOn } from "@/components/ARTryOn";
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
@@ -119,6 +120,10 @@ export default function ChatPage() {
   const [isWaitingResponse, setIsWaitingResponse] = useState(false);
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
+
+  // Add at the top of your component
+  const [showARTryOn, setShowARTryOn] = useState(false);
+  const [selectedProductImage, setSelectedProductImage] = useState<string | null>(null);
 
   // Function to open the Preferences dialog
   const viewPreferenceDialog = () => router.push("/preferences");
@@ -939,6 +944,11 @@ export default function ChatPage() {
     );
   }
 
+  const handleARTryOn = (productImage: string) => {
+    setSelectedProductImage(productImage);
+    setShowARTryOn(true);
+  };
+
   return (
     <div
       className="min-h-screen flex flex-col md:flex-row 
@@ -1401,14 +1411,9 @@ export default function ChatPage() {
                           </h3>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
-                          {message.products.map((product, productIndex) => {
-                            // const ratingNumber = parseFloat(
-                            //   product.rating.split(" ")[0]
-                            // );
-
-                            return (
+                          {message.products.map((product, productIndex) => (
+                            <div key={productIndex} className="relative">
                               <a
-                                key={productIndex}
                                 href={product.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -1430,43 +1435,6 @@ export default function ChatPage() {
                                   )}
                                 </div>
 
-                                {/* Enhanced Rating and Reviews */}
-                                {/* <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/70 text-gray-900 dark:text-gray-100 px-2 py-1 rounded-lg backdrop-blur-sm shadow-sm transition-colors duration-200">
-                                  <div className="flex flex-col space-y-0.5">
-                                    <div className="flex items-center space-x-0.5">
-                                      {[...Array(5)].map((_, i) => (
-                                        <span
-                                          key={i}
-                                          className="text-[0.65rem]"
-                                        >
-                                          {i < Math.floor(ratingNumber) ? (
-                                            <span className="text-amber-500 dark:text-amber-400">
-                                              ★
-                                            </span>
-                                          ) : i === Math.floor(ratingNumber) &&
-                                            ratingNumber % 1 >= 0.5 ? (
-                                            <span className="text-amber-500 dark:text-amber-400">
-                                              ★
-                                            </span>
-                                          ) : (
-                                            <span className="text-gray-300 dark:text-gray-600">
-                                              ☆
-                                            </span>
-                                          )}
-                                        </span>
-                                      ))}
-                                      <span className="text-[0.65rem] ml-1 font-medium">
-                                        {isNaN(ratingNumber)
-                                          ? 0
-                                          : ratingNumber.toFixed(1)}
-                                      </span>
-                                    </div>
-                                    <div className="text-[0.6rem] text-gray-500 dark:text-gray-400">
-                                      {product.reviews || 0} reviews
-                                    </div>
-                                  </div>
-                                </div> */}
-
                                 {/* Product Info */}
                                 <div className="p-3 md:p-4">
                                   <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
@@ -1477,8 +1445,32 @@ export default function ChatPage() {
                                 {/* Hover Effect Border */}
                                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-400 rounded-xl transition-colors duration-300 pointer-events-none" />
                               </a>
-                            );
-                          })}
+
+                              {/* AR Try On Button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleARTryOn(product.image);
+                                }}
+                                className="absolute bottom-2 right-2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white text-xs font-medium shadow-md hover:shadow-lg transition-all duration-300"
+                              >
+                                <svg 
+                                  xmlns="http://www.w3.org/2000/svg" 
+                                  className="w-4 h-4" 
+                                  viewBox="0 0 24 24" 
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2" 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                                  <circle cx="12" cy="14" r="3"/>
+                                </svg>
+                                Try On
+                              </button>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -1627,6 +1619,17 @@ export default function ChatPage() {
           }}
           userId={localStorageUser?.id}
         />
+      )}
+      {showARTryOn && selectedProductImage && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-lg">
+          <ARTryOn 
+            productImage={selectedProductImage}
+            onExit={() => {
+              setShowARTryOn(false);
+              setSelectedProductImage(null);
+            }}
+          />
+        </div>
       )}
     </div>
   );

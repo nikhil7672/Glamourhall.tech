@@ -7,7 +7,8 @@ const nextConfig = {
       domains: [
         'lh3.googleusercontent.com',
         'assets.myntassets.com',
-        'm.media-amazon.com'
+        'm.media-amazon.com',
+        'media.landmarkshops.in'
       ], // Add the domain to the list
     },
     async headers() {
@@ -18,6 +19,14 @@ const nextConfig = {
             { key: "Access-Control-Allow-Origin", value: "*" },
             { key: "Access-Control-Allow-Methods", value: "GET, POST, OPTIONS" },
             { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
+            {
+              key: 'Feature-Policy',
+              value: 'camera *; microphone *; accelerometer *; gyroscope *'
+            },
+            {
+              key: 'Permissions-Policy',
+              value: 'camera=(self), xr-spatial-tracking=(self)'
+            }
           ],
         },
       ];
