@@ -40,7 +40,6 @@ import ReactMarkdown from "react-markdown";
 import { NotificationDialog } from "@/components/notificationDialog";
 import { RiChatNewFill } from "react-icons/ri";
 import { StylePreferenceStepper } from "@/components/StylePreferenceStepper";
-import { ARTryOn } from "@/components/ARTryOn";
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
@@ -1445,30 +1444,6 @@ export default function ChatPage() {
                                 {/* Hover Effect Border */}
                                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-400 rounded-xl transition-colors duration-300 pointer-events-none" />
                               </a>
-
-                              {/* AR Try On Button */}
-                              {/* <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleARTryOn(product.image);
-                                }}
-                                className="absolute bottom-2 right-2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white text-xs font-medium shadow-md hover:shadow-lg transition-all duration-300"
-                              >
-                                <svg 
-                                  xmlns="http://www.w3.org/2000/svg" 
-                                  className="w-4 h-4" 
-                                  viewBox="0 0 24 24" 
-                                  fill="none" 
-                                  stroke="currentColor" 
-                                  strokeWidth="2" 
-                                  strokeLinecap="round" 
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-                                  <circle cx="12" cy="14" r="3"/>
-                                </svg>
-                                Try On
-                              </button> */}
                             </div>
                           ))}
                         </div>
@@ -1619,17 +1594,6 @@ export default function ChatPage() {
           }}
           userId={localStorageUser?.id}
         />
-      )}
-      {showARTryOn && selectedProductImage && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-lg">
-          <ARTryOn 
-            productImage={selectedProductImage}
-            onExit={() => {
-              setShowARTryOn(false);
-              setSelectedProductImage(null);
-            }}
-          />
-        </div>
       )}
     </div>
   );
