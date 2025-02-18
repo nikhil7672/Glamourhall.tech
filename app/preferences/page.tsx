@@ -22,12 +22,13 @@ interface Step {
 interface PreferencesState {
   gender: string;
   age?: number;
-  height?: number;
+  ethnicity?: string;
   body_shape?: string;
-  fit_preference?: string;
-  accessory_style?: string;
   preferred_store?: string;
-}
+  skin_tone?: string;
+  price_range?: string;
+ }
+ 
 
 interface User {
   id: string;
@@ -36,96 +37,109 @@ interface User {
 const steps: Step[] = [
   {
     id: "gender",
-    question: "Select your gender",
+    question: "Choose what best describes your gender",
     options: [
-      { value: "male", label: "Male ♂️" },
-      { value: "female", label: "Female ♀️" },
-      { value: "nonbinary", label: "Non-Binary ⚧️" },
-      { value: "prefer_not_say", label: "Prefer not to say 🙊" },
+      { value: "woman", label: "Woman ♀️" },
+      { value: "neutral", label: "Neutral ⚪️" },
+      { value: "man", label: "Man ♂️" },
     ],
   },
-  {
-    id: "age",
-    question: "Enter your age",
-    isCustomInput: true,
-  },
-  {
-    id: "height",
-    question: "Enter your height (cm)",
-    isCustomInput: true,
-  },
-  {
-    id: "body_shape",
-    question: "Which body shape best describes you?",
-    options: [
-      { value: "rectangle", label: "Rectangle ▭" },
-      { value: "hourglass", label: "Hourglass ⏳" },
-      { value: "pear", label: "Pear 🍐" },
-      { value: "apple", label: "Apple 🍎" },
-      { value: "triangle", label: "Triangle 🔺" },
-    ],
-  },
-  {
-    id: "fit_preference",
-    question: "How do you like your clothes to fit?",
-    options: [
-      { value: "slim", label: "Slim Fit 🏃" },
-      { value: "regular", label: "Regular Fit 👕" },
-      { value: "oversized", label: "Oversized 😎" },
-    ],
-  },
-  {
-    id: "accessory_style",
-    question: "How do you accessorize?",
-    options: [
-      { value: "minimal", label: "Minimal ✨ (Simple jewelry)" },
-      { value: "statement", label: "Statement 💥 (Bold pieces)" },
-      { value: "functional", label: "Functional 🕶️ (Hats, belts)" },
-      { value: "none", label: "No Accessories 🙅" },
-    ],
-  },
-  {
-    id: "preferred_store",
-    question: "Choose your favorite stores",
-    options: [
-      {
-        value: "amazon",
-        label: "Amazon",
-        emoji: "🅰️",
-        imageUrl: "/ama.svg"
-      },
-      {
-        value: "flipkart",
-        label: "Flipkart",
-        emoji: "🅱️",
-        imageUrl: "/flipkart.svg"
-      },
-      {
-        value: "ajio",
-        label: "Ajio",
-        emoji: "🅾️",
-        imageUrl: "/ajio.svg"
-      },
-      {
-        value: "puma",
-        label: "Puma",
-        emoji: "🐆",
-        imageUrl: "/puma.svg"
-      },
-    ],
-  },
+ {
+  id: "age",
+  question: "Choose the group that best fits your style",
+  options: [
+    { value: "teen", label: "Teen 🧒" },
+    { value: "young_adult", label: "Young adult 👩🎓" },
+    { value: "adult", label: "Adult 👨💼" },
+    { value: "senior", label: "Senior 👵" },
+  ],
+},
+ {
+   id: "ethnicity",
+   question: "Choose the group that best fits your style",
+   options: [
+     { value: "white", label: "White ⚪️" },
+     { value: "black", label: "Black ⬛️" },
+     { value: "east_asian", label: "East Asian 🀄️" },
+     { value: "south_asian", label: "South Asian 🌸" },
+     { value: "latino", label: "Latino 🌮" },
+   ],
+},
+ {
+   id: "body_shape",
+   question: "Choose the body type that best describes you for a better fit",
+   options: [
+     { value: "petite", label: "Petite 🧘♀️" },
+     { value: "slim", label: "Slim 🍃" },
+     { value: "average", label: "Average 👌" },
+     { value: "curvy", label: "Curvy 🌺" },
+     { value: "plus_size", label: "Plus size 🌟" },
+     { value: "tall", label: "Tall 🌳" },
+   ],
+ },
+ {
+   id: "skin_tone",
+   question: "Choose the shade closest to your skin tone",
+   options: [
+     { value: "fair", label: "Fair ⚪️" },
+     { value: "light", label: "Light 🟡" },
+     { value: "medium", label: "Medium 🟠" },
+     { value: "tan", label: "Tan 🟤" },
+     { value: "deep", label: "Deep ⚫️" },
+   ],
+ },
+{
+  id: "price_range",
+  question: "Choose a price range for brands we'll show",
+  options: [
+    { value: "no_limit", label: "No limit 💸" },
+    { value: "affordable", label: "$ Affordable 🤑" },
+    { value: "mid_range", label: "$$ Mid-Range 💰" },
+    { value: "luxury", label: "$$$ Luxury 🤑" },
+  ],
+},
+{
+  id: "preferred_store",
+  question: "Choose your favorite stores",
+  options: [
+    { 
+      value: "amazon", 
+      label: "Amazon",
+      emoji: "🅰️",
+      imageUrl: "/ama.svg" 
+    },
+    { 
+      value: "flipkart", 
+      label: "Flipkart",
+      emoji: "🅱️",
+      imageUrl: "/flipkart.svg" 
+    },
+    { 
+      value: "ajio", 
+      label: "Ajio",
+      emoji: "🅾️",
+      imageUrl: "/ajio.svg" 
+    },
+    { 
+      value: "puma", 
+      label: "Puma",
+      emoji: "🐆",
+      imageUrl: "/puma.svg" 
+    },
+  ],
+},
 ];
 
 export default function PreferencesPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [preferences, setPreferences] = useState<PreferencesState>({
     gender: "",
-    age: 25,
-    height: 170,
-    body_shape: "",
-    fit_preference: "",
-    accessory_style: "",
-    preferred_store: "",
+   age: undefined,
+   ethnicity: undefined,
+   skin_tone: "",
+   body_shape: "",
+   price_range: "",
+   preferred_store: "",
   });
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -151,22 +165,22 @@ export default function PreferencesPage() {
           const data = await response.json();
           setPreferences(data.preferences || {
             gender: "",
-            age: 25,
-            height: 170,
-            body_shape: "",
-            fit_preference: "",
-            accessory_style: "",
-            preferred_store: "",
+   age: undefined,
+   ethnicity: undefined,
+   skin_tone: "",
+   body_shape: "",
+   price_range: "",
+   preferred_store: "",
           });
         } catch (error) {
           console.error("Error fetching preferences:", error);
           setPreferences({
             gender: "",
-            age: 25,
-            height: 170,
+            age: undefined,
+            ethnicity: undefined,
+            skin_tone: "",
             body_shape: "",
-            fit_preference: "",
-            accessory_style: "",
+            price_range: "",
             preferred_store: "",
           });
         }
@@ -306,14 +320,14 @@ export default function PreferencesPage() {
           {currentStepData.isCustomInput ? (
             <input
               type={
-                currentStepData.id === "age" || currentStepData.id === "height"
+                currentStepData.id === "age" 
                   ? "number"
                   : "text"
               }
               value={preferences[currentStepData.id] || ""}
               onChange={(e) =>
                 handleInputChange(
-                  currentStepData.id === "age" || currentStepData.id === "height"
+                  currentStepData.id === "age"
                     ? Number(e.target.value)
                     : e.target.value
                 )

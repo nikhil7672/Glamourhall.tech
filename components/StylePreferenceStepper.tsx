@@ -21,11 +21,11 @@ interface Step {
 interface PreferencesState {
  gender: string;
  age?: number;
- height?: number;
+ ethnicity?: string;
  body_shape?: string;
- fit_preference?: string;
- accessory_style?: string;
  preferred_store?: string;
+ skin_tone?: string;
+ price_range?: string;
 }
 
 interface StylePreferenceStepperProps {
@@ -36,54 +36,67 @@ interface StylePreferenceStepperProps {
 }
 
 const steps: Step[] = [
+  {
+    id: "gender",
+    question: "Choose what best describes your gender",
+    options: [
+      { value: "woman", label: "Woman ♀️" },
+      { value: "neutral", label: "Neutral ⚪️" },
+      { value: "man", label: "Man ♂️" },
+    ],
+  },
  {
-   id: "gender",
-   question: "Select your gender",
+  id: "age",
+  question: "Choose the group that best fits your style",
+  options: [
+    { value: "teen", label: "Teen 🧒" },
+    { value: "young_adult", label: "Young adult 👩🎓" },
+    { value: "adult", label: "Adult 👨💼" },
+    { value: "senior", label: "Senior 👵" },
+  ],
+},
+ {
+   id: "ethnicity",
+   question: "Choose the group that best fits your style",
    options: [
-     { value: "male", label: "Male ♂️" },
-     { value: "female", label: "Female ♀️" },
-     { value: "nonbinary", label: "Non-Binary ⚧️" },
-     { value: "prefer_not_say", label: "Prefer not to say 🙊" },
+     { value: "white", label: "White ⚪️" },
+     { value: "black", label: "Black ⬛️" },
+     { value: "east_asian", label: "East Asian 🀄️" },
+     { value: "south_asian", label: "South Asian 🌸" },
+     { value: "latino", label: "Latino 🌮" },
    ],
- },
- {
-   id: "age",
-   question: "Enter your age",
-   isCustomInput: true,
- },
- {
-   id: "height", 
-   question: "Enter your height (cm)",
-   isCustomInput: true,
- },
+},
  {
    id: "body_shape",
-   question: "Which body shape best describes you?",
+   question: "Choose the body type that best describes you for a better fit",
    options: [
-     { value: "rectangle", label: "Rectangle ▭" },
-     { value: "hourglass", label: "Hourglass ⏳" },
-     { value: "pear", label: "Pear 🍐" }, 
-     { value: "apple", label: "Apple 🍎" },
-     { value: "triangle", label: "Triangle 🔺" },
+     { value: "petite", label: "Petite 🧘♀️" },
+     { value: "slim", label: "Slim 🍃" },
+     { value: "average", label: "Average 👌" },
+     { value: "curvy", label: "Curvy 🌺" },
+     { value: "plus_size", label: "Plus size 🌟" },
+     { value: "tall", label: "Tall 🌳" },
    ],
  },
  {
-   id: "fit_preference",
-   question: "How do you like your clothes to fit?",
+   id: "skin_tone",
+   question: "Choose the shade closest to your skin tone",
    options: [
-     { value: "slim", label: "Slim Fit 🏃" },
-     { value: "regular", label: "Regular Fit 👕" },
-     { value: "oversized", label: "Oversized 😎" },
+     { value: "fair", label: "Fair ⚪️" },
+     { value: "light", label: "Light 🟡" },
+     { value: "medium", label: "Medium 🟠" },
+     { value: "tan", label: "Tan 🟤" },
+     { value: "deep", label: "Deep ⚫️" },
    ],
  },
- {
-  id: "accessory_style",
-  question: "How do you accessorize?",
+{
+  id: "price_range",
+  question: "Choose a price range for brands we'll show",
   options: [
-    { value: "minimal", label: "Minimal ✨ (Simple jewelry)" },
-    { value: "statement", label: "Statement 💥 (Bold pieces)" },
-    { value: "functional", label: "Functional 🕶️ (Hats, belts)" },
-    { value: "none", label: "No Accessories 🙅" },
+    { value: "no_limit", label: "No limit 💸" },
+    { value: "affordable", label: "$ Affordable 🤑" },
+    { value: "mid_range", label: "$$ Mid-Range 💰" },
+    { value: "luxury", label: "$$$ Luxury 🤑" },
   ],
 },
 {
@@ -128,10 +141,10 @@ export function StylePreferenceStepper({
  const [preferences, setPreferences] = useState<PreferencesState>({
    gender: "",
    age: undefined,
-   height: undefined,
+   ethnicity: undefined,
+   skin_tone: "",
    body_shape: "",
-   fit_preference: "",
-   accessory_style: "",
+   price_range: "",
    preferred_store: "",
  });
  const [error, setError] = useState("");
@@ -140,19 +153,7 @@ export function StylePreferenceStepper({
    const currentQuestion = steps[currentStep];
    if (!currentQuestion) return;
    
-   if (currentQuestion.id === "age") {
-     const ageValue = preferences.age;
-     if (!ageValue || isNaN(ageValue) || ageValue < 10 || ageValue > 100) {
-       setError("Please enter a valid age between 10 and 100.");
-       return;
-     }
-   } else if (currentQuestion.id === "height") {
-     const heightValue = preferences.height;
-     if (!heightValue || isNaN(heightValue) || heightValue < 100 || heightValue > 250) {
-       setError("Please enter a valid height between 100 and 250 cm.");
-       return;
-     }
-   } else if (currentQuestion.id === "preferred_store") {
+   if (currentQuestion.id === "preferred_store") {
      if (!preferences.preferred_store) {
        setError("Please select a store");
        return;
