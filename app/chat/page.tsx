@@ -1141,18 +1141,12 @@ export default function ChatPage() {
               {(session?.user || localStorageUser) && (
                 <Popover className="relative">
                   <Popover.Button className="focus:outline-none">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 transition-all">
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 transition-all">
                       {session?.user?.image ? (
                         <img
                           src={session.user.image}
                           alt="Profile"
-                          className="w-10 h-10 object-cover rounded-full border-2 border-purple-300"
-                          style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)'
-                          }}
+                          className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-purple-100 flex items-center justify-center">
