@@ -78,10 +78,8 @@ export default function ChatPage() {
   const initialPrompts = [
     { icon: "🤵", text: "What should I wear to a wedding?" },
     { icon: "🎨", text: "Which colors are trending this season?" },
-    { icon: "💈", text: "What grooming tips suit my skin tone best?" },
     { icon: "👕", text: "How can I build a versatile capsule wardrobe?" },
     { icon: "👟", text: "What style tips work best for my body type?" },
-    { icon: "🌿", text: "What's new in sustainable fashion?" },
   ];
   
   
@@ -1363,7 +1361,7 @@ export default function ChatPage() {
                           <div className="flex items-center gap-4 relative z-10">
                             <motion.span
                               whileHover={{ scale: 1.1 }}
-                              className="text-4xl p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 shadow-inner"
+                              className="text-4xl p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-blue-900 shadow-inner"
                             >
                               {prompt.icon}
                             </motion.span>
@@ -1384,19 +1382,31 @@ export default function ChatPage() {
                     className="flex flex-wrap justify-center gap-3"
                   >
                     {[
-                      { label: 'Virtual Try-On', icon: '👗', color: 'purple' },
-                      { label: 'Trend Forecast', icon: '📈', color: 'pink' },
+                      { label: 'Style Advisor', icon: '👗', color: 'purple' },
+                      { label: 'Outfit Planner', icon: '📈', color: 'pink' },
                       { label: 'Color Analysis', icon: '🎨', color: 'blue' },
                       { label: 'Eco Styles', icon: '🌿', color: 'green' }
                     ].map((badge, index) => (
                       <motion.span
                         key={index}
                         whileHover={{ scale: 1.05 }}
-                        className="px-4 py-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 text-sm flex items-center gap-2 hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors"
+                        className={`px-4 py-2 rounded-full backdrop-blur-sm border text-sm flex items-center gap-2 transition-colors
+                          ${badge.color === 'purple' ? 
+                            'bg-purple-50/70 dark:bg-purple-900/30 border-purple-200/50 dark:border-purple-700/50 hover:bg-purple-100/50 dark:hover:bg-purple-800/40 text-purple-600 dark:text-purple-300' :
+                          badge.color === 'pink' ?
+                            'bg-pink-50/70 dark:bg-pink-900/30 border-pink-200/50 dark:border-pink-700/50 hover:bg-pink-100/50 dark:hover:bg-pink-800/40 text-pink-600 dark:text-pink-300' :
+                          badge.color === 'blue' ?
+                            'bg-blue-50/70 dark:bg-blue-900/30 border-blue-200/50 dark:border-blue-700/50 hover:bg-blue-100/50 dark:hover:bg-blue-800/40 text-blue-600 dark:text-blue-300' :
+                            'bg-green-50/70 dark:bg-green-900/30 border-green-200/50 dark:border-green-700/50 hover:bg-green-100/50 dark:hover:bg-green-800/40 text-green-600 dark:text-green-300'
+                          }`}
                       >
                         <span className="text-xl">{badge.icon}</span>
                         {badge.label}
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                        <div className={`w-2 h-2 rounded-full animate-pulse ${
+                          badge.color === 'purple' ? 'bg-purple-400' :
+                          badge.color === 'pink' ? 'bg-pink-400' :
+                          badge.color === 'blue' ? 'bg-blue-400' : 'bg-green-400'
+                        }`} />
                       </motion.span>
                     ))}
                   </motion.div>
@@ -1605,7 +1615,7 @@ export default function ChatPage() {
                 ) : (
                   <button
                     type="submit"
-                    className="p-3 rounded-full bg-gradient-to-r from-purple-500 to-blue-400 text-white hover:opacity-90 transition-opacity"
+                    className="p-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 text-white hover:opacity-90 transition-opacity"
                     title="Send"
                   >
                     <FaPaperPlane className="h-5 w-5" />
