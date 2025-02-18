@@ -1143,12 +1143,16 @@ export default function ChatPage() {
                   <Popover.Button className="focus:outline-none">
                     <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 transition-all">
                       {session?.user?.image ? (
-                        <Image
+                        <img
                           src={session.user.image}
                           alt="Profile"
-                          width={40}
-                          height={40}
-                          className="object-cover w-full h-full"
+                          className="w-10 h-10 object-cover rounded-full border-2 border-purple-300"
+                          style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)'
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full bg-purple-100 flex items-center justify-center">
@@ -1177,12 +1181,16 @@ export default function ChatPage() {
                         <div className="flex items-center gap-4">
                           <div className="relative flex-shrink-0 w-12 h-12">
                             {session?.user?.image ? (
-                              <Image
+                              <img
                                 src={session.user.image}
                                 alt="Profile"
-                                fill
-                                sizes="(max-width: 48px) 100vw"
-                                className="object-cover rounded-full border-2 border-purple-300"
+                                className="w-10 h-10 object-cover rounded-full border-2 border-purple-300"
+                                style={{
+                                  position: 'absolute',
+                                  top: '50%',
+                                  left: '50%',
+                                  transform: 'translate(-50%, -50%)'
+                                }}
                               />
                             ) : (
                               <div className="w-full h-full bg-purple-100 flex items-center justify-center rounded-full border-2 border-purple-300">
