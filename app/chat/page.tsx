@@ -76,12 +76,16 @@ export default function ChatPage() {
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [localStorageUser, setLocalStorageUser] = useState<any>(null);
   const initialPrompts = [
-    { icon: "👕", text: "Help me style an outfit for a wedding" },
-    { icon: "🌈", text: "What colors are trending this season?" },
-    { icon: "🖼️", text: "Recommend makeup looks for my skin tone" },
-    { icon: "👜", text: "Create a capsule wardrobe for me" },
-    { icon: "📊", text: "Give me fashion tips for my body type" },
+    { icon: "🤵", text: "What should I wear to a wedding?" },
+    { icon: "🎨", text: "Which colors are trending this season?" },
+    { icon: "💈", text: "What grooming tips suit my skin tone best?" },
+    { icon: "👕", text: "How can I build a versatile capsule wardrobe?" },
+    { icon: "👟", text: "What style tips work best for my body type?" },
+    { icon: "🌿", text: "What's new in sustainable fashion?" },
   ];
+  
+  
+  
   const { theme, setTheme } = useTheme();
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -1291,60 +1295,112 @@ export default function ChatPage() {
             <div className="max-w-3xl mx-auto px-4 py-6">
               {/* Welcome Section - Only show if chat hasn't started */}
               {!hasStartedChat && messages.length <= 1 && (
-                <div className="text-center mb-8">
-                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-purple-200 to-blue-200 flex items-center justify-center shadow-lg dark:from-purple-200 dark:to-blue-800">
-                    <Image
-                      src="/wedding.png"
-                      alt="Fashion Icon"
-                      width={64}
-                      height={64}
-                      className="rounded-full"
-                    />
-                  </div>
-                  <h2 className="text-2xl font-extrabold mb-3 text-center text-gray-900 dark:text-gray-100">
-                    Your Personal Style Guide
-                  </h2>
-                  <p className="text-gray-700 dark:text-gray-300 text-center mb-10">
-                    Get personalized fashion advice, trend updates, and style
-                    recommendations
-                  </p>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center mb-8 space-y-8"
+                >
+                  {/* Animated Logo */}
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 100 }}
+                    className="relative mx-auto w-28 h-28"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-xl opacity-20 animate-pulse-slow" />
+                    <div className="relative w-full h-full rounded-full bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center shadow-2xl backdrop-blur-sm border border-white/20">
+                      <motion.img
+                        src="/wedding.png"
+                        alt="Fashion Icon"
+                        className="w-20 h-20 rounded-full"
+                        animate={{ 
+                          rotate: [0, 5, -5, 0],
+                          y: [0, -10, 0]
+                        }}
+                        transition={{ 
+                          duration: 6,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    </div>
+                  </motion.div>
 
-                  {/* Featured Prompts */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto p-4">
+                  {/* Headings */}
+                  <div className="space-y-4">
+                    <motion.h2
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-blue-400 bg-clip-text text-transparent"
+                    >
+                      Your AI Style Companion
+                    </motion.h2>
+                    
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                      className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+                    >
+                      Transform your wardrobe with <span className="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent font-semibold">AI-powered fashion insights</span> tailored just for you
+                    </motion.p>
+                  </div>
+
+                  {/* Prompts Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto px-4">
                     {initialPrompts.map((prompt, index) => (
-                      <button
+                      <motion.div
                         key={index}
-                        onClick={() => handlePromptClick(prompt.text)}
-                        className="group p-5 rounded-2xl border border-gray-300 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800 transition-all duration-300 shadow-md dark:shadow-lg text-left"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 + 0.3 }}
                       >
-                        <div className="flex items-center gap-4">
-                          <span className="text-3xl dark:text-gray-200">
-                            {prompt.icon}
-                          </span>
-                          <span className="text-base text-gray-800 dark:text-gray-300 group-hover:text-purple-700 dark:group-hover:text-purple-300">
-                            {prompt.text}
-                          </span>
-                        </div>
-                      </button>
+                        <button
+                          onClick={() => handlePromptClick(prompt.text)}
+                          className="group w-full p-6 rounded-2xl border border-white/20 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg hover:bg-gradient-to-br from-purple-50/50 to-pink-50/50 shadow-lg hover:shadow-purple-500/20 transition-all duration-300 text-left relative overflow-hidden"
+                        >
+                          <div className="absolute inset-0 bg-[conic-gradient(from_90deg_at_50%_50%,#e879f920_0%,#3b82f600_50%)] opacity-0 group-hover:opacity-100 animate-spin-slow" />
+                          <div className="flex items-center gap-4 relative z-10">
+                            <motion.span
+                              whileHover={{ scale: 1.1 }}
+                              className="text-4xl p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 shadow-inner"
+                            >
+                              {prompt.icon}
+                            </motion.span>
+                            <span className="text-lg font-medium text-gray-800 dark:text-gray-200 group-hover:text-purple-600 transition-colors">
+                              {prompt.text}
+                            </span>
+                          </div>
+                        </button>
+                      </motion.div>
                     ))}
                   </div>
 
-                  {/* Feature Badges */}
-                  <div className="flex flex-wrap justify-center gap-3 mt-8">
-                    <span className="px-4 py-2 rounded-full bg-purple-100 text-purple-700 text-sm">
-                      Personal Styling
-                    </span>
-                    <span className="px-4 py-2 rounded-full bg-pink-100 text-pink-700 text-sm">
-                      Trend Analysis
-                    </span>
-                    <span className="px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm">
-                      Color Matching
-                    </span>
-                    <span className="px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm">
-                      Sustainable Fashion
-                    </span>
-                  </div>
-                </div>
+                  {/* Feature Chips */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="flex flex-wrap justify-center gap-3"
+                  >
+                    {[
+                      { label: 'Virtual Try-On', icon: '👗', color: 'purple' },
+                      { label: 'Trend Forecast', icon: '📈', color: 'pink' },
+                      { label: 'Color Analysis', icon: '🎨', color: 'blue' },
+                      { label: 'Eco Styles', icon: '🌿', color: 'green' }
+                    ].map((badge, index) => (
+                      <motion.span
+                        key={index}
+                        whileHover={{ scale: 1.05 }}
+                        className="px-4 py-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 text-sm flex items-center gap-2 hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors"
+                      >
+                        <span className="text-xl">{badge.icon}</span>
+                        {badge.label}
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                      </motion.span>
+                    ))}
+                  </motion.div>
+                </motion.div>
               )}
 
               {/* Chat Messages */}
