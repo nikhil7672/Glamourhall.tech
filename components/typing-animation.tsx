@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 
-export const TypingAnimation = ({ content }: { content: string }) => {
+export const TypingAnimation = ({ 
+  content, 
+  onComplete
+}: { 
+  content: string; 
+  onComplete?: () => void 
+}) => {
   const [displayedContent, setDisplayedContent] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
@@ -25,8 +31,9 @@ export const TypingAnimation = ({ content }: { content: string }) => {
       return () => clearTimeout(timer);
     } else {
       setIsTyping(false);
+      onComplete?.();
     }
-  }, [currentIndex, content, isSkipped]);
+  }, [currentIndex, content, isSkipped, onComplete]);
 
   const handleSkip = () => {
     setIsSkipped(true);

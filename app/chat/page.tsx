@@ -43,6 +43,8 @@ import { StylePreferenceStepper } from "@/components/StylePreferenceStepper";
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { useSpeechSynthesis } from "@/components/voice/useSpeechSynthesis";
+import { SpeechControl } from "@/components/voice/SpeechControl";
 
 interface Message {
   type: "user" | "ai";
@@ -125,7 +127,34 @@ export default function ChatPage() {
   // Add at the top of your component
   const [showARTryOn, setShowARTryOn] = useState(false);
   const [selectedProductImage, setSelectedProductImage] = useState<string | null>(null);
-
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const {
+    isSpeechEnabled,
+    setIsSpeechEnabled,
+    voicesLoaded,
+    availableVoices,
+    speechSettings,
+    setSpeechSettings,
+    speakText,
+    stopSpeech
+  } = useSpeechSynthesis();
+  
+  const [currentlySpeakingIndex, setCurrentlySpeakingIndex] = useState<number>(-1);
+  
+  // Add useEffect for speaking new messages
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.type === 'ai' && !lastMessage.isHistory && isSpeechEnabled) {
+      // Stop any existing speech before starting new
+      stopSpeech();
+      // Use setTimeout to ensure DOM updates complete before speaking
+      setTimeout(() => {
+        speakText(lastMessage.content, messages.length - 1, setCurrentlySpeakingIndex);
+      }, 300);
+    }
+  }, [messages, isSpeechEnabled]); // Add isSpeechEnabled to dependencies
+  
+  
   // Function to open the Preferences dialog
   const viewPreferenceDialog = () => router.push("/preferences");
 
@@ -446,6 +475,7 @@ export default function ChatPage() {
         type: "ai" as const,
         content: data?.result || "Sorry, I could not process your request.",
         products: data?.products || [],
+        isHistory: false // Ensure this is explicitly set
       };
       setIsWaitingResponse(false);
       setIsAITyping(false);
@@ -1120,6 +1150,13 @@ export default function ChatPage() {
 
             {/* Right Section: Theme Toggle, Notifications, Profile */}
             <div className="flex items-center gap-4">
+              <SpeechControl
+                isSpeechEnabled={isSpeechEnabled}
+                setIsSpeechEnabled={setIsSpeechEnabled}
+                stopSpeech={stopSpeech}
+                voicesLoaded={voicesLoaded}
+                currentlySpeakingIndex={currentlySpeakingIndex}
+              />
               {/* Notifications */}
               {(session?.user || localStorageUser) && (
                 <div className="relative">
@@ -1465,7 +1502,7 @@ export default function ChatPage() {
                         !message.isHistory ? (
                           <TypingAnimation content={message.content} />
                         ) : (
-                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                          <ReactMarkdown className="speech-friendly">{message.content}</ReactMarkdown>
                         )}
                       </div>
                     )}
@@ -1489,17 +1526,12 @@ export default function ChatPage() {
                                 {/* Image container */}
                                 <div className="aspect-square relative bg-gray-100 dark:bg-gray-700 overflow-hidden">
                                   <img
-                                    src={product.image}
-                                    alt={product.name}
+                                    src={product?.image}
+                                    alt={product?.name}
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                    loading="lazy"
+                                 
                                   />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
-                                  
-                                  {/* Loading skeleton */}
-                                  {!product.image && (
-                                    <div className="absolute inset-0 animate-pulse bg-gray-200 dark:bg-gray-600" />
-                                  )}
+                                 
                                 </div>
 
                                 {/* Product Info */}
