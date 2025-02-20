@@ -31,6 +31,8 @@ import {
   FaStopCircle,
   FaCheckCircle,
   FaCrown,
+  FaStore,
+  FaLeaf,
 } from "react-icons/fa";
 import { BsBellFill } from "react-icons/bs";
 import { useMediaQuery } from "@/utils/useMediaQuery";
@@ -1183,142 +1185,152 @@ export default function ChatPage() {
 
               {/* Profile */}
               {(session?.user || localStorageUser) && (
-                <Popover className="relative">
-                  <Popover.Button className="focus:outline-none">
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 transition-all">
-                      {session?.user?.image ? (
-                        <img
-                          src={session.user.image}
-                          alt="Profile"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                          <span className="text-xl text-purple-500">
-                            {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                              localStorageUser?.full_name?.[0]?.toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </Popover.Button>
-
-                  {/* Dropdown Menu */}
-                  <Transition
-                    as={Fragment}
-                    enter="transition ease-out duration-200"
-                    enterFrom="opacity-0 translate-y-2"
-                    enterTo="opacity-100 translate-y-0"
-                    leave="transition ease-in duration-150"
-                    leaveFrom="opacity-100 translate-y-0"
-                    leaveTo="opacity-0 translate-y-2"
-                  >
-                    <Popover.Panel className="absolute right-0 z-50 mt-2 w-64 origin-top-right bg-white dark:bg-gray-800 rounded-xl shadow-xl ring-1 ring-black ring-opacity-5">
-                      <div className="p-4">
-                        {/* Profile Info */}
-                        <div className="flex items-center gap-4">
-                          <div className="relative flex-shrink-0 w-12 h-12">
-                            {session?.user?.image ? (
-                              <img
-                                src={session.user.image}
-                                alt="Profile"
-                                className="w-10 h-10 object-cover rounded-full border-2 border-purple-300"
-                                style={{
-                                  position: 'absolute',
-                                  top: '50%',
-                                  left: '50%',
-                                  transform: 'translate(-50%, -50%)'
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-purple-100 flex items-center justify-center rounded-full border-2 border-purple-300">
-                                <span className="text-lg text-purple-500">
-                                  {localStorageUser?.fullName?.[0]?.toUpperCase() ||
-                                    localStorageUser?.full_name?.[0]?.toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-                              {localStorageUser?.fullName ||
-                                localStorageUser?.full_name}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                              {localStorageUser?.email}
-                            </p>
-                            {/* Add plan display */}
-                            <div className="mt-1 space-y-1">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                localStorageUser?.plan === 'premium'
-                                  ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-900 dark:from-amber-600 dark:to-yellow-500 dark:text-amber-100'
-                                  : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-                              }`}>
-                                {localStorageUser?.plan === 'premium' ? (
-                                  <>
-                                    <FaCrown className="w-3.5 h-3.5 mr-1.5" />
-                                    Premium Account
-                                  </>
-                                ) : (
-                                  `Account: ${localStorageUser?.plan?.toUpperCase() || 'BASIC'}`
-                                )}
-                              </span>
-                              
-                              {/* Add expiration date for premium users */}
-                              {localStorageUser?.plan === 'premium' && localStorageUser?.planExpiresAt && (
-                                <p className="text-[0.7rem] text-amber-700 dark:text-amber-200/80 font-medium ml-2">
-                                  Valid till: {new Date(localStorageUser.planExpiresAt).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                  })}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        {/* Actions */}
-                        <div className="mt-4 space-y-2">
-                          {/* Theme Toggle Button */}
-                          <button
-                            onClick={() =>
-                              setTheme(theme === "dark" ? "light" : "dark")
-                            }
-                            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                          >
-                            {theme === "dark" ? (
-                              <>
-                                <FaSun className="w-5 h-5 text-yellow-400" />
-                                <span>Light Mode</span>
-                              </>
-                            ) : (
-                              <>
-                                <FaMoon className="w-5 h-5" />
-                                <span>Dark Mode</span>
-                              </>
-                            )}
-                          </button>
-
-                          <button
-                            onClick={viewPreferenceDialog}
-                            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/20 transition"
-                          >
-                            <FaCogs className="w-5 h-5" />
-                            <span>Preferences</span>
-                          </button>
-
-                          <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 transition"
-                          >
-                            <FaSignOutAlt className="w-5 h-5" />
-                            <span>Sign Out</span>
-                          </button>
-                        </div>
-                      </div>
-                    </Popover.Panel>
-                  </Transition>
-                </Popover>
+                 <Popover className="relative">
+                 <Popover.Button className="focus:outline-none">
+                   <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-purple-400 transition-all">
+                     {session?.user?.image ? (
+                       <img
+                         src={session.user.image}
+                         alt="Profile"
+                         className="w-full h-full object-cover filter brightness-90"
+                       />
+                     ) : (
+                       <div className="w-full h-full bg-purple-100 flex items-center justify-center">
+                         <span className="text-xl text-purple-500">
+                           {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                             localStorageUser?.full_name?.[0]?.toUpperCase()}
+                         </span>
+                       </div>
+                     )}
+                   </div>
+                 </Popover.Button>
+           
+                 <Transition
+                   as={Fragment}
+                   enter="transition ease-out duration-200"
+                   enterFrom="opacity-0 translate-y-2"
+                   enterTo="opacity-100 translate-y-0"
+                   leave="transition ease-in duration-150"
+                   leaveFrom="opacity-100 translate-y-0"
+                   leaveTo="opacity-0 translate-y-2"
+                 >
+                   <Popover.Panel className="absolute right-0 z-50 mt-2 w-72 origin-top-right bg-white dark:bg-gray-800 rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 backdrop-blur-sm">
+                     <div className="p-5">
+                       {/* Profile Info */}
+                       <div className="flex items-center gap-4">
+                         <div className="relative flex-shrink-0 w-12 h-12">
+                           {session?.user?.image ? (
+                             <img
+                               src={session.user.image}
+                               alt="Profile"
+                               className="w-12 h-12 object-cover rounded-full border-2 border-purple-300 filter brightness-90"
+                               style={{
+                                 position: 'absolute',
+                                 top: '50%',
+                                 left: '50%',
+                                 transform: 'translate(-50%, -50%)',
+                               }}
+                             />
+                           ) : (
+                             <div className="w-full h-full bg-purple-100 flex items-center justify-center rounded-full border-2 border-purple-300">
+                               <span className="text-lg text-purple-500">
+                                 {localStorageUser?.fullName?.[0]?.toUpperCase() ||
+                                   localStorageUser?.full_name?.[0]?.toUpperCase()}
+                               </span>
+                             </div>
+                           )}
+                         </div>
+                         <div className="min-w-0 flex-1">
+                           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                             {localStorageUser?.fullName || localStorageUser?.full_name}
+                           </h3>
+                           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                             {localStorageUser?.email}
+                           </p>
+                           {/* Plan Display */}
+                           <div className="mt-1">
+                             <div
+                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                 localStorageUser?.plan === 'premium'
+                                   ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-900 dark:from-amber-600 dark:to-yellow-500 dark:text-amber-100'
+                                   : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                               }`}
+                             >
+                               {localStorageUser?.plan === 'premium' ? (
+                                 <>
+                                   <FaCrown className="w-4 h-4 mr-1" />
+                                   Premium Account
+                                 </>
+                               ) : (
+                                 `Account: ${localStorageUser?.plan?.toUpperCase() || 'BASIC'}`
+                               )}
+                             </div>
+                             {localStorageUser?.plan === 'premium' && localStorageUser?.planExpiresAt && (
+                               <p className="mt-1 text-[0.7rem] text-amber-700 dark:text-amber-200/80 font-medium">
+                                 Valid till:{' '}
+                                 {new Date(localStorageUser.planExpiresAt).toLocaleDateString('en-US', {
+                                   year: 'numeric',
+                                   month: 'short',
+                                   day: 'numeric',
+                                 })}
+                               </p>
+                             )}
+                           </div>
+                         </div>
+                       </div>
+                       {/* Actions */}
+                       <div className="mt-4 space-y-2">
+                         <button
+                           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-transform duration-300 hover:scale-105"
+                         >
+                           {theme === 'dark' ? (
+                             <>
+                               <FaSun className="w-5 h-5 text-yellow-400" />
+                               <span>Light Mode</span>
+                             </>
+                           ) : (
+                             <>
+                               <FaMoon className="w-5 h-5" />
+                               <span>Dark Mode</span>
+                             </>
+                           )}
+                         </button>
+           
+                         <button
+                           onClick={viewPreferenceDialog}
+                           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-transform duration-300 hover:scale-105"
+                         >
+                           <FaCogs className="w-5 h-5" />
+                           <span>Preferences</span>
+                         </button>
+                         <button
+                           onClick={() => router.push('/local-store')}
+                           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-transform duration-300 hover:scale-105"
+                         >
+                           <FaStore className="w-5 h-5" />
+                           <span>Local Store</span>
+                         </button>
+                         <button
+                           onClick={() => router.push('/skincare-challenge')}
+                           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 transition-transform duration-300 hover:scale-105"
+                         >
+                           <FaLeaf className="w-5 h-5" />
+                           <span>Skin Care Challenge</span>
+                         </button>
+                         <button
+                           onClick={handleLogout}
+                           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 transition-transform duration-300 hover:scale-105"
+                         >
+                           <FaSignOutAlt className="w-5 h-5" />
+                           <span>Sign Out</span>
+                         </button>
+                       </div>
+                     </div>
+                   </Popover.Panel>
+                 </Transition>
+               </Popover>
+            
               )}
             </div>
           </div>
