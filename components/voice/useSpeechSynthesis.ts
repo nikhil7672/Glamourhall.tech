@@ -22,7 +22,7 @@ interface SpeechSettings {
 }
 
 export const usePollySpeechSynthesis = () => {
-  const [isSpeechEnabled, setIsSpeechEnabled] = useState(false);
+  const [isSpeechEnabled, setIsSpeechEnabled] = useState(true);
   const [currentlySpeaking, setCurrentlySpeaking] = useState(false);
   const [speechSettings, setSpeechSettings] = useState<SpeechSettings>({
     rate: 1.0,

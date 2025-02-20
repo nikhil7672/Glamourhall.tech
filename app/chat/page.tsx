@@ -1152,13 +1152,16 @@ export default function ChatPage() {
 
             {/* Right Section: Theme Toggle, Notifications, Profile */}
             <div className="flex items-center gap-4">
-              <SpeechControl
-                isSpeechEnabled={isSpeechEnabled}
-                setIsSpeechEnabled={setIsSpeechEnabled}
-                stopSpeech={stopSpeech}
-                currentlySpeakingIndex={currentlySpeakingIndex}
-                currentlySpeaking={currentlySpeaking}
-              />
+              {/* Desktop Speech Control (stays in header) */}
+              <div className="hidden md:block mt-2">
+                <SpeechControl
+                  isSpeechEnabled={isSpeechEnabled}
+                  setIsSpeechEnabled={setIsSpeechEnabled}
+                  stopSpeech={stopSpeech}
+                  currentlySpeakingIndex={currentlySpeakingIndex}
+                  currentlySpeaking={currentlySpeaking}
+                />
+              </div>
               {/* Notifications */}
               {(session?.user || localStorageUser) && (
                 <div className="relative">
@@ -1696,6 +1699,39 @@ export default function ChatPage() {
           }}
           userId={localStorageUser?.id}
         />
+      )}
+      {/* Mobile Speech Control Floating Button - Only show when chat hasn't started */}
+      {hasStartedChat &&  (
+        <div className="fixed md:hidden bottom-24 right-4 z-50"> {/* Increased bottom spacing */}
+          <motion.div
+            initial={{ scale: 0, y: 100 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+            className="relative"
+          >
+            <SpeechControl
+              isSpeechEnabled={isSpeechEnabled}
+              setIsSpeechEnabled={setIsSpeechEnabled}
+              stopSpeech={stopSpeech}
+              currentlySpeakingIndex={currentlySpeakingIndex}
+              currentlySpeaking={currentlySpeaking}
+              className="w-14 h-14 rounded-full backdrop-blur-lg bg-white/90 dark:bg-gray-800/90 
+                        border-2 border-purple-300/50 dark:border-purple-500/30 shadow-2xl
+                        hover:shadow-3xl transition-all duration-300
+                        flex items-center justify-center
+                        hover:-translate-y-1 active:translate-y-0
+                        [transform-style:preserve-3d]"
+              iconClassName="w-7 h-7"
+            />
+            {/* Enhanced 3D effect elements */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-400/20 
+                           mix-blend-overlay [transform:translateZ(1px)] pointer-events-none" />
+            <div className="absolute inset-0 rounded-full border border-white/30 
+                           [transform:translateZ(2px)] pointer-events-none" />
+            <div className="absolute inset-0 rounded-full shadow-inner shadow-black/10 
+                           [transform:translateZ(3px)] pointer-events-none" />
+          </motion.div>
+        </div>
       )}
     </div>
   );
