@@ -43,7 +43,7 @@ import { StylePreferenceStepper } from "@/components/StylePreferenceStepper";
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { useSpeechSynthesis } from "@/components/voice/useSpeechSynthesis";
+import { usePollySpeechSynthesis } from "@/components/voice/useSpeechSynthesis";
 import { SpeechControl } from "@/components/voice/SpeechControl";
 
 interface Message {
@@ -131,28 +131,30 @@ export default function ChatPage() {
   const {
     isSpeechEnabled,
     setIsSpeechEnabled,
-    voicesLoaded,
-    availableVoices,
     speechSettings,
     setSpeechSettings,
     speakText,
-    stopSpeech
-  } = useSpeechSynthesis();
+    stopSpeech,
+    voicesLoaded,
+    currentlySpeaking
+    
+    
+  } = usePollySpeechSynthesis();
   
   const [currentlySpeakingIndex, setCurrentlySpeakingIndex] = useState<number>(-1);
   
   // Add useEffect for speaking new messages
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.type === 'ai' && !lastMessage.isHistory && isSpeechEnabled) {
+    if (lastMessage?.type === 'ai' && !lastMessage.isHistory ) {
       // Stop any existing speech before starting new
       stopSpeech();
       // Use setTimeout to ensure DOM updates complete before speaking
       setTimeout(() => {
         speakText(lastMessage.content, messages.length - 1, setCurrentlySpeakingIndex);
-      }, 300);
+      }, 100);
     }
-  }, [messages, isSpeechEnabled]); // Add isSpeechEnabled to dependencies
+  }, [messages]); // Add isSpeechEnabled to dependencies
   
   
   // Function to open the Preferences dialog
@@ -1154,8 +1156,8 @@ export default function ChatPage() {
                 isSpeechEnabled={isSpeechEnabled}
                 setIsSpeechEnabled={setIsSpeechEnabled}
                 stopSpeech={stopSpeech}
-                voicesLoaded={voicesLoaded}
                 currentlySpeakingIndex={currentlySpeakingIndex}
+                currentlySpeaking={currentlySpeaking}
               />
               {/* Notifications */}
               {(session?.user || localStorageUser) && (

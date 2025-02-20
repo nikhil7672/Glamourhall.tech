@@ -9,9 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-polly": "^3.750.0",
     "@google-cloud/aiplatform": "^3.34.0",
     "@google/generative-ai": "^0.21.0",
     "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
     "@huggingface/inference": "3.0.1",
     "@langchain/openai": "^0.4.3",
     "@radix-ui/react-avatar": "^1.1.0",

@@ -9,7 +9,7 @@ interface SpeechControlProps {
   setIsSpeechEnabled: (enabled: boolean) => void;
   currentlySpeakingIndex: number;
   stopSpeech: () => void;
-  voicesLoaded: boolean;
+  currentlySpeaking: boolean;
 }
 
 export const SpeechControl: React.FC<SpeechControlProps> = ({
@@ -17,7 +17,7 @@ export const SpeechControl: React.FC<SpeechControlProps> = ({
   setIsSpeechEnabled,
   currentlySpeakingIndex,
   stopSpeech,
-  voicesLoaded
+  currentlySpeaking
 }) => {
   useEffect(() => {
     if (!isSpeechEnabled) {
@@ -26,11 +26,6 @@ export const SpeechControl: React.FC<SpeechControlProps> = ({
   }, [isSpeechEnabled, stopSpeech]);
 
   const handleClick = () => {
-    if (!voicesLoaded) {
-      toast.error('Voice synthesis loading...');
-      return;
-    }
-    
     setIsSpeechEnabled(!isSpeechEnabled);
   };
 
@@ -41,14 +36,10 @@ export const SpeechControl: React.FC<SpeechControlProps> = ({
       onClick={handleClick}
       className="w-10 h-10 flex items-center justify-center rounded-full 
                 hover:bg-gray-100 dark:hover:bg-gray-800 transition group"
-      title={!voicesLoaded ? "Loading voices..." : 
-             isSpeechEnabled ? "Disable voice" : "Enable voice"}
-      disabled={!voicesLoaded}
+      title={isSpeechEnabled ? "Disable voice" : "Enable voice"}
     >
-      {!voicesLoaded ? (
-        <div className="w-5 h-5 border-2 border-gray-400 rounded-full animate-spin" />
-      ) : isSpeechEnabled ? (
-        currentlySpeakingIndex !== -1 ? (
+      {isSpeechEnabled ? (
+        currentlySpeaking ? (
           <FaVolumeUp className="w-5 h-5 text-purple-500 animate-pulse" />
         ) : (
           <FaVolumeUp className="w-5 h-5 text-gray-700 dark:text-gray-300" />
