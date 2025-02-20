@@ -154,12 +154,12 @@ export const useSpeechSynthesis = () => {
     if (!speechSettings.voice || !voices.includes(speechSettings.voice)) {
       // Prioritize premium quality voices
       const preferredVoices = voices.filter(voice => (
-        // voice.name.includes('Premium') ||
-        // voice.name.includes('Enhanced') ||
-        // voice.name.includes('Neural') ||
-        // voice.name.includes('WaveNet') ||
-        // voice.name.includes('Samantha') ||  // Known for natural sound
-        // voice.name.includes('Daniel') ||    // Known for warmth
+        voice.name.includes('Premium') ||
+        voice.name.includes('Enhanced') ||
+        voice.name.includes('Neural') ||
+        voice.name.includes('WaveNet') ||
+        voice.name.includes('Samantha') ||  // Known for natural sound
+        voice.name.includes('Daniel') ||    // Known for warmth
         voice.name.includes('Karen')        // Known for clarity
       ));
 
