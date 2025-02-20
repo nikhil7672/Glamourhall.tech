@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'react-hot-toast';
 
 interface SpeechSettings {
   rate: number;
@@ -22,6 +23,8 @@ export const useSpeechSynthesis = () => {
     style: 'natural',
     mood: 'warm'
   });
+
+  const [userInteractionRequired, setUserInteractionRequired] = useState(true);
 
   const cleanTextForSpeech = (text: string): string => {
     return text
@@ -47,6 +50,13 @@ export const useSpeechSynthesis = () => {
   }, []);
 
   const speakText = useCallback((text: string, index: number, setIndex: (index: number) => void) => {
+    if (userInteractionRequired) {
+      console.warn('Speech blocked - require user interaction');
+      toast.error('Tap screen first to enable speech');
+      setIsSpeechEnabled(false);
+      return;
+    }
+
     if (!isSpeechEnabled || !text || !window.speechSynthesis) return;
 
     stopSpeech();
@@ -143,24 +153,22 @@ export const useSpeechSynthesis = () => {
     };
 
     speakNextSegment();
-  }, [isSpeechEnabled, speechSettings, stopSpeech]);
+  }, [isSpeechEnabled, speechSettings, stopSpeech, userInteractionRequired]);
 
-  // Prioritize high-quality, pleasant voices
   const loadVoices = useCallback(() => {
     const voices = window.speechSynthesis.getVoices();
     setAvailableVoices(voices);
     setVoicesLoaded(true);
 
     if (!speechSettings.voice || !voices.includes(speechSettings.voice)) {
-      // Prioritize premium quality voices
+      // Mobile-friendly voice prioritization
       const preferredVoices = voices.filter(voice => (
-        // voice.name.includes('Premium') ||
-        // voice.name.includes('Enhanced') ||
-        // voice.name.includes('Neural') ||
-        // voice.name.includes('WaveNet') ||
-        // voice.name.includes('Samantha') ||  // Known for natural sound
-        // voice.name.includes('Daniel') ||    // Known for warmth
-        voice.name.includes('Karen')        // Known for clarity
+        voice.name.includes('Google') ||      // Android default
+        voice.name.includes('Samantha') ||    // iOS voice
+        voice.name.includes('Karen') ||        // Chrome default
+        voice.name.includes('Microsoft') ||    // Edge mobile
+        voice.name.includes('Samsung') ||     // Android devices
+        voice.lang.startsWith('en')           // Broaden language support
       ));
 
       // Fallback to any good English voice
@@ -188,18 +196,32 @@ export const useSpeechSynthesis = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
-      if (window.speechSynthesis.getVoices().length > 0) {
-        loadVoices();
+      // Add mobile-specific initialization
+      if ('onvoiceschanged' in window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      } else {
+        // Fallback for browsers that don't support voiceschanged event
+        setTimeout(loadVoices, 1000);
       }
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+      
+      // Mobile browsers often require immediate voice loading
+      if (window.speechSynthesis.getVoices().length === 0) {
+        setTimeout(loadVoices, 500);
+      }
     }
 
     return () => {
       stopSpeech();
-      // Add cleanup to reset speech enabled state
       setIsSpeechEnabled(false);
     };
   }, [stopSpeech, loadVoices]);
+
+  const handleFirstInteraction = useCallback(() => {
+    setUserInteractionRequired(false);
+    if (!voicesLoaded) {
+      loadVoices();
+    }
+  }, [voicesLoaded, loadVoices]);
 
   return {
     isSpeechEnabled,
@@ -210,6 +232,7 @@ export const useSpeechSynthesis = () => {
     speechSettings,
     setSpeechSettings,
     speakText,
-    stopSpeech
+    stopSpeech,
+    handleFirstInteraction,
   };
 };

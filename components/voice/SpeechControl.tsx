@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { FaVolumeUp, FaVolumeOff } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import { useSpeechSynthesis } from './useSpeechSynthesis';
 
 interface SpeechControlProps {
   isSpeechEnabled: boolean;
@@ -10,6 +11,7 @@ interface SpeechControlProps {
   currentlySpeakingIndex: number;
   stopSpeech: () => void;
   voicesLoaded: boolean;
+  handleFirstInteraction: () => void;
 }
 
 export const SpeechControl: React.FC<SpeechControlProps> = ({
@@ -17,7 +19,8 @@ export const SpeechControl: React.FC<SpeechControlProps> = ({
   setIsSpeechEnabled,
   currentlySpeakingIndex,
   stopSpeech,
-  voicesLoaded
+  voicesLoaded,
+  handleFirstInteraction
 }) => {
   useEffect(() => {
     if (!isSpeechEnabled) {
@@ -31,6 +34,7 @@ export const SpeechControl: React.FC<SpeechControlProps> = ({
       return;
     }
     
+    handleFirstInteraction();
     setIsSpeechEnabled(!isSpeechEnabled);
   };
 
@@ -39,6 +43,7 @@ export const SpeechControl: React.FC<SpeechControlProps> = ({
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
       onClick={handleClick}
+      onTouchStart={handleFirstInteraction}
       className="w-10 h-10 flex items-center justify-center rounded-full 
                 hover:bg-gray-100 dark:hover:bg-gray-800 transition group"
       title={!voicesLoaded ? "Loading voices..." : 
