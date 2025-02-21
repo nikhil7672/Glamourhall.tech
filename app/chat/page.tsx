@@ -147,17 +147,13 @@ export default function ChatPage() {
   const [currentlySpeakingIndex, setCurrentlySpeakingIndex] = useState<number>(-1);
   
   // Add useEffect for speaking new messages
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.type === 'ai' && !lastMessage.isHistory ) {
-      // Stop any existing speech before starting new
-      stopSpeech();
-      // Use setTimeout to ensure DOM updates complete before speaking
-      setTimeout(() => {
-        speakText(lastMessage.content, messages.length - 1, setCurrentlySpeakingIndex);
-      }, 100);
-    }
-  }, [messages]); // Add isSpeechEnabled to dependencies
+  // useEffect(() => {
+  //   const lastMessage = messages[messages.length - 1];
+  //   if (lastMessage?.type === 'ai' && !lastMessage.isHistory ) {
+  //     // Stop any existing speech before starting new
+  
+  //   }
+  // }, [messages]); // Add isSpeechEnabled to dependencies
   
   
   // Function to open the Preferences dialog
@@ -487,7 +483,11 @@ export default function ChatPage() {
       // Update messages with AI response
       enableAudio()
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
-
+      stopSpeech();
+      // Use setTimeout to ensure DOM updates complete before speaking
+      setTimeout(() => {
+        speakText(aiMessage.content, messages.length - 1, setCurrentlySpeakingIndex);
+      }, 100);
       // Handle conversation storage
       if (!activeConversationId) {
         const newConversation = await createConversation([
@@ -934,7 +934,7 @@ export default function ChatPage() {
       await silentAudio.play();
       
       // 3. Enable speech after successful playback
-      setIsSpeechEnabled(true);
+      // setIsSpeechEnabled(true);
       
       
       // 4. Clean up after short delay
