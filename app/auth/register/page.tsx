@@ -107,12 +107,11 @@ export default function RegisterPage() {
     <div className="min-h-screen flex">
       {/* Left side - Fashion Image */}
       <div className="hidden lg:flex lg:w-1/2 relative">
-        <Image
+        <img
           src="/boy.jpg"
           alt="Fashion background"
-          fill
-          className="object-cover"
-          priority
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-purple-900/40 to-blue-900/40 mix-blend-multiply" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -124,12 +123,11 @@ export default function RegisterPage() {
       {/* Right side - Register Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center relative">
         <div className="absolute inset-0 lg:hidden">
-          <Image
+          <img
             src="/boy.jpg"
             alt="Fashion background"
-            fill
-            className="object-cover"
-            priority
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/60 via-blue-900/60 to-black/70 mix-blend-multiply" />
         </div>

@@ -117,13 +117,12 @@ export default function LoginPage() {
       {/* Right side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center relative">
         <div className="absolute inset-0 lg:hidden">
-          <Image
-            src="/lgbg.jpg"
-            alt="Fashion background"
-            fill
-            className="object-cover"
-            priority
-          />
+        <img
+    src="/lgbg.jpg"
+    alt="Fashion background"
+    className="absolute inset-0 w-full h-full object-cover"
+    loading="eager"
+  />
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/60 via-blue-900/60 to-black/70 mix-blend-multiply" />
         </div>
         <div className="absolute inset-0 hidden lg:block bg-gradient-to-br from-purple-100 via-indigo-50 to-blue-100" />
