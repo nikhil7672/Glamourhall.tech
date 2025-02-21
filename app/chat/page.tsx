@@ -89,7 +89,7 @@ export default function ChatPage() {
   
   
   
-  const { theme, setTheme } = useTheme();
+  // const { theme, setTheme } = useTheme();
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(isDesktop);
@@ -1317,7 +1317,7 @@ export default function ChatPage() {
                        </div>
                        {/* Actions */}
                        <div className="mt-4 space-y-2">
-                         <button
+                         {/* <button
                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-transform duration-300 hover:scale-105"
                          >
@@ -1332,7 +1332,7 @@ export default function ChatPage() {
                                <span>Dark Mode</span>
                              </>
                            )}
-                         </button>
+                         </button> */}
            
                          <button
                            onClick={viewPreferenceDialog}
@@ -1515,9 +1515,9 @@ export default function ChatPage() {
                   } mb-4`}
                 >
                   {message.type === "ai" && (
-                    <div className="w-14 h-14 mr-3 rounded-full bg-gradient-to-r from-pink-400 to-blue-600 flex items-center justify-center shadow-lg dark:from-pink-700 dark:to-blue-800">
+                    <div className="w-16 h-16 mr-3 rounded-full bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center shadow-lg dark:from-pink-700 dark:to-blue-800">
                       <motion.img
-                        src="/fashion-wear.png"
+                        src="/glambot.png"
                         alt="Icon"
                         animate={{ y: ["0%", "-10%", "0%"] }}
                         transition={{
@@ -1526,7 +1526,7 @@ export default function ChatPage() {
                           repeatType: "loop",
                           ease: "easeInOut",
                         }}
-                        className="w-9 h-9 object-cover"
+                        className="w-12 h-12 object-cover"
                       />
                     </div>
                   )}
@@ -1656,8 +1656,29 @@ export default function ChatPage() {
         </div>
 
         {/* Input Bar */}
+   
         <div className="fixed md:left-72 md:bottom-0 bottom-16 left-0 right-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border-t shadow z-10">
           <div className="max-w-2xl mx-auto px-4 py-3 pb-6">
+          {imagePreviews.length > 0 && (
+                <div className="mt-4 mb-4 flex gap-2 overflow-x-auto">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index}`}
+                        className="w-12 h-12 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute -top-1 -right-1 text-red-600 bg-white rounded-full p-1 shadow-sm"
+                      >
+                        <FaTimesCircle className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             <form onSubmit={handleSendMessage} className="relative lg:ml-16">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -1710,26 +1731,7 @@ export default function ChatPage() {
                   </button>
                 )}
               </div>
-              {imagePreviews.length > 0 && (
-                <div className="mt-4 flex gap-2 overflow-x-auto">
-                  {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={preview}
-                        alt={`Preview ${index}`}
-                        className="w-12 h-12 object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute -top-1 -right-1 text-red-600 bg-white rounded-full p-1 shadow-sm"
-                      >
-                        <FaTimesCircle className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+            
             </form>
           </div>
         </div>

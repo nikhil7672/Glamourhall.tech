@@ -41,7 +41,7 @@ export const usePollySpeechSynthesis = () => {
   // Function to clean and possibly split text if needed.
   const cleanTextForSpeech = (text: string): string => {
     return text
-      .replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}]/gu, '')
+      .replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{27BF}]/gu, '')
       .replace(/[*#\[\]`~]/g, '')
       .replace(/\n/g, '. ')
       .replace(/\s+/g, ' ')

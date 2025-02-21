@@ -8,7 +8,7 @@ export function Providers({ children, ...props }: { children: React.ReactNode })
   const pathname = usePathname();
 
   // Enable ThemeProvider for specific routes
-  const themeEnabledRoutes = ['/chat', '/preferences', '/notifications', '/pricing'];
+  const themeEnabledRoutes = ['/chat', '/preferences', '/notifications', '/pricing', '/profile'];
   const isThemeEnabled = themeEnabledRoutes.some(route => pathname?.startsWith(route));
 
   if (!isThemeEnabled) {
