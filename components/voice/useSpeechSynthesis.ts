@@ -82,7 +82,8 @@ export const usePollySpeechSynthesis = () => {
       // Create Howler instance
       const howl = new Howl({
         src: [audioUrl],
-        html5: true, // Force HTML5 Audio
+        format: ['mp3'],
+        html5: true,
         volume: speechSettings.volume,
         rate: speechSettings.rate,
         onend: () => {

@@ -48,6 +48,7 @@ export async function POST(request: Request) {
     return new Response(Buffer.concat(chunks), {
       headers: {
         'Content-Type': 'audio/mpeg',
+        'Content-Disposition': 'inline; filename="audio.mp3"',
         'Cache-Control': 'public, max-age=86400' // Cache for 24 hours
       }
     });
