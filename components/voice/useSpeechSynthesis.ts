@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
+import { Howl, Howler } from 'howler';
 
 // Note: In production, do not expose credentials on the client.
 // Use a backend service or AWS Cognito to provide temporary credentials.
@@ -34,6 +35,7 @@ export const usePollySpeechSynthesis = () => {
   });
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [voicesLoaded, setVoicesLoaded] = useState(true); // Polly voices are always available
+  const [currentHowl, setCurrentHowl] = useState<Howl | null>(null);
 
   // Function to clean and possibly split text if needed.
   const cleanTextForSpeech = (text: string): string => {
@@ -46,12 +48,11 @@ export const usePollySpeechSynthesis = () => {
   };
 
   const stopSpeech = useCallback(() => {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
+    if (currentHowl) {
+      currentHowl.stop();
       setCurrentlySpeaking(false);
     }
-  }, [currentAudio]);
+  }, [currentHowl]);
 
   // This function uses Amazon Polly to synthesize speech and then plays it.
   const speakText = useCallback(async (text: string, index?: number, setIndex?: React.Dispatch<React.SetStateAction<number>>) => {
@@ -77,23 +78,46 @@ export const usePollySpeechSynthesis = () => {
       
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      setCurrentAudio(audio);
+
+      // Create Howler instance
+      const howl = new Howl({
+        src: [audioUrl],
+        html5: true, // Force HTML5 Audio
+        volume: speechSettings.volume,
+        rate: speechSettings.rate,
+        onend: () => {
+          setCurrentlySpeaking(false);
+          setIndex?.(-1);
+        },
+        onplayerror: () => {
+          howl.once('unlock', () => howl.play());
+        },
+        onloaderror: (_, error) => {
+          console.error('Howler load error:', error);
+          toast.error('Audio loading failed');
+          setCurrentlySpeaking(false);
+        },
+        onplay: () => {
+          // Resume Howler's audio context if needed
+          if (Howler.ctx.state === 'suspended') {
+            Howler.ctx.resume();
+          }
+        }
+      });
+
+      setCurrentHowl(howl);
       
-      audio.onended = () => {
-        setCurrentlySpeaking(false);
-        setIndex?.(-1);
-      };
-      audio.onerror = (error) => {
-        console.error('Audio playback error:', error);
-        setCurrentlySpeaking(false);
-        toast.error('Error during audio playback.');
-      };
-      audio.play().catch((error) => {
-        console.error('Playback failed:', error);
-        toast.error('Click anywhere to enable audio playback');
+      // Play with error handling
+      howl.play();
+      howl.on('playerror', (id, error) => {
+        console.error('Howler play error:', error);
+        if (String(error).includes('interrupted')) {
+          toast.error('Click speaker icon to enable audio');
+          setIsSpeechEnabled(false);
+        }
         setCurrentlySpeaking(false);
       });
+
     } catch (error) {
       console.error('Synthesis Error:', error);
       toast.error('Error synthesizing speech.');
