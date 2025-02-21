@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
 import { Howl, Howler } from 'howler';
+import React from 'react';
 
 // Note: In production, do not expose credentials on the client.
 // Use a backend service or AWS Cognito to provide temporary credentials.
@@ -115,6 +116,42 @@ export const usePollySpeechSynthesis = () => {
       const soundId = howl.play();
       howl.once('playerror', (id, error) => {
         console.error('Play failed:', error);
+        
+        toast.error(
+          React.createElement(
+            'div',
+            { 
+              className: 'flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 rounded-lg border border-purple-100 dark:border-purple-800/50 shadow-lg' 
+            },
+            [
+              React.createElement('div', { 
+                className: 'p-2 rounded-full bg-red-100 dark:bg-red-900/30 animate-pulse' 
+              }, '🔇'),
+              React.createElement('div', { className: 'flex flex-col' }, [
+                React.createElement('span', { className: 'font-medium dark:text-white' }, 'Audio Disabled'),
+                React.createElement('button', {
+                  onClick: enableSpeech,
+                  className: 'mt-1 text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-400 ' +
+                             'underline underline-offset-4 transition-colors duration-200 flex items-center gap-1'
+                }, [
+                  'Tap to Enable ',
+                  React.createElement('span', { className: 'text-lg' }, '🔊')
+                ])
+              ])
+            ]
+          ),
+          { 
+            duration: 5000,
+            icon: null,
+            style: {
+              animation: 'slideInRight 0.3s ease-out',
+              border: 'none',
+              background: 'transparent',
+              boxShadow: 'none'
+            }
+          }
+        );
+
         setIsSpeechEnabled(false);
         setCurrentlySpeaking(false);
       });
@@ -126,7 +163,29 @@ export const usePollySpeechSynthesis = () => {
   }, [isSpeechEnabled, speechSettings, stopSpeech]);
 
   // Example function to enable speech (e.g., after a user interaction)
-  const enableSpeech = () => setIsSpeechEnabled(true);
+  const enableSpeech = async () => {
+    try {
+      // Create and play silent audio through user interaction
+      const silentAudio = new Audio('/silent.mp3');
+      silentAudio.volume = 0;
+      
+      // Must play/pause during the click handler
+      await silentAudio.play();
+      silentAudio.pause();
+      
+      // Initialize Howler context after user interaction
+      Howler.autoUnlock = true;
+      Howler.usingWebAudio = true;
+      Howler.ctx?.resume();
+      
+      setIsSpeechEnabled(true);
+      return true;
+    } catch (error) {
+      console.error('Enable failed:', error);
+      toast.error('Click "Enable" then allow audio');
+      return false;
+    }
+  };
 
   return {
     voicesLoaded,
@@ -141,3 +200,4 @@ export const usePollySpeechSynthesis = () => {
     
   };
 };
+
