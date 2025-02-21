@@ -38,6 +38,12 @@ export const SpeechControl: React.FC<SpeechControlProps> = ({
         color: '#fff',
       },
     });
+    if (!isSpeechEnabled) {
+        // Unlock audio by playing a silent sound immediately:
+        const silentAudio = new Audio('/silent.mp3');
+        silentAudio.play().catch((e) => console.error('Silent audio failed:', e));
+      
+    }
   };
 
   return (
