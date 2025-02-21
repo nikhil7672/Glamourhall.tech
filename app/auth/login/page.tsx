@@ -1,109 +1,120 @@
 // app/auth/login/page.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { EyeIcon, EyeOffIcon, MailIcon, LockIcon, Sparkles } from 'lucide-react'
-import { signIn } from 'next-auth/react'
-import toast, { Toaster } from 'react-hot-toast'
-import { z } from "zod"
-import { Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  MailIcon,
+  LockIcon,
+  Sparkles,
+} from "lucide-react";
+import { signIn } from "next-auth/react";
+import toast, { Toaster } from "react-hot-toast";
+import { z } from "zod";
+import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-})
+});
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
       // Validate input
-      const validatedInput = loginSchema.safeParse({ email, password })
+      const validatedInput = loginSchema.safeParse({ email, password });
       if (!validatedInput.success) {
-        setError(validatedInput.error.errors[0].message)
-        toast.error(validatedInput.error.errors[0].message)
-        return
+        setError(validatedInput.error.errors[0].message);
+        toast.error(validatedInput.error.errors[0].message);
+        return;
       }
 
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        toast.success('Login successful!')
+        toast.success("Login successful!");
 
         // Store token and user data
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify(data.user))
-        
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         setTimeout(() => {
-          router.push('/chat')
-        }, 300)
+          router.push("/chat");
+        }, 300);
       } else {
-        setError(data.error || 'Login failed')
-        toast.error(data.error || 'Login failed')
+        setError(data.error || "Login failed");
+        toast.error(data.error || "Login failed");
       }
     } catch (error) {
-      console.error('Login error:', error)
-      setError('An error occurred. Please try again.')
-      toast.error('An error occurred. Please try again.')
+      console.error("Login error:", error);
+      setError("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
+    setShowPassword(!showPassword);
+  };
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     try {
-      const result = await signIn('google', { callbackUrl: '/chat' })
+      const result = await signIn("google", { callbackUrl: "/chat" });
       if (result?.error) {
-        setError('Google login failed')
+        setError("Google login failed");
       }
     } catch (error) {
-      setError('An error occurred. Please try again.')
-    }
-    finally {
+      setError("An error occurred. Please try again.");
+    } finally {
       setIsGoogleLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex">
       {/* Left side - Fashion Image */}
       <div className="hidden lg:flex lg:w-1/2 relative">
-        <Image
+        <img
           src="/lgbg.jpg"
           alt="Fashion background"
-          fill
-          className="object-cover"
-          priority
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-purple-900/40 to-blue-900/40 mix-blend-multiply" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -117,19 +128,19 @@ export default function LoginPage() {
       {/* Right side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center relative">
         <div className="absolute inset-0 lg:hidden">
-        <img
-    src="/lgbg.jpg"
-    alt="Fashion background"
-    className="absolute inset-0 w-full h-full object-cover"
-    loading="eager"
-  />
+          <img
+            src="/lgbg.jpg"
+            alt="Fashion background"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/60 via-blue-900/60 to-black/70 mix-blend-multiply" />
         </div>
         <div className="absolute inset-0 hidden lg:block bg-gradient-to-br from-purple-100 via-indigo-50 to-blue-100" />
 
         <Card className="w-full max-w-md shadow-2xl rounded-2xl bg-white/80 dark:bg-gray-800/90 backdrop-blur-lg border border-white/20 dark:border-gray-700/50 relative z-10 m-6">
           <CardHeader className="space-y-2 text-center pb-4">
-          <div className="flex items-center justify-start lg:justify-center w-full mb-4">
+            <div className="flex items-center justify-start lg:justify-center w-full mb-4">
               <Link href="/" className="flex items-center space-x-3 group">
                 <Image
                   src="/fashion-wear.png"
@@ -242,12 +253,22 @@ export default function LoginPage() {
               >
                 {isGoogleLoading ? (
                   <>
-                    <Image src="/google.png" alt="Google" width={20} height={20} />
+                    <Image
+                      src="/google.png"
+                      alt="Google"
+                      width={20}
+                      height={20}
+                    />
                     <Loader2 className="h-5 w-5 animate-spin" />
                   </>
                 ) : (
                   <>
-                    <Image src="/google.png" alt="Google" width={20} height={20} />
+                    <Image
+                      src="/google.png"
+                      alt="Google"
+                      width={20}
+                      height={20}
+                    />
                     Continue with Google
                   </>
                 )}
@@ -268,7 +289,10 @@ export default function LoginPage() {
               </p>
               <p className="text-center text-xs text-gray-500 dark:text-gray-400">
                 By logging in, you agree to our{" "}
-                <Link href="/terms-of-service" className="text-purple-600 hover:underline dark:text-purple-400">
+                <Link
+                  href="/terms-of-service"
+                  className="text-purple-600 hover:underline dark:text-purple-400"
+                >
                   Terms
                 </Link>{" "}
                 and{" "}
