@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Instagram } from "lucide-react";
-import Image from "next/image";
 
 const influencers = [
   {
@@ -12,7 +11,7 @@ const influencers = [
     description: "Curated streetwear & contemporary fashion",
     location: "New Delhi",
     image: "/store1.jpg",
-    instagramLink: "https://instagram.com/urbanchic.style"
+    instagramLink: "https://instagram.com/urbanchic.style",
   },
   {
     id: 2,
@@ -21,7 +20,7 @@ const influencers = [
     description: "Traditional wear with modern twists",
     location: "Mumbai",
     image: "/store2.jpg",
-    instagramLink: "https://instagram.com/ethnicelegance.in"
+    instagramLink: "https://instagram.com/ethnicelegance.in",
   },
   {
     id: 3,
@@ -30,7 +29,7 @@ const influencers = [
     description: "Specialty denim wear & custom fittings",
     location: "Bangalore",
     image: "/store3.jpg",
-    instagramLink: "https://instagram.com/denimdistrict.india"
+    instagramLink: "https://instagram.com/denimdistrict.india",
   },
   // Add more influencers as needed
 ];
@@ -40,7 +39,7 @@ export default function LocalStore() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -50,7 +49,8 @@ export default function LocalStore() {
             Featured Local Stores
           </h1>
           <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
-            Discover curated fashion from our network of local influencers and boutique stores.
+            Discover curated fashion from our network of local influencers and
+            boutique stores.
           </p>
         </motion.div>
 
@@ -66,11 +66,10 @@ export default function LocalStore() {
             >
               <div className="relative h-96 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
                 {/* Image with Darker Gradient Overlay */}
-                <Image
+                <img
                   src={influencer.image}
                   alt={influencer.name}
-                  fill
-                  className="object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
 
@@ -80,7 +79,7 @@ export default function LocalStore() {
                     <h3 className="text-2xl font-bold">{influencer.name}</h3>
                     <p className="text-sm">{influencer.description}</p>
                   </div>
-                  
+
                   {/* Location & Handle */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
