@@ -147,13 +147,17 @@ export default function ChatPage() {
   const [currentlySpeakingIndex, setCurrentlySpeakingIndex] = useState<number>(-1);
   
   // Add useEffect for speaking new messages
-  // useEffect(() => {
-  //   const lastMessage = messages[messages.length - 1];
-  //   if (lastMessage?.type === 'ai' && !lastMessage.isHistory ) {
-  //     // Stop any existing speech before starting new
-  
-  //   }
-  // }, [messages]); // Add isSpeechEnabled to dependencies
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.type === 'ai' && !lastMessage.isHistory ) {
+      // Stop any existing speech before starting new
+      stopSpeech();
+      // Use setTimeout to ensure DOM updates complete before speaking
+      setTimeout(() => {
+        speakText(lastMessage.content, messages.length - 1, setCurrentlySpeakingIndex);
+      }, 100);
+    }
+  }, [messages]); // Add isSpeechEnabled to dependencies
   
   
   // Function to open the Preferences dialog
@@ -292,7 +296,9 @@ export default function ChatPage() {
   // Message Handlers
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (isSpeechEnabled) {
+      enableAudio();
+    }
     // Early return if no content
     if (!userInput.trim() && imagePreviews.length === 0) return;
 
@@ -481,13 +487,8 @@ export default function ChatPage() {
       setIsWaitingResponse(false);
       setIsAITyping(false);
       // Update messages with AI response
-      enableAudio()
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
-      stopSpeech();
-      // Use setTimeout to ensure DOM updates complete before speaking
-      setTimeout(() => {
-        speakText(aiMessage.content, messages.length - 1, setCurrentlySpeakingIndex);
-      }, 100);
+
       // Handle conversation storage
       if (!activeConversationId) {
         const newConversation = await createConversation([
@@ -921,33 +922,6 @@ export default function ChatPage() {
       return false;
     }
   };
-
-  const enableAudio = async () => {
-    try {
-      // 1. Create and resume audio context
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      await audioContext.resume();
-      
-      // 2. Play your silent.mp3 file
-      const silentAudio = new Audio('/silent.mp3');
-      silentAudio.volume = 0; // Ensure silent playback
-      await silentAudio.play();
-      
-      // 3. Enable speech after successful playback
-      // setIsSpeechEnabled(true);
-      
-      
-      // 4. Clean up after short delay
-      setTimeout(() => {
-        silentAudio.pause();
-        silentAudio.remove();
-      }, 500);
-    } catch (error) {
-      console.error('Audio enable failed:', error);
-      toast.error('Enable audio: Click speaker then allow permissions');
-      setIsSpeechEnabled(false);
-    }
-  };
   // Authentication Effect
   useEffect(() => {
     const checkAuth = () => {
@@ -1011,6 +985,33 @@ export default function ChatPage() {
   const handleARTryOn = (productImage: string) => {
     setSelectedProductImage(productImage);
     setShowARTryOn(true);
+  };
+
+  const enableAudio = async () => {
+    try {
+      // 1. Create and resume audio context
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      await audioContext.resume();
+      
+      // 2. Play your silent.mp3 file
+      const silentAudio = new Audio('/silent.mp3');
+      silentAudio.volume = 0; // Ensure silent playback
+      await silentAudio.play();
+      
+      // 3. Enable speech after successful playback
+      setIsSpeechEnabled(true);
+      
+      
+      // 4. Clean up after short delay
+      setTimeout(() => {
+        silentAudio.pause();
+        silentAudio.remove();
+      }, 500);
+    } catch (error) {
+      console.error('Audio enable failed:', error);
+      toast.error('Enable audio: Click speaker then allow permissions');
+      setIsSpeechEnabled(false);
+    }
   };
 
   return (
@@ -1380,7 +1381,7 @@ export default function ChatPage() {
             }`}
             ref={chatContainerRef}
           >
-            <div className="max-w-3xl mx-auto px-4 py-6 mb-[5rem] md:mb-0">
+            <div className="max-w-3xl mx-auto px-4 py-6 mb-[1rem] md:mb-0">
               {/* Welcome Section - Only show if chat hasn't started */}
               {!hasStartedChat && messages.length <= 1 && (
                 <motion.div 
