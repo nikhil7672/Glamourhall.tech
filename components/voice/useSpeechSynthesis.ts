@@ -23,7 +23,7 @@ interface SpeechSettings {
 }
 
 export const usePollySpeechSynthesis = () => {
-  const [isSpeechEnabled, setIsSpeechEnabled] = useState(false);
+  const [isSpeechEnabled, setIsSpeechEnabled] = useState(true);
   const [currentlySpeaking, setCurrentlySpeaking] = useState(false);
   const [speechSettings, setSpeechSettings] = useState<SpeechSettings>({
     rate: 1.0,
@@ -79,10 +79,16 @@ export const usePollySpeechSynthesis = () => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
 
+      if (audioBlob.type !== 'audio/mpeg') {
+        toast.error(`Invalid audio format: ${audioBlob.type}, expected MP3`);
+        return;
+      }
+
       // Create Howler instance
       const howl = new Howl({
         src: [audioUrl],
-        html5: true, // Force HTML5 Audio
+        format: ['mp3'],
+        html5: true,
         volume: speechSettings.volume,
         rate: speechSettings.rate,
         onend: () => {
@@ -106,18 +112,15 @@ export const usePollySpeechSynthesis = () => {
       setCurrentHowl(howl);
       
       // Play with error handling
-      howl.play().catch((error) => {
-        console.error('Howler play error:', error);
-        if (error.message.includes('interrupted')) {
-          toast.error('Click speaker icon to enable audio');
-          setIsSpeechEnabled(false);
-        }
+      const soundId = howl.play();
+      howl.once('playerror', (id, error) => {
+        console.error('Play failed:', error);
+        setIsSpeechEnabled(false);
         setCurrentlySpeaking(false);
       });
 
     } catch (error) {
       console.error('Synthesis Error:', error);
-      toast.error('Error synthesizing speech.');
       setCurrentlySpeaking(false);
     }
   }, [isSpeechEnabled, speechSettings, stopSpeech]);
