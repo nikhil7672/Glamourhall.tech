@@ -54,14 +54,14 @@ export default function ProfilePage() {
     <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-white'}`}>
       <div className="max-w-5xl mx-auto px-4 py-10">
         {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent dark:from-purple-400 dark:to-blue-300">
+        <header className="flex justify-between items-center mb-8 px-4">
+          {/* <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent dark:from-purple-400 dark:to-blue-300">
             My Profile
-          </h1>
+          </h1> */}
           <div className="flex items-center gap-3">
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group"
+              className="p-2 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group"
               aria-label="Toggle theme"
             >
               <div className="relative w-5 h-5">
@@ -71,7 +71,7 @@ export default function ProfilePage() {
             </button>
             <button
               onClick={handleLogout}
-              className="p-2.5 rounded-xl bg-red-500/90 hover:bg-red-600 transition-all duration-300 shadow-sm hover:shadow-md group dark:bg-red-600/90 dark:hover:bg-red-700 flex items-center gap-2"
+              className="p-2 rounded-xl bg-red-500/90 hover:bg-red-600 transition-all duration-300 shadow-sm hover:shadow-md group dark:bg-red-600/90 dark:hover:bg-red-700 flex items-center gap-2"
               aria-label="Sign out"
             >
               <FaSignOutAlt className="w-5 h-5 text-white" />
@@ -87,12 +87,12 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center">
             <div className="relative group -mt-16">
               <div className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-700 overflow-hidden shadow-lg">
-                <Image
+                <img
                   src={session?.user?.image || "/default-avatar.png"}
                   alt="Profile"
                   width={128}
                   height={128}
-                  className="object-cover"
+                  className="object-cover w-full h-full"
                 />
               </div>
               <button className="absolute bottom-0 right-0 p-2 bg-blue-500 text-white rounded-full shadow transform opacity-0 group-hover:opacity-100 transition duration-300 hover:bg-blue-600">
