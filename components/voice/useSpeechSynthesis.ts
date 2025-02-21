@@ -89,7 +89,11 @@ export const usePollySpeechSynthesis = () => {
         setCurrentlySpeaking(false);
         toast.error('Error during audio playback.');
       };
-      audio.play();
+      audio.play().catch((error) => {
+        console.error('Playback failed:', error);
+        toast.error('Click anywhere to enable audio playback');
+        setCurrentlySpeaking(false);
+      });
     } catch (error) {
       console.error('Synthesis Error:', error);
       toast.error('Error synthesizing speech.');
