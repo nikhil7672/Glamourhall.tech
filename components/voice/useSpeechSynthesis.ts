@@ -116,39 +116,71 @@ export const usePollySpeechSynthesis = () => {
       const soundId = howl.play();
       howl.once('playerror', (id, error) => {
         console.error('Play failed:', error);
-        
         toast.error(
           React.createElement(
             'div',
-            { 
-              className: 'flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 rounded-lg border border-purple-100 dark:border-purple-800/50 shadow-lg' 
-            },
-            [
-              React.createElement('div', { 
-                className: 'p-2 rounded-full bg-red-100 dark:bg-red-900/30 animate-pulse' 
-              }, '🔇'),
-              React.createElement('div', { className: 'flex flex-col' }, [
-                React.createElement('span', { className: 'font-medium dark:text-white' }, 'Audio Disabled'),
-                React.createElement('button', {
-                  onClick: enableSpeech,
-                  className: 'mt-1 text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-purple-400 ' +
-                             'underline underline-offset-4 transition-colors duration-200 flex items-center gap-1'
-                }, [
-                  'Tap to Enable ',
-                  React.createElement('span', { className: 'text-lg' }, '🔊')
-                ])
-              ])
-            ]
+            { className: 'flex items-center space-x-4' },
+            React.createElement(
+              'div',
+              { 
+                className: 'flex items-center justify-center w-10 h-10'
+              },
+              React.createElement(
+                'span',
+                { 
+                  role: 'img', 
+                  'aria-label': 'muted', 
+                  className: 'text-2xl'
+                },
+                '🔇'
+              )
+            ),
+            React.createElement(
+              'div',
+              { className: 'flex-1' },
+              React.createElement(
+                'p', 
+                { 
+                  className: 'font-semibold text-sm'
+                }, 
+                'Audio Blocked'
+              ),
+              React.createElement(
+                'p', 
+                { 
+                  className: 'text-xs opacity-90'
+                }, 
+                'Tap the speaker icon to enable voice'
+              )
+            )
           ),
-          { 
-            duration: 5000,
+          {
+            duration: 4000,
             icon: null,
             style: {
-              animation: 'slideInRight 0.3s ease-out',
-              border: 'none',
-              background: 'transparent',
-              boxShadow: 'none'
-            }
+              background: '#ffffff',
+              color: '#334155',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              boxShadow: `
+                0 1px 1px rgba(0, 0, 0, 0.02),
+                0 2px 2px rgba(0, 0, 0, 0.02),
+                0 4px 4px rgba(0, 0, 0, 0.02),
+                0 8px 8px rgba(0, 0, 0, 0.02),
+                0 16px 16px rgba(0, 0, 0, 0.02),
+                0 2px 4px rgba(17, 24, 39, 0.05),
+                0 -1px 0px rgba(255, 255, 255, 1),
+                0 1px 0px rgba(17, 24, 39, 0.1)
+              `,
+              padding: '14px 18px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              maxWidth: '380px',
+              width: '100%',
+              transform: 'translateY(0) scale(1)',
+              transition: 'all 0.2s ease',
+              position: 'relative',
+              backdropFilter: 'blur(8px)',
+            },
           }
         );
 
@@ -163,29 +195,7 @@ export const usePollySpeechSynthesis = () => {
   }, [isSpeechEnabled, speechSettings, stopSpeech]);
 
   // Example function to enable speech (e.g., after a user interaction)
-  const enableSpeech = async () => {
-    try {
-      // Create and play silent audio through user interaction
-      const silentAudio = new Audio('/silent.mp3');
-      silentAudio.volume = 0;
-      
-      // Must play/pause during the click handler
-      await silentAudio.play();
-      silentAudio.pause();
-      
-      // Initialize Howler context after user interaction
-      Howler.autoUnlock = true;
-      Howler.usingWebAudio = true;
-      Howler.ctx?.resume();
-      
-      setIsSpeechEnabled(true);
-      return true;
-    } catch (error) {
-      console.error('Enable failed:', error);
-      toast.error('Click "Enable" then allow audio');
-      return false;
-    }
-  };
+  const enableSpeech = () => setIsSpeechEnabled(true);
 
   return {
     voicesLoaded,
@@ -200,4 +210,3 @@ export const usePollySpeechSynthesis = () => {
     
   };
 };
-

@@ -31,6 +31,7 @@ export const SpeechControl: React.FC<SpeechControlProps> = ({
 
   const handleClick = (): void => {
     setIsSpeechEnabled(!isSpeechEnabled);
+  
     toast(isSpeechEnabled ? 'Voice disabled' : 'Voice enabled', {
       icon: isSpeechEnabled ? '🔇' : '🔊',
       style: {
