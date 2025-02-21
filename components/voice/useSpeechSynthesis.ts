@@ -82,8 +82,7 @@ export const usePollySpeechSynthesis = () => {
       // Create Howler instance
       const howl = new Howl({
         src: [audioUrl],
-        format: ['mp3'],
-        html5: true,
+        html5: true, // Force HTML5 Audio
         volume: speechSettings.volume,
         rate: speechSettings.rate,
         onend: () => {
@@ -95,8 +94,6 @@ export const usePollySpeechSynthesis = () => {
         },
         onloaderror: (_, error) => {
           console.error('Howler load error:', error);
-          toast.error('Audio loading failed');
-          setCurrentlySpeaking(false);
         },
         onplay: () => {
           // Resume Howler's audio context if needed
@@ -109,10 +106,9 @@ export const usePollySpeechSynthesis = () => {
       setCurrentHowl(howl);
       
       // Play with error handling
-      howl.play();
-      howl.on('playerror', (id, error) => {
+      howl.play().catch((error) => {
         console.error('Howler play error:', error);
-        if (String(error).includes('interrupted')) {
+        if (error.message.includes('interrupted')) {
           toast.error('Click speaker icon to enable audio');
           setIsSpeechEnabled(false);
         }
