@@ -39,7 +39,7 @@ const ChallengeProgress = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto pb-[7rem] md:pb-0">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button

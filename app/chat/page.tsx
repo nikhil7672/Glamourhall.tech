@@ -47,6 +47,7 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { usePollySpeechSynthesis } from "@/components/voice/useSpeechSynthesis";
 import { SpeechControl } from "@/components/voice/SpeechControl";
+import  MobileNavSpacer  from "@/components/MobileNavSpacer";
 
 interface Message {
   type: "user" | "ai";
@@ -974,7 +975,7 @@ export default function ChatPage() {
   if (status === "loading" || fullLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-purple-500"></div>
       </div>
     );
   }
@@ -1064,13 +1065,13 @@ export default function ChatPage() {
             )}
           </div>
 
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          {/* <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             {localStorageUser?.plan === 'premium' ? (
               <div className="relative flex flex-col items-center justify-center gap-1 rounded-lg bg-gradient-to-br from-amber-400 to-yellow-300 dark:from-amber-600 dark:to-yellow-500 px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow">
-                {/* Shimmer effect */}
+           
                 <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%)] opacity-0 hover:opacity-100 transition-opacity" />
                 
-                {/* Content */}
+      
                 <div className="relative z-10 flex flex-col items-center">
                   <FaCrown className="h-5 w-5 text-amber-800 dark:text-amber-100 mb-1.5" />
                   <div className="text-center">
@@ -1082,8 +1083,6 @@ export default function ChatPage() {
                     </p>
                   </div>
                 </div>
-
-                {/* Decorative elements */}
                 <div className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-amber-500/10 dark:bg-amber-400/10" />
                 <div className="absolute -left-2 -bottom-2 h-6 w-6 rounded-full bg-yellow-400/10 dark:bg-yellow-300/10" />
               </div>
@@ -1119,12 +1118,14 @@ export default function ChatPage() {
                 </div>
               </motion.button>
             )}
-          </div> 
+          </div>  */}
         </div>
       </motion.aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen md:ml-72">
+        {/* Page content */}
+        <MobileNavSpacer />
         {/* Fixed Header */}
         <header className="fixed top-0 left-0 right-0 bg-white/30 backdrop-blur-md shadow-lg z-10 dark:bg-gray-900/30">
           <div className="px-4 py-3 flex justify-between items-center">
@@ -1162,6 +1163,13 @@ export default function ChatPage() {
                   stopSpeech={stopSpeech}
                   currentlySpeakingIndex={currentlySpeakingIndex}
                   currentlySpeaking={currentlySpeaking}
+                  className="w-12 h-12 rounded-full backdrop-blur-lg bg-white/90 dark:bg-gray-800/90 
+                            border-2 border-purple-300/50 dark:border-purple-500/30 shadow-2xl
+                            hover:shadow-3xl transition-all duration-300
+                            flex items-center justify-center
+                            hover:-translate-y-1 active:translate-y-0
+                            [transform-style:preserve-3d]"
+                  iconClassName="w-6 h-6"
                 />
               </div>
               {/* Notifications */}
@@ -1337,14 +1345,14 @@ export default function ChatPage() {
         </header>
 
         {/* Chat Container */}
-        <div className="flex-1 overflow-hidden mt-[60px] mb-[80px] md:mb-12 md:ml-0">
+        <div className="flex-1 overflow-hidden mt-[20px] md:mt-[60px] mb-[80px] md:mb-12 md:ml-0">
           <div
             className={`h-full overflow-y-auto ${
-              window.innerWidth < 768 ? "mb-20" : ""
+              window.innerWidth < 768 ? "mb-22" : ""
             }`}
             ref={chatContainerRef}
           >
-            <div className="max-w-3xl mx-auto px-4 py-6">
+            <div className="max-w-3xl mx-auto px-4 py-6 mb-[5rem] md:mb-0">
               {/* Welcome Section - Only show if chat hasn't started */}
               {!hasStartedChat && messages.length <= 1 && (
                 <motion.div 
@@ -1383,7 +1391,7 @@ export default function ChatPage() {
                     <motion.h2
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
-                      className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-blue-400 bg-clip-text text-transparent"
+                      className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-blue-400 bg-clip-text text-transparent"
                     >
                       Your AI Style Companion
                     </motion.h2>
@@ -1392,7 +1400,7 @@ export default function ChatPage() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.2 }}
-                      className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+                      className="text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
                     >
                       Transform your wardrobe with <span className="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent font-semibold">AI-powered fashion insights</span> tailored just for you
                     </motion.p>
@@ -1415,11 +1423,11 @@ export default function ChatPage() {
                           <div className="flex items-center gap-4 relative z-10">
                             <motion.span
                               whileHover={{ scale: 1.1 }}
-                              className="text-4xl p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-blue-900 shadow-inner"
+                              className="text-base md:text-lg p-3 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-blue-900 shadow-inner"
                             >
                               {prompt.icon}
                             </motion.span>
-                            <span className="text-lg font-medium text-gray-800 dark:text-gray-200 group-hover:text-purple-600 transition-colors">
+                            <span className="text-base md:text-lg font-medium text-gray-800 dark:text-gray-200 group-hover:text-purple-600 transition-colors">
                               {prompt.text}
                             </span>
                           </div>
@@ -1444,7 +1452,7 @@ export default function ChatPage() {
                       <motion.span
                         key={index}
                         whileHover={{ scale: 1.05 }}
-                        className={`px-4 py-2 rounded-full backdrop-blur-sm border text-sm flex items-center gap-2 transition-colors
+                        className={`px-4 py-2 rounded-full backdrop-blur-sm border text-xs md:text-sm flex items-center gap-2 transition-colors
                           ${badge.color === 'purple' ? 
                             'bg-purple-50/70 dark:bg-purple-900/30 border-purple-200/50 dark:border-purple-700/50 hover:bg-purple-100/50 dark:hover:bg-purple-800/40 text-purple-600 dark:text-purple-300' :
                           badge.color === 'pink' ?
@@ -1455,7 +1463,9 @@ export default function ChatPage() {
                           }`}
                       >
                         <span className="text-xl">{badge.icon}</span>
-                        {badge.label}
+                        <motion.span className="text-xs md:text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-purple-600 transition-colors">
+                          {badge.label}
+                        </motion.span>
                         <div className={`w-2 h-2 rounded-full animate-pulse ${
                           badge.color === 'purple' ? 'bg-purple-400' :
                           badge.color === 'pink' ? 'bg-pink-400' :
@@ -1519,7 +1529,7 @@ export default function ChatPage() {
                         !message.isHistory ? (
                           <TypingAnimation content={message.content} />
                         ) : (
-                          <ReactMarkdown className="speech-friendly">{message.content}</ReactMarkdown>
+                          <ReactMarkdown className="text-sm md:text-base speech-friendly">{message.content}</ReactMarkdown>
                         )}
                       </div>
                     )}
@@ -1617,15 +1627,15 @@ export default function ChatPage() {
         </div>
 
         {/* Input Bar */}
-        <div className="fixed md:left-72 bottom-0 left-0 right-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border-t shadow z-10">
-          <div className="max-w-2xl mx-auto px-4 py-3">
+        <div className="fixed md:left-72 md:bottom-0 bottom-16 left-0 right-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border-t shadow z-10">
+          <div className="max-w-2xl mx-auto px-4 py-3 pb-6">
             <form onSubmit={handleSendMessage} className="relative lg:ml-16">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <input
                     type="text"
                     placeholder="Let's find your perfect look!"
-                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors text-sm md:text-base"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                   />
@@ -1714,7 +1724,7 @@ export default function ChatPage() {
       )}
       {/* Mobile Speech Control Floating Button - Only show when chat hasn't started */}
       {hasStartedChat &&  (
-        <div className="fixed md:hidden bottom-24 right-4 z-50"> {/* Increased bottom spacing */}
+        <div className="fixed md:hidden bottom-[9.5rem] right-4 z-50"> {/* Increased bottom spacing */}
           <motion.div
             initial={{ scale: 0, y: 100 }}
             animate={{ scale: 1, y: 0 }}
@@ -1727,13 +1737,13 @@ export default function ChatPage() {
               stopSpeech={stopSpeech}
               currentlySpeakingIndex={currentlySpeakingIndex}
               currentlySpeaking={currentlySpeaking}
-              className="w-14 h-14 rounded-full backdrop-blur-lg bg-white/90 dark:bg-gray-800/90 
+              className="w-10 h-10 rounded-full backdrop-blur-lg bg-white/90 dark:bg-gray-800/90 
                         border-2 border-purple-300/50 dark:border-purple-500/30 shadow-2xl
                         hover:shadow-3xl transition-all duration-300
                         flex items-center justify-center
                         hover:-translate-y-1 active:translate-y-0
                         [transform-style:preserve-3d]"
-              iconClassName="w-7 h-7"
+              iconClassName="w-6 h-6"
             />
             {/* Enhanced 3D effect elements */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-400/20 
