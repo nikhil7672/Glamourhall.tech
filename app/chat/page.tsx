@@ -485,6 +485,7 @@ export default function ChatPage() {
       setIsWaitingResponse(false);
       setIsAITyping(false);
       // Update messages with AI response
+      enableAudio()
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
 
       // Handle conversation storage
@@ -918,6 +919,33 @@ export default function ChatPage() {
     } catch (error) {
       console.error("Error checking preferences:", error);
       return false;
+    }
+  };
+
+  const enableAudio = async () => {
+    try {
+      // 1. Create and resume audio context
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      await audioContext.resume();
+      
+      // 2. Play your silent.mp3 file
+      const silentAudio = new Audio('/silent.mp3');
+      silentAudio.volume = 0; // Ensure silent playback
+      await silentAudio.play();
+      
+      // 3. Enable speech after successful playback
+      setIsSpeechEnabled(true);
+      
+      
+      // 4. Clean up after short delay
+      setTimeout(() => {
+        silentAudio.pause();
+        silentAudio.remove();
+      }, 500);
+    } catch (error) {
+      console.error('Audio enable failed:', error);
+      toast.error('Enable audio: Click speaker then allow permissions');
+      setIsSpeechEnabled(false);
     }
   };
   // Authentication Effect
