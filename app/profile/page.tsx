@@ -178,8 +178,8 @@ export default function ProfilePage() {
                   </div>
                   <div className="ml-3 md:ml-6">
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="text-base md:text-xl font-semibold text-gray-800 dark:text-gray-100 truncate">
-                      {conversation.title || "New Style Chat"}
+                    <h4 className="text-base md:text-xl font-semibold text-gray-800 dark:text-gray-100">
+                      {conversation?.title?.split(/\s+/).slice(0,5).join(' ') + (conversation?.title?.split(/\s+/).length > 6 ? '...' : '') || "New Style Chat"}
                     </h4>
                     <span className="text-xs px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-300 rounded-full">
                       {conversation.messages?.length || 0} messages
