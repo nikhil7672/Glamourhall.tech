@@ -124,12 +124,12 @@ export default function ProfilePage() {
             {/* Floating Avatar */}
             <div className="relative -mt-16">
               <div className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-700 overflow-hidden shadow-2xl">
-                <Image
+                <img
                   src={session?.user?.image || "/avatar.jpg"}
                   alt="Profile"
-                  width={128}
-                  height={128}
-                  className="object-cover"
+                  width="128"
+                  height="128"
+                  className="object-cover rounded-full w-32 h-32"
                 />
               </div>
               <button className="absolute bottom-0 right-0 p-2 bg-blue-500 text-white rounded-full shadow-lg transform hover:scale-110 transition">
