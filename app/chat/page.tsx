@@ -1252,29 +1252,143 @@ export default function ChatPage() {
                 >
                   {/* Animated Logo */}
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 100 }}
-                    className="relative mx-auto w-28 h-28"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-xl opacity-20 animate-pulse-slow" />
-                    <div className="relative w-full h-full rounded-full bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center shadow-2xl backdrop-blur-sm border border-white/20">
-                      <motion.img
-                        src="/wedding.png"
-                        alt="Fashion Icon"
-                        className="w-20 h-20 rounded-full"
-                        animate={{ 
-                          rotate: [0, 5, -5, 0],
-                          y: [0, -10, 0]
-                        }}
-                        transition={{ 
-                          duration: 6,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      />
-                    </div>
-                  </motion.div>
+  initial={{ scale: 0, rotateX: -90, rotateY: 45 }}
+  animate={{ 
+    scale: 1,
+    rotateX: [0, 15, -15, 0],
+    rotateY: [0, 15, -15, 0],
+    transition: { 
+      type: "spring", 
+      stiffness: 120,
+      damping: 15,
+      rotateX: {
+        duration: 8,
+        repeat: Infinity,
+        ease: "easeInOut"
+      },
+      rotateY: {
+        duration: 7,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: 0.5
+      }
+    } 
+  }}
+  whileHover={{ 
+    scale: 1.1,
+    rotateZ: [0, 3, -3, 0],
+    transition: { type: "spring", stiffness: 300 }
+  }}
+  whileTap={{ scale: 0.95 }}
+  className="relative mx-auto w-32 h-32 perspective-1000"
+>
+  {/* 3D Aura Layers */}
+  <div className="absolute inset-0 rounded-full overflow-hidden">
+    {/* Pulsing Core Glow */}
+    <motion.div 
+      className="absolute inset-0 bg-gradient-to-r from-purple-400/40 to-pink-400/40 rounded-full"
+      animate={{
+        opacity: [0.4, 0.8, 0.4],
+        scale: [1, 1.2, 1],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+    />
+    
+    {/* Rotating Particle Field */}
+    <motion.div 
+      className="absolute inset-0 bg-[url('/sparkles.png')] bg-contain opacity-20"
+      animate={{
+        rotate: 360,
+        scale: [1, 1.05, 1],
+      }}
+      transition={{
+        duration: 20,
+        repeat: Infinity,
+        ease: "linear"
+      }}
+    />
+  </div>
+
+  {/* 3D Glass Sphere */}
+  <div className="relative w-full h-full rounded-full transform-style-preserve-3d">
+    {/* Inner Refraction */}
+    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 to-transparent backdrop-blur-xl border-2 border-white/20 shadow-4xl" />
+    
+    {/* Dynamic Lighting */}
+    <motion.div 
+      className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-white/10 to-transparent"
+      animate={{
+        x: [-50, 50, -50],
+        y: [-30, 30, -30],
+      }}
+      transition={{
+        duration: 15,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+    />
+    
+    {/* Floating Bot */}
+    <motion.div
+      className="relative z-10 w-full h-full flex items-center justify-center"
+      animate={{
+        y: ["0%", "-10%", "0%"],
+        rotateZ: [0, 0.5, -0.5, 0],
+      }}
+      transition={{
+        y: {
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut"
+        },
+        rotateZ: {
+          duration: 7,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }
+      }}
+    >
+      <motion.img
+        src="/glambot.png"
+        alt="Fashion AI Icon"
+        className="w-24 h-24 transform-style-preserve-3d"
+        animate={{
+          rotateX: [0, 15, 0],
+          rotateY: [0, 15, 0],
+          filter: "drop-shadow(0 10px 8px rgba(192, 132, 252, 0.3))"
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 0.2
+        }}
+        whileHover={{
+          scale: 1.1,
+          filter: "drop-shadow(0 15px 10px rgba(192, 132, 252, 0.5))"
+        }}
+      />
+    </motion.div>
+  </div>
+
+  {/* Interactive Shadow */}
+  <motion.div 
+    className="absolute -bottom-4 left-1/2 w-24 h-4 bg-purple-400/20 dark:bg-purple-600/30 blur-xl rounded-full"
+    animate={{
+      scaleX: [0.8, 1.2, 0.8],
+      opacity: [0.6, 0.8, 0.6]
+    }}
+    transition={{
+      duration: 2,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }}
+  />
+</motion.div>
 
                   {/* Headings */}
                   <div className="space-y-4">

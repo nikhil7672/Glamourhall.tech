@@ -40,7 +40,7 @@ export default function RegisterPage() {
   const [isCheckingEnv, setIsCheckingEnv] = useState(true);
 
   function isWebView() {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const userAgent = navigator.userAgent || navigator.vendor || window?.opera;
     const isAndroidWebView = /wv/.test(userAgent) || /Version\/[\d.]+.*Chrome/.test(userAgent);
     const isIOSWebView = /iPhone|iPod|iPad/.test(userAgent) && /AppleWebKit/.test(userAgent) && !/Safari/.test(userAgent);
     return isAndroidWebView || isIOSWebView;
@@ -270,6 +270,10 @@ export default function RegisterPage() {
                 )}
               </Button>
 
+
+              {!isApp && (
+               <>
+
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300/50"></div>
@@ -280,9 +284,8 @@ export default function RegisterPage() {
                   </span>
                 </div>
               </div>
-
-              {!isApp && (
-                <Button
+               
+               <Button
                   className="w-full py-4 bg-white/80 hover:bg-white dark:bg-gray-700/80 dark:hover:bg-gray-600/90 text-gray-700 dark:text-gray-200 font-semibold rounded-xl border border-gray-300/50 dark:border-gray-600/50 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-3 text-base"
                   onClick={handleGoogleSignUp}
                   type="button"
@@ -300,6 +303,7 @@ export default function RegisterPage() {
                     </>
                   )}
                 </Button>
+               </>
               )}
             </form>
           </CardContent>
