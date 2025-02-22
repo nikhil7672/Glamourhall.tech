@@ -52,8 +52,9 @@ export default function ProfilePage() {
         setIsLoadingConversations(false);
       }
     };
-    
-    if (status === "authenticated") {
+    const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (status === "authenticated" || token ) {
       fetchConversations();
     }
   }, [status]);
@@ -143,7 +144,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen transition-colors duration-300 bg-gray-100 dark:bg-gray-900">
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-20">
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}

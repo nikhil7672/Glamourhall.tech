@@ -54,9 +54,9 @@ export default function RegisterPage() {
 
   if (isCheckingEnv) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <Loader2 className="h-12 w-12 animate-spin text-purple-600" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-purple-500"></div>
+    </div>
     );
   }
 
