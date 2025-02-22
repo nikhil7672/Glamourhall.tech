@@ -866,17 +866,18 @@ export default function ChatPage() {
     router.push("/chat", { scroll: false });
   };
 
-  // ... existing code ...
+  // Add new state for half loader
+  const [halfLoading, setHalfLoading] = useState(false);
+
   const loadConversation = async (conversationId: string) => {
     try {
-      setFullLoading(true)
+      setHalfLoading(true); // Use half loader instead of full
       const response = await fetch(`/api/auth/conversations/${conversationId}`);
       if (!response.ok) throw new Error("Failed to load conversation");
 
       const data = await response.json();
       setActiveConversationId(conversationId);
 
-      // Add isHistory: true to all loaded messages
       const historyMessages = data.messages.map((message: Message) => ({
         ...message,
         isHistory: true,
@@ -884,10 +885,11 @@ export default function ChatPage() {
 
       setMessages(historyMessages);
       setHasStartedChat(true);
-      setFullLoading(false)
+      setHalfLoading(false);
       router.push(`/chat?id=${conversationId}`, { scroll: false });
     } catch (error) {
       console.error("Error loading conversation:", error);
+      setHalfLoading(false);
     }
   };
 
@@ -1245,8 +1247,14 @@ export default function ChatPage() {
             ref={chatContainerRef}
           >
             <div className="max-w-3xl mx-auto px-4 py-10 mb-[1rem] md:mb-0">
+              {halfLoading && (
+                <div className="flex justify-center items-center h-full py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-purple-500 mt-32"></div>
+                </div>
+              )}
+
               {/* Welcome Section - Only show if chat hasn't started */}
-              {!hasStartedChat && messages.length <= 1 && (
+              {!hasStartedChat && messages.length <= 1 && !halfLoading && (
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -1484,7 +1492,7 @@ export default function ChatPage() {
               )}
 
               {/* Chat Messages */}
-              {messages.map((message, index) => (
+              {!halfLoading && messages.map((message, index) => (
                 <div
                   key={index}
                   className={`flex ${
@@ -1525,9 +1533,9 @@ export default function ChatPage() {
                     {message.content && (
                       <div
                         className={`relative text-sm md:text-base  inline-block rounded-2xl px-5 py-4 shadow-lg ${
-                          message.type === "user"
-                            ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white"
-                            : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            message.type === "user"
+                              ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         }`}
                       >
                         {message.type === "ai" &&
