@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FaLeaf, FaTint, FaRegGem, FaFire } from "react-icons/fa";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 const challenges = [
   {
@@ -46,6 +47,20 @@ export default function SkincareChallenge() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
+         <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.4 }}
+        className="hidden md:fixed md:flex items-center left-4 top-4 z-50"
+      >
+        <button
+          onClick={() => router.back()}
+          className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-6 h-6 text-gray-500 dark:text-white/90" />
+        </button>
+      </motion.div>
       <div className="max-w-7xl mx-auto pb-[5rem] md:pb-0">
         {/* Header */}
         <motion.div
@@ -89,8 +104,8 @@ export default function SkincareChallenge() {
                 {/* Content */}
                 <div className="relative z-10">
                   <div className="mb-6">{challenge.icon}</div>
-                  <h3 className="text-2xl font-bold mb-2">{challenge.title}</h3>
-                  <p className="text-sm opacity-90 mb-4">{challenge.description}</p>
+                  <h3 className="text-xl md:text-2xl font-bold mb-2">{challenge.title}</h3>
+                  <p className="text-xs md:text-sm opacity-90 mb-4">{challenge.description}</p>
                   
                   {/* Progress Circle */}
                   <div className="relative w-20 h-20 mb-6">
@@ -117,7 +132,7 @@ export default function SkincareChallenge() {
                         transform="rotate(-90 50 50)"
                       />
                     </svg>
-                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-bold">
+                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg md:text-xl font-bold">
                       {challenge.duration}
                     </span>
                   </div>
@@ -125,7 +140,7 @@ export default function SkincareChallenge() {
                   {/* Start Button */}
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    className="w-full py-3 bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-all"
+                    className="w-full py-3 bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-all text-sm md:text-base"
                     onClick={() => {
                       setSelectedChallenge(index);
                       setIsModalOpen(true);

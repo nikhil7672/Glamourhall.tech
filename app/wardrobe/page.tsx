@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Instagram } from "lucide-react";
+import { ArrowLeft, Instagram } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const influencers = [
   {
@@ -35,8 +36,23 @@ const influencers = [
 ];
 
 export default function WardrobePage() {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-16 px-4 sm:px-6 lg:px-8">
+            <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.4 }}
+        className="hidden md:fixed md:flex items-center left-4 top-4 z-50"
+      >
+        <button
+          onClick={() => router.back()}
+          className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-6 h-6 text-gray-500 dark:text-white/90" />
+        </button>
+      </motion.div>
       <div className="max-w-7xl mx-auto pb-[7rem] md:pb-0">
         {/* Header */}
         <motion.div

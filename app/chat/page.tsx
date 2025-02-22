@@ -1209,7 +1209,7 @@ export default function ChatPage() {
                   className="p-2 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-colors duration-200"
                 >
                   <img 
-                    src="/setting.png"
+                    src="/settingss.png"
                     alt="Settings" 
                     className="w-7 h-7 object-contain"
                   />
@@ -1222,13 +1222,11 @@ export default function ChatPage() {
                     onClick={() => setIsNotificationOpen(!isNotificationOpen)}
                     className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 relative"
                   >
-                    <BsBellFill className="text-gray-700 dark:text-gray-300 w-5 h-5" />
-                    {notifications.length > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 flex items-center justify-center 
-                                     rounded-full bg-red-500 text-white text-xxs font-medium px-1 border border-white">
-                        {notifications.length > 99 ? "99+" : notifications.length}
-                      </span>
-                    )}
+                    <img 
+                      src="/bell.png" 
+                      alt="Notifications" 
+                      className="w-5 h-5 text-gray-700 dark:text-gray-300" 
+                    />
                   </button>
                 </div>
               )}
@@ -1244,7 +1242,7 @@ export default function ChatPage() {
             }`}
             ref={chatContainerRef}
           >
-            <div className="max-w-3xl mx-auto px-4 py-6 mb-[1rem] md:mb-0">
+            <div className="max-w-3xl mx-auto px-4 py-10 mb-[1rem] md:mb-0">
               {/* Welcome Section - Only show if chat hasn't started */}
               {!hasStartedChat && messages.length <= 1 && (
                 <motion.div 
@@ -1410,7 +1408,7 @@ export default function ChatPage() {
                     {/* Text Content Section */}
                     {message.content && (
                       <div
-                        className={`relative inline-block rounded-2xl px-5 py-4 shadow-lg ${
+                        className={`relative text-sm md:text-base  inline-block rounded-2xl px-5 py-4 shadow-lg ${
                           message.type === "user"
                             ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white"
                             : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"

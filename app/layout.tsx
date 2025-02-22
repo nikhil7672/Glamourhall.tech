@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 import { Suspense } from "react";
 import Script from "next/script";
 import MobileNavBar from "@/components/MobileNavBar";
+import DesktopNavBar from '@/components/DesktopNavBar';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -70,6 +71,7 @@ export default function RootLayout({
               {children}
             </Suspense>
             <MobileNavBar />
+            <DesktopNavBar />
           </div>
         </Providers>
       </body>
