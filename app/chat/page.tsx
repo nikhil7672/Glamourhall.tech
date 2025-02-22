@@ -77,7 +77,7 @@ export default function ChatPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const conversationId = searchParams.get("id");
+  const conversationId = searchParams?.get("id");
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [localStorageUser, setLocalStorageUser] = useState<any>(null);
@@ -869,6 +869,7 @@ export default function ChatPage() {
   // ... existing code ...
   const loadConversation = async (conversationId: string) => {
     try {
+      setFullLoading(true)
       const response = await fetch(`/api/auth/conversations/${conversationId}`);
       if (!response.ok) throw new Error("Failed to load conversation");
 
@@ -883,6 +884,7 @@ export default function ChatPage() {
 
       setMessages(historyMessages);
       setHasStartedChat(true);
+      setFullLoading(false)
       router.push(`/chat?id=${conversationId}`, { scroll: false });
     } catch (error) {
       console.error("Error loading conversation:", error);
