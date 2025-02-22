@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -36,6 +36,30 @@ export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isApp, setIsApp] = useState(false);
+  const [isCheckingEnv, setIsCheckingEnv] = useState(true);
+
+  function isWebView() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isAndroidWebView = /wv/.test(userAgent) || /Version\/[\d.]+.*Chrome/.test(userAgent);
+    const isIOSWebView = /iPhone|iPod|iPad/.test(userAgent) && /AppleWebKit/.test(userAgent) && !/Safari/.test(userAgent);
+    return isAndroidWebView || isIOSWebView;
+  }
+
+  useEffect(() => {
+    const isMobileApp = isWebView();
+    setIsApp(isMobileApp);
+    setIsCheckingEnv(false);
+  }, []);
+
+  if (isCheckingEnv) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <Loader2 className="h-12 w-12 animate-spin text-purple-600" />
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -257,24 +281,26 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <Button
-                className="w-full py-4 bg-white/80 hover:bg-white dark:bg-gray-700/80 dark:hover:bg-gray-600/90 text-gray-700 dark:text-gray-200 font-semibold rounded-xl border border-gray-300/50 dark:border-gray-600/50 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-3 text-base"
-                onClick={handleGoogleSignUp}
-                type="button"
-                disabled={isGoogleLoading}
-              >
-                {isGoogleLoading ? (
-                  <>
-                    <Image src="/google.png" alt="Google" width={20} height={20} />
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  </>
-                ) : (
-                  <>
-                    <Image src="/google.png" alt="Google" width={20} height={20} />
-                    Continue with Google
-                  </>
-                )}
-              </Button>
+              {!isApp && (
+                <Button
+                  className="w-full py-4 bg-white/80 hover:bg-white dark:bg-gray-700/80 dark:hover:bg-gray-600/90 text-gray-700 dark:text-gray-200 font-semibold rounded-xl border border-gray-300/50 dark:border-gray-600/50 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-3 text-base"
+                  onClick={handleGoogleSignUp}
+                  type="button"
+                  disabled={isGoogleLoading}
+                >
+                  {isGoogleLoading ? (
+                    <>
+                      <Image src="/google.png" alt="Google" width={20} height={20} />
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <Image src="/google.png" alt="Google" width={20} height={20} />
+                      Continue with Google
+                    </>
+                  )}
+                </Button>
+              )}
             </form>
           </CardContent>
 

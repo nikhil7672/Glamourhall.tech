@@ -41,7 +41,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
-  const [isApp, setIsApp] = useState(false)
+  const [isApp, setIsApp] = useState(false);
+  const [isCheckingEnv, setIsCheckingEnv] = useState(true);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -123,7 +125,16 @@ export default function LoginPage() {
     const isMobileApp = isWebView();
     console.log(isMobileApp, 'isMobileApp');
     setIsApp(isMobileApp);
-  },[])
+    setIsCheckingEnv(false);
+  }, []);
+
+  if (isCheckingEnv) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <Loader2 className="h-12 w-12 animate-spin text-purple-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
