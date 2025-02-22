@@ -81,7 +81,7 @@ export default function ProfilePage() {
       icon: () => (
         <div className="relative w-8 h-8 md:w-10 md:h-10 mb-2 text-purple-500">
           <img 
-            src="/aura.png"
+            src="/aura1.png"
             alt="Aura" 
             className="w-full h-full object-contain"
           />
@@ -173,11 +173,18 @@ export default function ProfilePage() {
                 className="block hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start bg-white dark:bg-gray-800 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg transition duration-300">
-                  <div className="w-12 h-12 md:w-20 md:h-20 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex-shrink-0" />
+                  <div className="w-12 h-12 md:w-20 md:h-20 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex-shrink-0 flex items-center justify-center relative">
+                    <FaComments className="w-6 h-6 md:w-8 md:h-8 text-blue-500 dark:text-blue-400 opacity-75" />
+                  </div>
                   <div className="ml-3 md:ml-6">
-                    <h4 className="text-base md:text-xl font-medium dark:text-gray-100">
-                      {conversation.title || "Style Chat"}
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="text-base md:text-xl font-semibold text-gray-800 dark:text-gray-100 truncate">
+                      {conversation.title || "New Style Chat"}
                     </h4>
+                    <span className="text-xs px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-300 rounded-full">
+                      {conversation.messages?.length || 0} messages
+                    </span>
+                  </div>
                     <p className="text-xs md:text-base text-gray-600 dark:text-gray-300">
                       {conversation.messages?.[0]?.content?.substring(0, 60) + "..."}
                     </p>
@@ -198,7 +205,7 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-gray-100 dark:bg-gray-900  px-4 sm:px-6 lg:px-12">
+    <div className=" transition-colors duration-300 bg-gray-100 dark:bg-gray-900  px-4 sm:px-2 lg:px-12">
       <div className="max-w-screen-xl mx-auto px-4 pb-20 md:pb-12 pt-8">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -281,7 +288,7 @@ export default function ProfilePage() {
                   className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg hover:shadow-lg transition duration-300"
                 >
                   {stat.icon && <stat.icon className={`w-8 h-8 md:w-10 md:h-10 mb-2 ${stat.className}`} />}
-                  <div className="text-2xl md:text-4xl font-bold text-blue-500 dark:text-blue-400 flex items-center gap-1">
+                  <div className="text-2xl md:text-4xl font-bold text-gray-600 dark:text-blue-400 flex items-center gap-1">
                     {stat.value}
                     {stat.label === "Aura" && (
                       <button
@@ -312,7 +319,7 @@ export default function ProfilePage() {
                 {stats[2].stats?.map((challengeStat, index) => (
                   <div key={index} className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg hover:shadow-lg transition duration-300">
                     {challengeStat.icon && <challengeStat.icon className={`w-8 h-8 md:w-10 md:h-10 mb-2 ${challengeStat.className}`} />}
-                    <div className="text-2xl md:text-4xl font-bold text-blue-500 dark:text-blue-400">
+                    <div className="text-2xl md:text-4xl font-bold text-gray-600 dark:text-blue-400">
                       {challengeStat.value}
                     </div>
                     <div className="mt-1 md:mt-2 text-xs md:text-lg text-gray-600 dark:text-gray-300">
