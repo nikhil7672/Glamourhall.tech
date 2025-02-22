@@ -1,7 +1,7 @@
 // app/auth/login/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -41,6 +41,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
+  const [isApp, setIsApp] = useState(false)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -105,6 +106,24 @@ export default function LoginPage() {
       setIsGoogleLoading(false);
     }
   };
+
+  function isWebView() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    
+    // Detect Android WebView
+    const isAndroidWebView = /wv/.test(userAgent) || /Version\/[\d.]+.*Chrome/.test(userAgent);
+
+    // Detect iOS WebView
+    const isIOSWebView = /iPhone|iPod|iPad/.test(userAgent) && /AppleWebKit/.test(userAgent) && !/Safari/.test(userAgent);
+
+    return isAndroidWebView || isIOSWebView;
+}
+
+  useEffect(() => {
+    const isMobileApp = isWebView();
+    console.log(isMobileApp, 'isMobileApp');
+    setIsApp(isMobileApp);
+  },[])
 
   return (
     <div className="min-h-screen flex">
@@ -233,8 +252,10 @@ export default function LoginPage() {
                   "Log in"
                 )}
               </Button>
-
-              <div className="relative my-6">
+                {
+                  !isApp && (
+                    <>
+                         <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300/50"></div>
                 </div>
@@ -273,6 +294,10 @@ export default function LoginPage() {
                   </>
                 )}
               </Button>
+                    </>
+                  )
+                }
+           
             </form>
           </CardContent>
 
