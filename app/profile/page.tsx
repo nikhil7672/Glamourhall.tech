@@ -10,15 +10,20 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { MdDarkMode } from "react-icons/md";
+import axios from "axios";
+import { format } from "date-fns";
+import Link from "next/link";
 
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(session?.user?.name || "Your Name");
+  const [name, setName] = useState('');
   const [bio, setBio] = useState("Fashion enthusiast and style seeker");
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -26,14 +31,35 @@ export default function ProfilePage() {
         localStorage.getItem("token") || sessionStorage.getItem("token");
       if (status === "unauthenticated" && !token) {
         window.location.href = "/auth/login";
+      } else {
+        setName(session?.user?.name || '')
       }
     };
-
     checkAuth();
   }, [status]);
 
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user?.id) {
+          const response = await axios.get(`/api/auth/conversations/user/${user.id}`);
+          setConversations(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching conversations:", error);
+      } finally {
+        setIsLoadingConversations(false);
+      }
+    };
+    
+    if (status === "authenticated") {
+      fetchConversations();
+    }
+  }, [status]);
+
   const stats = [
-    { label: "Style Chats", value: "23" },
+    { label: "Style Chats", value: conversations.length.toString() },
     { label: "Credits", value: "4500" },
     { label: "Following", value: "102" },
     { label: "Followers", value: "89" },
@@ -65,13 +91,63 @@ export default function ProfilePage() {
     }
   };
 
+  const RecentChats = () => (
+    <div className="mt-8 md:mt-12">
+      <h3 className="text-lg md:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 md:mb-6">
+        Recent Chats
+      </h3>
+      <div className="space-y-4 md:space-y-6">
+        {isLoadingConversations ? (
+          <div className="flex justify-center p-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
+          </div>
+        ) : conversations.length > 0 ? (
+          [...conversations]
+            .sort((a, b) => 
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )
+            .slice(0, 3)
+            .map((conversation) => (
+              <Link 
+                href={{
+                  pathname: "/chat",
+                  query: { id: conversation.id }
+                }}
+                key={conversation.id}
+                className="block hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start bg-white dark:bg-gray-800 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg transition duration-300">
+                  <div className="w-12 h-12 md:w-20 md:h-20 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex-shrink-0" />
+                  <div className="ml-3 md:ml-6">
+                    <h4 className="text-base md:text-xl font-medium dark:text-gray-100">
+                      {conversation.title || "Style Chat"}
+                    </h4>
+                    <p className="text-xs md:text-base text-gray-600 dark:text-gray-300">
+                      {conversation.messages?.[0]?.content?.substring(0, 60) + "..."}
+                    </p>
+                    <p className="text-[10px] md:text-sm text-gray-400 mt-1 md:mt-2">
+                      {format(new Date(conversation.created_at), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))
+        ) : (
+          <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+            No chat history available
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div
       className={`min-h-screen transition-colors duration-300 ${
         theme === "dark" ? "dark bg-gray-900" : "bg-gray-100"
       }`}
     >
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-12">
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -87,8 +163,8 @@ export default function ProfilePage() {
         </button>
       </motion.div>
         {/* Hero Header */}
-        <header className="flex justify-between items-center mb-10">
-          <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500">
+        <header className="flex justify-between items-center mb-6 md:mb-10">
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500">
            Profile
           </h1>
           <div className="flex items-center gap-4">
@@ -118,86 +194,47 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8"
+          className="relative bg-white dark:bg-gray-800 rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl p-6 md:p-8"
         >
           <div className="relative flex flex-col items-center">
             {/* Floating Avatar */}
-            <div className="relative -mt-16">
-              <div className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-700 overflow-hidden shadow-2xl">
+            <div className="relative -mt-14 md:-mt-16">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-700 overflow-hidden shadow-xl md:shadow-2xl">
                 <img
                   src={session?.user?.image || "/avatar.jpg"}
                   alt="Profile"
-                  width="128"
-                  height="128"
-                  className="object-cover rounded-full w-32 h-32"
+                  className="object-cover w-full h-full"
                 />
               </div>
-              <button className="absolute bottom-0 right-0 p-2 bg-blue-500 text-white rounded-full shadow-lg transform hover:scale-110 transition">
+              {/* <button className="absolute bottom-0 right-0 p-2 bg-blue-500 text-white rounded-full shadow-lg transform hover:scale-110 transition">
                 <FaCamera size={16} />
-              </button>
+              </button> */}
             </div>
             {/* Profile Info */}
-            <div className="mt-6 text-center">
-              {isEditing ? (
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full max-w-xs px-4 py-2 text-2xl font-bold bg-transparent border-b-2 border-blue-300 focus:border-blue-500 outline-none"
-                  />
-                  <textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    className="w-full max-w-xs px-4 py-2 bg-transparent border-2 border-blue-300 rounded-lg focus:border-blue-500 outline-none"
-                    rows={3}
-                  />
-                  <div className="flex justify-center space-x-4">
-                    <button
-                      onClick={handleSave}
-                      className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
-                    >
-                      <FaSave size={16} />
-                      <span>Save</span>
-                    </button>
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="flex items-center gap-2 px-6 py-2 bg-gray-300 text-gray-700 rounded-full hover:bg-gray-400 transition"
-                    >
-                      <FaTimes size={16} />
-                      <span>Cancel</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="mt-4 md:mt-6 text-center">
+            <div>
+                  <h2 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
                     {name}
                   </h2>
-                  <p className="mt-2 text-gray-600 dark:text-gray-300">{bio}</p>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
-                  >
-                    <FaEdit size={16} />
-                    <span>Edit Profile</span>
-                  </button>
+                  <p className="mt-1 text-sm md:text-base text-gray-500 dark:text-gray-400">
+        {session?.user?.email}
+      </p>
+               
                 </div>
-              )}
             </div>
           </div>
 
           {/* Stats Section */}
-          <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="mt-6 md:mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300"
+                className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg hover:shadow-lg transition duration-300"
               >
-                <div className="text-4xl font-bold text-blue-500 dark:text-blue-400">
+                <div className="text-2xl md:text-4xl font-bold text-blue-500 dark:text-blue-400">
                   {stat.value}
                 </div>
-                <div className="mt-2 text-lg text-gray-600 dark:text-gray-300">
+                <div className="mt-1 md:mt-2 text-xs md:text-lg text-gray-600 dark:text-gray-300">
                   {stat.label}
                 </div>
               </div>
@@ -205,31 +242,7 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
-        {/* Recent Activity */}
-        <div className="mt-12">
-          <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-            Recent Chats
-          </h3>
-          <div className="space-y-6">
-            {[1, 2, 3].map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-start bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300"
-              >
-                <div className="w-20 h-20 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex-shrink-0" />
-                <div className="ml-6">
-                  <h4 className="text-xl font-medium dark:text-gray-100">
-                    Style Chat #{index + 1}
-                  </h4>
-                  <p className="text-base text-gray-600 dark:text-gray-300">
-                    Discussed summer fashion trends and got personalized recommendations.
-                  </p>
-                  <p className="text-sm text-gray-400 mt-2">2 days ago</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <RecentChats />
       </div>
     </div>
   );
