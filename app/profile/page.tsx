@@ -13,7 +13,9 @@ import { MdDarkMode } from "react-icons/md";
 import axios from "axios";
 import { format } from "date-fns";
 import Link from "next/link";
-
+import { FaLeaf, FaCrown } from "react-icons/fa";
+import { FaComments } from "react-icons/fa";
+import { FaSpinner, FaCheckCircle } from "react-icons/fa";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -53,17 +55,65 @@ export default function ProfilePage() {
       }
     };
     const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (status === "authenticated" || token ) {
       fetchConversations();
     }
   }, [status]);
 
   const stats = [
-    { label: "Style Chats", value: conversations.length.toString() },
-    { label: "Credits", value: "4500" },
-    { label: "Following", value: "102" },
-    { label: "Followers", value: "89" },
+    { 
+      label: "Style Chats", 
+      value: conversations.length.toString(),
+      icon: () => (
+        <div className="relative w-8 h-8 md:w-10 md:h-10 mb-2 text-purple-500">
+          <img 
+            src="/chat.png"
+            alt="Chat" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+      ),
+    },
+    { 
+      label: "Aura", 
+      value: "4500",
+      icon: () => (
+        <div className="relative w-8 h-8 md:w-10 md:h-10 mb-2 text-purple-500">
+          <img 
+            src="/aura.png"
+            alt="Aura" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+      ),
+      className: "text-purple-500"
+    },
+    // Challenges group
+    {
+      label: "Challenges",
+      stats: [
+        {
+          label: "Active",
+          value: "17",
+          icon: FaSpinner,
+          className: "text-blue-500"
+        },
+        {
+          label: "Completed",
+          value: "72",
+          icon: () => (
+            <div className="relative w-8 h-8 md:w-10 md:h-10 mb-2 text-purple-500">
+              <img 
+                src="/crown.png"
+                alt="Crown" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+          ),
+        }
+      ]
+    }
   ];
 
   const handleSave = () => {
@@ -90,6 +140,11 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Logout error:", error);
     }
+  };
+
+  const handleAddAura = () => {
+    // Implement aura purchase/add logic here
+    router.push('/pricing')
   };
 
   const RecentChats = () => (
@@ -143,26 +198,26 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-gray-100 dark:bg-gray-900">
-      <div className="max-w-6xl mx-auto px-4 pb-20 md:pb-12 pt-8">
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.4 }}
-        className="hidden md:fixed md:flex items-center left-4 top-4 z-50"
-      >
-        <button
-          onClick={() => router.back()}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20"
-          aria-label="Go back"
+    <div className="min-h-screen transition-colors duration-300 bg-gray-100 dark:bg-gray-900  px-4 sm:px-6 lg:px-12">
+      <div className="max-w-screen-xl mx-auto px-4 pb-20 md:pb-12 pt-8">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+          className="hidden md:fixed md:flex items-center left-4 top-4 z-50"
         >
-          <ArrowLeft className="w-6 h-6 text-gray-500 dark:text-white/90" />
-        </button>
-      </motion.div>
+          <button
+            onClick={() => router.back()}
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-500 dark:text-white/90" />
+          </button>
+        </motion.div>
         {/* Hero Header */}
         <header className="flex justify-between items-center mb-6 md:mb-10">
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500">
-           Profile
+            Profile
           </h1>
           <div className="flex items-center gap-4">
             <button
@@ -195,7 +250,7 @@ export default function ProfilePage() {
         >
           <div className="relative flex flex-col items-center">
             {/* Floating Avatar */}
-            <div className="relative -mt-14 md:-mt-16">
+            <div className="relative -mt-14 md:-mt-16 lg:-mt-20">
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-700 overflow-hidden shadow-xl md:shadow-2xl">
                 <img
                   src={session?.user?.image || "/avatar.jpg"}
@@ -203,39 +258,70 @@ export default function ProfilePage() {
                   className="object-cover w-full h-full"
                 />
               </div>
-              {/* <button className="absolute bottom-0 right-0 p-2 bg-blue-500 text-white rounded-full shadow-lg transform hover:scale-110 transition">
-                <FaCamera size={16} />
-              </button> */}
             </div>
             {/* Profile Info */}
             <div className="mt-4 md:mt-6 text-center">
-            <div>
-                  <h2 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
-                    {name}
-                  </h2>
-                  <p className="mt-1 text-sm md:text-base text-gray-500 dark:text-gray-400">
-        {session?.user?.email}
-      </p>
-               
-                </div>
+              <div>
+                <h2 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  {name}
+                </h2>
+                <p className="mt-1 text-sm md:text-base text-gray-500 dark:text-gray-400">
+                  {session?.user?.email}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Stats Section */}
-          <div className="mt-6 md:mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg hover:shadow-lg transition duration-300"
-              >
-                <div className="text-2xl md:text-4xl font-bold text-blue-500 dark:text-blue-400">
-                  {stat.value}
+           {/* Stats Section */}
+           <div className="mt-6 md:mt-10 space-y-8">
+            <div className="grid grid-cols-2 gap-4 md:gap-8">
+              {stats.slice(0, 2).map((stat, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg hover:shadow-lg transition duration-300"
+                >
+                  {stat.icon && <stat.icon className={`w-8 h-8 md:w-10 md:h-10 mb-2 ${stat.className}`} />}
+                  <div className="text-2xl md:text-4xl font-bold text-blue-500 dark:text-blue-400 flex items-center gap-1">
+                    {stat.value}
+                    {stat.label === "Aura" && (
+                      <button
+                        onClick={handleAddAura}
+                        aria-label="Add more aura"
+                      >
+                        <img 
+                            src="/add.png" 
+                            alt="Add Aura"
+                            className="w-5 h-5 object-contain"
+                          />
+                      </button>
+                    )}
+                  </div>
+                  <div className="mt-1 md:mt-2 text-xs md:text-lg text-gray-600 dark:text-gray-300">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="mt-1 md:mt-2 text-xs md:text-lg text-gray-600 dark:text-gray-300">
-                  {stat.label}
-                </div>
+              ))}
+            </div>
+
+            {/* Challenges Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-200">
+                Challenges
+              </h3>
+              <div className="grid grid-cols-2 gap-4 md:gap-8">
+                {stats[2].stats?.map((challengeStat, index) => (
+                  <div key={index} className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg hover:shadow-lg transition duration-300">
+                    {challengeStat.icon && <challengeStat.icon className={`w-8 h-8 md:w-10 md:h-10 mb-2 ${challengeStat.className}`} />}
+                    <div className="text-2xl md:text-4xl font-bold text-blue-500 dark:text-blue-400">
+                      {challengeStat.value}
+                    </div>
+                    <div className="mt-1 md:mt-2 text-xs md:text-lg text-gray-600 dark:text-gray-300">
+                      {challengeStat.label}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </motion.div>
 
