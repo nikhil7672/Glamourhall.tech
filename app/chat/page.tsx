@@ -848,6 +848,10 @@ export default function ChatPage() {
       if (!response.ok) throw new Error("Failed to fetch conversations");
 
       const data = await response.json();
+      const sortedData = data.sort((a: any, b: any) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setConversations(sortedData);
       setConversations(data);
     } catch (error) {
       console.error("Error fetching conversations:", error);
@@ -871,7 +875,10 @@ export default function ChatPage() {
 
   const loadConversation = async (conversationId: string) => {
     try {
-      setHalfLoading(true); // Use half loader instead of full
+      if(searchParams?.get("id")) {
+        setHalfLoading(true);
+      }
+     // Use half loader instead of full
       const response = await fetch(`/api/auth/conversations/${conversationId}`);
       if (!response.ok) throw new Error("Failed to load conversation");
 
