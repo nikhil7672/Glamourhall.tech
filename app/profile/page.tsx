@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaCamera, FaEdit, FaSave, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { FiSun, FiMoon } from "react-icons/fi";
@@ -13,12 +13,24 @@ import { MdDarkMode } from "react-icons/md";
 
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(session?.user?.name || "Your Name");
   const [bio, setBio] = useState("Fashion enthusiast and style seeker");
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (status === "unauthenticated" && !token) {
+        window.location.href = "/auth/login";
+      }
+    };
+
+    checkAuth();
+  }, [status]);
 
   const stats = [
     { label: "Style Chats", value: "23" },

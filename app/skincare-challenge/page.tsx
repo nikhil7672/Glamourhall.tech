@@ -1,9 +1,10 @@
 "use client";
 import { motion } from "framer-motion";
 import { FaLeaf, FaTint, FaRegGem, FaFire } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const challenges = [
   {
@@ -41,9 +42,22 @@ const challenges = [
 ];
 
 export default function SkincareChallenge() {
+  const { status } = useSession();
+  const router = useRouter();
   const [selectedChallenge, setSelectedChallenge] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (status === "unauthenticated" && !token) {
+        window.location.href = "/auth/login";
+      }
+    };
+
+    checkAuth();
+  }, [status]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
@@ -66,19 +80,19 @@ export default function SkincareChallenge() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="text-center mb-8 md:mb-16"
         >
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-blue-500 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-blue-500 bg-clip-text text-transparent">
             Skin Care Challenges
           </h1>
-          <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="mt-3 md:mt-4 text-sm md:text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4">
             Level up your skincare routine with our gamified challenges. Earn rewards, track progress, 
             and transform your skin!
           </p>
         </motion.div>
 
         {/* Challenge Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           {challenges.map((challenge, index) => (
             <motion.div
               key={index}
@@ -86,12 +100,11 @@ export default function SkincareChallenge() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.1 }}
               whileHover={{ scale: 1.05, rotate: -2 }}
-              className="relative group"
-            >
+              className="relative group p-2 md:p-0">
               {/* 3D Card Effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent dark:from-gray-800/30 rounded-3xl shadow-2xl transform group-hover:-rotate-6 transition-transform duration-300" />
               
-              <div className={`relative p-8 rounded-3xl ${challenge.color} text-white overflow-hidden`}>
+              <div className={`relative p-6 md:p-8 rounded-3xl ${challenge.color} text-white overflow-hidden`}>
                 {/* Floating Emoji */}
                 <motion.div
                   animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
@@ -104,11 +117,11 @@ export default function SkincareChallenge() {
                 {/* Content */}
                 <div className="relative z-10">
                   <div className="mb-6">{challenge.icon}</div>
-                  <h3 className="text-xl md:text-2xl font-bold mb-2">{challenge.title}</h3>
+                  <h3 className="text-lg md:text-2xl font-bold mb-2">{challenge.title}</h3>
                   <p className="text-xs md:text-sm opacity-90 mb-4">{challenge.description}</p>
                   
                   {/* Progress Circle */}
-                  <div className="relative w-20 h-20 mb-6">
+                  <div className="relative w-16 h-16 md:w-20 md:h-20 mb-4 md:mb-6">
                     <svg className="w-full h-full" viewBox="0 0 100 100">
                       <circle
                         className="text-white/20"
@@ -132,7 +145,7 @@ export default function SkincareChallenge() {
                         transform="rotate(-90 50 50)"
                       />
                     </svg>
-                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg md:text-xl font-bold">
+                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base md:text-xl font-bold">
                       {challenge.duration}
                     </span>
                   </div>
@@ -140,7 +153,7 @@ export default function SkincareChallenge() {
                   {/* Start Button */}
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    className="w-full py-3 bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-all text-sm md:text-base"
+                    className="w-full py-2 md:py-3 text-xs md:text-base bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-all"
                     onClick={() => {
                       setSelectedChallenge(index);
                       setIsModalOpen(true);
@@ -158,9 +171,9 @@ export default function SkincareChallenge() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-24 p-8 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm rounded-3xl"
+          className="mt-12 md:mt-24 p-4 md:p-8 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl md:rounded-3xl"
         >
-          <h2 className="text-3xl font-bold mb-8 text-center">How It Works</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center">How It Works</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { icon: "🎯", title: "Choose Your Challenge", text: "Pick from our curated skin goals" },

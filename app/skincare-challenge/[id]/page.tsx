@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { FaCheckCircle, FaChevronLeft, FaLeaf, FaFire, FaTrophy } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const ChallengeProgress = ({ params }: { params: { id: string } }) => {
+  const { status } = useSession();
   const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [currentDay, setCurrentDay] = useState(1);
@@ -30,6 +32,18 @@ const ChallengeProgress = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     setProgress(tasks.filter(task => task.completed).length);
   }, [tasks]);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (status === "unauthenticated" && !token) {
+        window.location.href = "/auth/login";
+      }
+    };
+
+    checkAuth();
+  }, [status]);
 
   const toggleTask = (taskId: number) => {
     setTasks(tasks.map(task => 
