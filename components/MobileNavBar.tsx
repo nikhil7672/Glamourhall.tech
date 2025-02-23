@@ -13,7 +13,7 @@ export default function MobileNavBar() {
   // Only show on these routes
   const allowedRoutes = [
     '/chat',
-    '/skincare-challenge',
+    '/selfcare-challenge',
     '/wardrobe',
     '/profile'
   ];
@@ -21,7 +21,7 @@ export default function MobileNavBar() {
   if (!isMobile || !allowedRoutes.some(route => pathname?.startsWith(route))) return null;
 
   const navItems = [
-    { path: '/skincare-challenge', icon: FaLeaf, label: 'Skincare' },
+    { path: '/selfcare-challenge', icon: FaLeaf, label: 'Selfcare' },
     { path: '/chat', icon: FaComments, label: 'Chat' },
     { path: '/wardrobe', icon: GiClothes, label: 'Wardrobe' },
     { path: '/profile', icon: FaUser, label: 'Profile' },
@@ -29,7 +29,7 @@ export default function MobileNavBar() {
 
   // Define active styles for each route
   const activeStyles = {
-    '/skincare-challenge': 'bg-green-500',
+    '/selfcare-challenge': 'bg-green-500',
     '/chat': 'bg-gradient-to-br from-purple-500 to-pink-500',
     '/wardrobe': 'bg-amber-500',
     '/profile': 'bg-blue-500'

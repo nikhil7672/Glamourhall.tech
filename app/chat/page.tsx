@@ -1195,7 +1195,7 @@ export default function ChatPage() {
             </div>
 
             {/* Right Section: Theme Toggle, Notifications, Profile */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 md:gap-3">
               {/* Speech Control */}
               <div className="hidden md:block">
                 <SpeechControl
@@ -1677,9 +1677,10 @@ export default function ChatPage() {
                   <input
                     type="text"
                     placeholder="Let's find your perfect look!"
-                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors text-sm md:text-base"
+                    className="w-full pl-4 pr-10 py-3 rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors text-base md:text-base chat-input"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
+                    style={{ touchAction: 'manipulation' }}
                   />
                   <input
                     ref={fileInputRef}

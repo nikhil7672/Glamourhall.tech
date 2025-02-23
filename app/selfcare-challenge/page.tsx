@@ -41,7 +41,7 @@ const challenges = [
   }
 ];
 
-export default function SkincareChallenge() {
+export default function SelfcareChallenge() {
   const { status } = useSession();
   const router = useRouter();
   const [selectedChallenge, setSelectedChallenge] = useState<number | null>(null);
@@ -83,11 +83,11 @@ export default function SkincareChallenge() {
           className="text-center mb-8 md:mb-16"
         >
           <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-blue-500 bg-clip-text text-transparent">
-            Skin Care Challenges
+            Challenges
           </h1>
           <p className="mt-3 md:mt-4 text-sm md:text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4">
-            Level up your skincare routine with our gamified challenges. Earn rewards, track progress, 
-            and transform your skin!
+            Level up your routine with our gamified challenges. Earn rewards, track progress, 
+            and transform yourself!
           </p>
         </motion.div>
 
@@ -218,7 +218,7 @@ export default function SkincareChallenge() {
               </button>
               <button
                 onClick={() => {
-                  router.push(`/skincare-challenge/${challenges[selectedChallenge].title}`);
+                  router.push(`/selfcare-challenge/${challenges[selectedChallenge].title}`);
                   setIsModalOpen(false);
                 }}
                 className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 text-white hover:opacity-90 transition-opacity"

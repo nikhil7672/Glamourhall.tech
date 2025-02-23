@@ -121,3 +121,18 @@ body {
     opacity: 1;
   }
 }
+
+/* Prevent iOS zoom */
+@supports (-webkit-overflow-scrolling: touch) {
+  input, textarea, select {
+    font-size: 16px !important;
+    touch-action: manipulation;
+  }
+}
+
+/* Specific fix for chat input */
+.chat-input {
+  font-size: 16px !important;
+  transform: scale(1);
+  transform-origin: left top;
+}

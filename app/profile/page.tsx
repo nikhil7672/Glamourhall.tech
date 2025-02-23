@@ -177,11 +177,11 @@ export default function ProfilePage() {
                     <FaComments className="w-6 h-6 md:w-8 md:h-8 text-blue-500 dark:text-blue-400 opacity-75" />
                   </div>
                   <div className="ml-3 md:ml-6">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="text-base md:text-xl font-semibold text-gray-800 dark:text-gray-100">
+                  <div className="flex items-start gap-2 mb-1">
+                    <h4 className="text-base md:text-xl font-semibold text-gray-800 dark:text-gray-100 flex-1 min-w-0">
                       {conversation?.title?.split(/\s+/).slice(0,5).join(' ') + (conversation?.title?.split(/\s+/).length > 6 ? '...' : '') || "New Style Chat"}
                     </h4>
-                    <span className="text-xs px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-300 rounded-full">
+                    <span className="text-xs px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-300 rounded-full flex-shrink-0 whitespace-nowrap">
                       {conversation.messages?.length || 0} messages
                     </span>
                   </div>
