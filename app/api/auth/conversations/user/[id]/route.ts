@@ -3,11 +3,7 @@ export const revalidate = 0;  // Disable revalidation
 
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl:string = process.env.SUPABASE_URL || '';
-const supabaseAnonKey:string = process.env.SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from "@/lib/supabaseClient";
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {

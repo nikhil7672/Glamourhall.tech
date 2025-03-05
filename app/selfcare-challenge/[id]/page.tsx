@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-const ChallengeProgress = ({ params }: { params: { id: string } }) => {
+const ChallengeProgressPage = ({ params }: { params: { id: string } }) => {
   const { status } = useSession();
   const router = useRouter();
   const [progress, setProgress] = useState(0);
@@ -159,4 +159,4 @@ const ChallengeProgress = ({ params }: { params: { id: string } }) => {
   );
 };
 
-export default ChallengeProgress; 
+export default ChallengeProgressPage; 

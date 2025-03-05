@@ -26,8 +26,7 @@ export async function POST(req: Request) {
     const hashParams = {
       key: merchantKey,
       txnid: txnId,
-      // amount: paymentData.amount.toString(),
-      amount: 1,
+      amount: paymentData.amount.toString(),
       productinfo: paymentData.product,
       firstname: paymentData.firstname,
       email: paymentData.email

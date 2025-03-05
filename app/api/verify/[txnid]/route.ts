@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from "@/lib/supabaseClient";
 import { NextRequest } from 'next/server';
 import PayU from 'payu-websdk';
 
@@ -7,9 +7,7 @@ export async function POST(
   { params }: { params: { txnid: string } }
 ) {
   try {
-    const supabaseUrl = process.env.SUPABASE_URL || "";
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
     const { txnid } = params; // Extract txnid from params
 
     const merchantKey = process.env.PAYU_MERCHANT_KEY;

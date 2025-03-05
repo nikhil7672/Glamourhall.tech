@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
-
+import { supabase } from "@/lib/supabaseClient";
 // Input validation schema
 const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -13,18 +12,14 @@ const loginSchema = z.object({
 type LoginInput = z.infer<typeof loginSchema>;
 
 export async function POST(request: Request) {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
   const JWT_SECRET = process.env.JWT_SECRET;
 
-  if (!supabaseUrl || !supabaseAnonKey || !JWT_SECRET) {
+  if (!JWT_SECRET) {
     return NextResponse.json(
       { error: "Server configuration is missing" },
       { status: 500 }
     );
   }
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   try {
     const body = await request.json();

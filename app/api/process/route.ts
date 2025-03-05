@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { HfInference } from "@huggingface/inference";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
 
@@ -9,9 +9,7 @@ import { scrapeProducts } from "@/app/lib/scraper_prod";
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
-const supabaseUrl = process.env.SUPABASE_URL || "";
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 
 const openai = new ChatOpenAI({
   openAIApiKey: process.env.DEEPSEEK_API_KEY,

@@ -1,14 +1,7 @@
 export const dynamic = 'force-dynamic';  // Disable caching for this route
 export const revalidate = 0;  // Disable revalidation
-
-
-
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 import { NextRequest, NextResponse } from "next/server";
-
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 // GET preferences
 export async function GET(request: NextRequest) {

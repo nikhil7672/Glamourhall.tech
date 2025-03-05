@@ -5,47 +5,31 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
+import axios from "axios";
+import React from "react";
 
-const challenges = [
-  {
-    title: "Acne Assassin",
-    duration: 7,
-    icon: <FaFire className="w-8 h-8" />,
-    color: "bg-gradient-to-br from-red-500 to-orange-400",
-    progress: 0,
-    description: "7-day intensive pimple clearing program"
-  },
-  {
-    title: "Glow Guardian",
-    duration: 14,
-    icon: <FaRegGem className="w-8 h-8" />,
-    color: "bg-gradient-to-br from-yellow-400 to-amber-500",
-    progress: 0,
-    description: "Two-week radiance boosting challenge"
-  },
-  {
-    title: "Hydration Hero",
-    duration: 21,
-    icon: <FaTint className="w-8 h-8" />,
-    color: "bg-gradient-to-br from-blue-400 to-purple-500",
-    progress: 0,
-    description: "3-week deep moisturizing quest"
-  },
-  {
-    title: "Even Tone Explorer",
-    duration: 30,
-    icon: <FaLeaf className="w-8 h-8" />,
-    color: "bg-gradient-to-br from-green-400 to-emerald-500",
-    progress: 0,
-    description: "Month-long pigmentation correction journey"
-  }
-];
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
-export default function SelfcareChallenge() {
+export default function SelfcareChallengePage() {
   const { status } = useSession();
   const router = useRouter();
   const [selectedChallenge, setSelectedChallenge] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [challenges, setChallenges] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const getIconComponent = (iconName: string) => {
+    const iconMap: { [key: string]: JSX.Element } = {
+      FaFire: <FaFire className="w-8 h-8" />,
+      FaRegGem: <FaRegGem className="w-8 h-8" />,
+      FaTint: <FaTint className="w-8 h-8" />,
+      FaLeaf: <FaLeaf className="w-8 h-8" />
+    };
+    return iconMap[iconName] || <FaLeaf className="w-8 h-8" />;
+  };
 
   useEffect(() => {
     const checkAuth = () => {
@@ -57,7 +41,31 @@ export default function SelfcareChallenge() {
     };
 
     checkAuth();
+    
   }, [status]);
+
+
+  useEffect(() => {
+    fetchChallenges()
+  },[])
+
+
+  const fetchChallenges = async () => {
+    try {
+      setIsLoading(true);
+      const response:any = await axios.get('/api/challenges');
+      const challenges = response.data.challenges.map((challenge: any) => ({
+        ...challenge,
+      }));
+      setChallenges(challenges);
+    } catch (error) {
+      console.error('Error fetching challenges:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
@@ -92,80 +100,123 @@ export default function SelfcareChallenge() {
         </motion.div>
 
         {/* Challenge Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-          {challenges.map((challenge, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.05, rotate: -2 }}
-              className="relative group p-2 md:p-0">
-              {/* 3D Card Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent dark:from-gray-800/30 rounded-3xl shadow-2xl transform group-hover:-rotate-6 transition-transform duration-300" />
-              
-              <div className={`relative p-6 md:p-8 rounded-3xl ${challenge.color} text-white overflow-hidden`}>
-                {/* Floating Emoji */}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-96">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+            {challenges.length > 0 ? (
+              challenges.map((challenge, index) => (
                 <motion.div
-                  animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 6, repeat: Infinity }}
-                  className="absolute -top-4 -right-4 opacity-20 text-8xl"
-                >
-                  {challenge.icon}
-                </motion.div>
-
-                {/* Content */}
-                <div className="relative z-10">
-                  <div className="mb-6">{challenge.icon}</div>
-                  <h3 className="text-lg md:text-2xl font-bold mb-2">{challenge.title}</h3>
-                  <p className="text-xs md:text-sm opacity-90 mb-4">{challenge.description}</p>
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05, rotate: -2 }}
+                  className="relative group p-2 md:p-0">
+                  {/* Updated Card Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent dark:from-gray-800/30 rounded-3xl shadow-xl transform group-hover:-rotate-3 transition-all duration-300" />
                   
-                  {/* Progress Circle */}
-                  <div className="relative w-16 h-16 md:w-20 md:h-20 mb-4 md:mb-6">
-                    <svg className="w-full h-full" viewBox="0 0 100 100">
-                      <circle
-                        className="text-white/20"
-                        strokeWidth="8"
-                        stroke="currentColor"
-                        fill="transparent"
-                        r="40"
-                        cx="50"
-                        cy="50"
-                      />
-                      <circle
-                        className="text-white"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        stroke="currentColor"
-                        fill="transparent"
-                        r="40"
-                        cx="50"
-                        cy="50"
-                        strokeDasharray={`${challenge.progress * 251} 251`}
-                        transform="rotate(-90 50 50)"
-                      />
-                    </svg>
-                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base md:text-xl font-bold">
-                      {challenge.duration}
-                    </span>
-                  </div>
+                  <div className={`relative p-6 md:p-8 rounded-3xl ${
+                    [
+                      'bg-gradient-to-br from-green-400/90 to-blue-400/90',
+                      'bg-gradient-to-br from-purple-400/90 to-pink-400/90',
+                            'bg-gradient-to-br from-cyan-400/90 to-blue-400/90',
+                      'bg-gradient-to-br from-yellow-400/90 to-orange-400/90',
+                
+                    ][index % 4]
+                  } text-white overflow-hidden backdrop-blur-sm border border-white/20`}>
+                    
+                    {/* Animated Background Elements */}
+                    <div className="absolute inset-0 bg-noise opacity-10 mix-blend-overlay" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
 
-                  {/* Start Button */}
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full py-2 md:py-3 text-xs md:text-base bg-white/20 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/30 transition-all"
-                    onClick={() => {
-                      setSelectedChallenge(index);
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    Start Challenge
-                  </motion.button>
-                </div>
+                    {/* Updated Icon Styling */}
+                    <motion.div
+                      animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 6, repeat: Infinity }}
+                      className="absolute -top-4 -right-4 opacity-30 text-8xl filter drop-shadow-lg"
+                    >
+                      {getIconComponent(challenge.icon)}
+                    </motion.div>
+
+                    {/* Content */}
+                    <div className="relative z-10">
+                      <div className="mb-6">
+                        {React.cloneElement(getIconComponent(challenge.icon), { 
+                          className: 'w-8 h-8 filter drop-shadow-md' 
+                        })}
+                      </div>
+                      
+                      {/* Text Styling */}
+                      <h3 className="text-lg md:text-2xl font-bold mb-2 drop-shadow-md">
+                        {challenge.title}
+                      </h3>
+                      <p className="text-xs md:text-sm opacity-95 mb-4 font-medium">
+                        {challenge.description}
+                      </p>
+                      
+                      {/* Updated Progress Circle */}
+                      <div className="relative w-16 h-16 md:w-20 md:h-20 mb-4 md:mb-6">
+                        <svg className="w-full h-full" viewBox="0 0 100 100">
+                          <circle
+                            className="text-white/30"
+                            strokeWidth="8"
+                            stroke="currentColor"
+                            fill="transparent"
+                            r="40"
+                            cx="50"
+                            cy="50"
+                          />
+                          <circle
+                            className="text-white/70"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                            stroke="currentColor"
+                            fill="transparent"
+                            r="40"
+                            cx="50"
+                            cy="50"
+                            strokeDasharray={`${challenge.progress * 251} 251`}
+                            transform="rotate(-90 50 50)"
+                          />
+                        </svg>
+                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base md:text-xl font-bold drop-shadow-md">
+                          {challenge.duration}
+                        </span>
+                      </div>
+
+                      {/* Updated Start Button */}
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        className={`w-full py-2 md:py-3 text-xs md:text-base backdrop-blur-lg rounded-xl font-bold transition-all shadow-lg hover:shadow-xl/50 flex items-center justify-center gap-2 ${
+                          [
+                            'bg-gradient-to-r from-green-400/90 to-blue-400/90 hover:from-green-500 hover:to-blue-500',
+                            'bg-gradient-to-r from-purple-400/90 to-pink-400/90 hover:from-purple-500 hover:to-pink-500',
+                                                        'bg-gradient-to-r from-cyan-400/90 to-blue-400/90 hover:from-cyan-500 hover:to-blue-500',
+                            'bg-gradient-to-r from-yellow-400/90 to-orange-400/90 hover:from-yellow-500 hover:to-orange-500',
+
+                          ][index % 4]
+                        }`}
+                        onClick={() => {
+                          setSelectedChallenge(index);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        Start Now <span className="text-lg">🚀</span>
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                No challenges available
               </div>
-            </motion.div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* How It Works Section */}
         <motion.div

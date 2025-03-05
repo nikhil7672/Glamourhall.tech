@@ -19,7 +19,7 @@ export function Providers({ children, ...props }: { children: React.ReactNode })
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="dark"
       enableSystem
       disableTransitionOnChange
       {...props}
