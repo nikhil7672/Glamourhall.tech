@@ -12,7 +12,7 @@ export default function DesktopNavBar() {
 
   const allowedRoutes = [
     '/chat',
-    '/skincare-challenge',
+    '/selfcare-challenge',
     '/wardrobe',
     '/profile'
   ];
@@ -20,14 +20,14 @@ export default function DesktopNavBar() {
   if (!isDesktop || !allowedRoutes.some(route => pathname?.startsWith(route))) return null;
 
   const navItems = [
-    { path: '/skincare-challenge', icon: FaLeaf, label: 'Skincare' },
+    { path: '/selfcare-challenge', icon: FaLeaf, label: 'Skincare' },
     { path: '/chat', icon: FaComments, label: 'Chat' },
     { path: '/wardrobe', icon: GiClothes, label: 'Wardrobe' },
     { path: '/profile', icon: FaUser, label: 'Profile' },
   ];
 
   const activeStyles = {
-    '/skincare-challenge': 'bg-green-500',
+    '/selfcare-challenge': 'bg-green-500',
     '/chat': 'bg-gradient-to-br from-purple-500 to-pink-500',
     '/wardrobe': 'bg-amber-500',
     '/profile': 'bg-blue-500'

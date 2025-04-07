@@ -14,12 +14,13 @@ export const viewport = {
 };
 
 export default function SelfcareChallengePage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [selectedChallenge, setSelectedChallenge] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [challenges, setChallenges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userProgress, setUserProgress] = useState<Record<string, any>>({});
 
   const getIconComponent = (iconName: string) => {
     const iconMap: { [key: string]: JSX.Element } = {
@@ -49,6 +50,29 @@ export default function SelfcareChallengePage() {
     fetchChallenges()
   },[])
 
+  useEffect(() => {
+    const fetchChallengeProgress = async () => {
+      const userId = localStorage.getItem('userId');
+      if (challenges.length > 0 && userId) {
+        const progressMap: Record<string, any> = {};
+        
+        await Promise.all(challenges.map(async (challenge) => {
+          try {
+            const response = await axios.get(`/api/user_challenge_progress?userId=${userId}&challengeId=${challenge.id}`);
+            if (response.data.progress) {
+              progressMap[challenge.id] = response.data.progress;
+            }
+          } catch (error) {
+            console.error('Error fetching progress:', error);
+          }
+        }));
+        
+        setUserProgress(progressMap);
+      }
+    };
+
+    fetchChallengeProgress();
+  }, [challenges]);
 
   const fetchChallenges = async () => {
     try {
@@ -64,6 +88,9 @@ export default function SelfcareChallengePage() {
       setIsLoading(false);
     }
   };
+
+
+  
 
 
 
@@ -178,33 +205,44 @@ export default function SelfcareChallengePage() {
                             r="40"
                             cx="50"
                             cy="50"
-                            strokeDasharray={`${challenge.progress * 251} 251`}
+                            strokeDasharray={`${
+                              ((userProgress[challenge.id]?.current_day || 0) / challenge.duration) * 251
+                            } 251`}
                             transform="rotate(-90 50 50)"
                           />
                         </svg>
                         <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base md:text-xl font-bold drop-shadow-md">
-                          {challenge.duration}
+                          {userProgress[challenge.id] 
+                            ? `${userProgress[challenge.id].current_day}/${challenge.duration}`
+                            : challenge.duration}
                         </span>
                       </div>
 
                       {/* Updated Start Button */}
                       <motion.button
+                        disabled={!!userProgress[challenge.id]}
                         whileTap={{ scale: 0.95 }}
                         className={`w-full py-2 md:py-3 text-xs md:text-base backdrop-blur-lg rounded-xl font-bold transition-all shadow-lg hover:shadow-xl/50 flex items-center justify-center gap-2 ${
-                          [
-                            'bg-gradient-to-r from-green-400/90 to-blue-400/90 hover:from-green-500 hover:to-blue-500',
-                            'bg-gradient-to-r from-purple-400/90 to-pink-400/90 hover:from-purple-500 hover:to-pink-500',
-                                                        'bg-gradient-to-r from-cyan-400/90 to-blue-400/90 hover:from-cyan-500 hover:to-blue-500',
-                            'bg-gradient-to-r from-yellow-400/90 to-orange-400/90 hover:from-yellow-500 hover:to-orange-500',
+                          userProgress[challenge.id] 
+                            ? 'bg-gray-400/50 cursor-not-allowed'
+                            : [
+                                'bg-gradient-to-r from-green-400/90 to-blue-400/90 hover:from-green-500 hover:to-blue-500',
+                                'bg-gradient-to-r from-purple-400/90 to-pink-400/90 hover:from-purple-500 hover:to-pink-500',
+                                                            'bg-gradient-to-r from-cyan-400/90 to-blue-400/90 hover:from-cyan-500 hover:to-blue-500',
+                                'bg-gradient-to-r from-yellow-400/90 to-orange-400/90 hover:from-yellow-500 hover:to-orange-500',
 
-                          ][index % 4]
+                              ][index % 4]
                         }`}
                         onClick={() => {
                           setSelectedChallenge(index);
                           setIsModalOpen(true);
                         }}
                       >
-                        Start Now <span className="text-lg">🚀</span>
+                        {userProgress[challenge.id] ? (
+                          'In Progress ▶️'
+                        ) : (
+                          'Start Now 🚀'
+                        )}
                       </motion.button>
                     </div>
                   </div>
@@ -269,7 +307,7 @@ export default function SelfcareChallengePage() {
               </button>
               <button
                 onClick={() => {
-                  router.push(`/selfcare-challenge/${challenges[selectedChallenge].title}`);
+                  router.push(`/selfcare-challenge/${challenges[selectedChallenge].id}`);
                   setIsModalOpen(false);
                 }}
                 className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 text-white hover:opacity-90 transition-opacity"
